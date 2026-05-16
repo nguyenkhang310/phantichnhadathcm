@@ -54,10 +54,12 @@ if (!"is_rent" %in% names(raw_df)) raw_df$is_rent <- NA
 if (!"log_price" %in% names(raw_df)) raw_df$log_price <- NA_real_
 if (!"distance_to_center" %in% names(raw_df)) raw_df$distance_to_center <- NA_real_
 if (!"ward_price_encoded" %in% names(raw_df)) raw_df$ward_price_encoded <- NA_real_
+if (!"source" %in% names(raw_df)) raw_df$source <- "unknown"
 
 df <- raw_df %>%
   mutate(
     category_id = as.character(category_id),
+    source = as.factor(if_else(is.na(source) | source == "", "unknown", as.character(source))),
     district_name = as.factor(district_name),
     category_name = as.factor(category_name),
     ward = as.factor(if_else(is.na(ward) | ward == "", "Unknown", as.character(ward))),
@@ -111,7 +113,7 @@ make_formula <- function(data) {
   numeric_terms <- numeric_candidates[
     vapply(data[numeric_candidates], function(x) sum(!is.na(x)) > 0, logical(1))
   ]
-  factor_candidates <- intersect(c("district_name", "category_name", "posted_wday"), names(data))
+  factor_candidates <- intersect(c("district_name", "category_name", "posted_wday", "source"), names(data))
   factor_terms <- factor_candidates[
     vapply(data[factor_candidates], function(x) dplyr::n_distinct(x, na.rm = TRUE) >= 2, logical(1))
   ]
@@ -128,11 +130,40 @@ train_regression_set <- function(data, segment_name) {
   train <- droplevels(split$train)
   test <- droplevels(split$test)
   formula <- make_formula(train)
-  factor_cols <- intersect(c("district_name", "category_name", "posted_wday"), all.vars(formula))
+  factor_cols <- intersect(c("district_name", "category_name", "posted_wday", "source"), all.vars(formula))
   for (col in factor_cols) {
     train[[col]] <- droplevels(as.factor(train[[col]]))
     test[[col]] <- factor(as.character(test[[col]]), levels = levels(train[[col]]))
   }
+  valid_terms <- all.vars(formula)[-1]
+  invalid_factors <- factor_cols[
+    vapply(factor_cols, function(col) nlevels(train[[col]]) < 2, logical(1))
+  ]
+  valid_terms <- setdiff(valid_terms, invalid_factors)
+  if (length(valid_terms) == 0) {
+    warning("Bo qua ", segment_name, ": khong con bien hop le de train.")
+    return(NULL)
+  }
+  formula <- as.formula(paste("log_price ~", paste(valid_terms, collapse = " + ")))
+  model_vars <- all.vars(formula)
+  train <- train[complete.cases(train[, model_vars]), ]
+  test <- test[complete.cases(test[, model_vars]), ]
+  train <- droplevels(train)
+  factor_cols <- intersect(c("district_name", "category_name", "posted_wday", "source"), all.vars(formula))
+  for (col in factor_cols) {
+    train[[col]] <- droplevels(as.factor(train[[col]]))
+    test[[col]] <- factor(as.character(test[[col]]), levels = levels(train[[col]]))
+  }
+  valid_terms <- all.vars(formula)[-1]
+  invalid_factors <- factor_cols[
+    vapply(factor_cols, function(col) nlevels(train[[col]]) < 2, logical(1))
+  ]
+  valid_terms <- setdiff(valid_terms, invalid_factors)
+  if (length(valid_terms) == 0) {
+    warning("Bo qua ", segment_name, ": khong con bien hop le de train sau khi loc NA.")
+    return(NULL)
+  }
+  formula <- as.formula(paste("log_price ~", paste(valid_terms, collapse = " + ")))
   model_vars <- all.vars(formula)
   train <- train[complete.cases(train[, model_vars]), ]
   test <- test[complete.cases(test[, model_vars]), ]

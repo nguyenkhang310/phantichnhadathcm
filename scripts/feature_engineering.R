@@ -1,7 +1,7 @@
 # ============================================================
 # FEATURE ENGINEERING - BDS TP.HCM
 # Chay: Rscript feature_engineering.R
-# Input uu tien: data/hcmc_bds.sqlite, fallback: data/hcmc_bds_raw.csv
+# Input uu tien: data/hcmc_bds_combined_raw.csv, fallback: data/hcmc_bds.sqlite, data/hcmc_bds_raw.csv
 # Output: data/hcmc_bds_featured.csv
 # ============================================================
 
@@ -20,10 +20,15 @@ library(readr)
 library(lubridate)
 
 RAW_CSV <- "data/hcmc_bds_raw.csv"
+COMBINED_RAW_CSV <- "data/hcmc_bds_combined_raw.csv"
 SQLITE_PATH <- "data/hcmc_bds.sqlite"
 FEATURED_CSV <- "data/hcmc_bds_featured.csv"
 
 read_project_data <- function() {
+  if (file.exists(COMBINED_RAW_CSV)) {
+    return(read_csv(COMBINED_RAW_CSV, show_col_types = FALSE))
+  }
+
   if (file.exists(SQLITE_PATH) && requireNamespace("DBI", quietly = TRUE) &&
       requireNamespace("RSQLite", quietly = TRUE)) {
     con <- DBI::dbConnect(RSQLite::SQLite(), SQLITE_PATH)
@@ -35,7 +40,7 @@ read_project_data <- function() {
     return(read_csv(RAW_CSV, show_col_types = FALSE))
   }
 
-  stop("Chua co data. Hay chay chotot_scraper_v3.R hoac chotot_scraper_v2_1.R truoc.")
+  stop("Chua co data. Hay chay scraper va scripts/merge_sources.R truoc.")
 }
 
 haversine_km <- function(lat1, lon1, lat2 = 10.7758, lon2 = 106.7009) {
@@ -62,9 +67,16 @@ build_features <- function(df) {
     stop("Data thieu cot: ", paste(missing_cols, collapse = ", "))
   }
 
+  if (!"source" %in% names(df)) df$source <- "unknown"
+  if (!"source_id" %in% names(df)) {
+    df$source_id <- if ("ad_id" %in% names(df)) as.character(df$ad_id) else seq_len(nrow(df))
+  }
+
   df <- df %>%
     mutate(
       category_id = as.character(category_id),
+      source = as.character(source),
+      source_id = as.character(source_id),
       price = as.numeric(price),
       area = as.numeric(area),
       rooms = as.numeric(rooms),
@@ -128,6 +140,7 @@ build_features <- function(df) {
       is_rent = category_id %in% c("1030", "1050") | price < 500e6,
       price_segment = ntile(price, 4),
       price_segment = factor(price_segment, labels = c("Re", "Trung binh", "Cao", "Cao cap")),
+      source = as.factor(source),
       district_name = as.factor(district_name),
       category_name = as.factor(category_name),
       ward = as.factor(ward)

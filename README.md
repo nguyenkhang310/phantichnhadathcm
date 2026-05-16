@@ -35,7 +35,7 @@ Mon: Lap Trinh R — Do an Cuoi ky — HCMUTE
 ```r
 install.packages(c(
   "httr", "jsonlite", "dplyr", "purrr", "furrr", "future",
-  "readr", "lubridate", "DBI", "RSQLite"
+  "readr", "lubridate", "DBI", "RSQLite", "rvest", "xml2", "stringr", "tibble"
 ))
 ```
 
@@ -73,14 +73,19 @@ phantichnhadathcm/
 |-- scripts/
 |   |-- run_pipeline.R           # Chay toan bo pipeline tu A den Z
 |   |-- chotot_scraper_v3.R      # Thu thap du lieu tu Cho Tot API
-|   |-- feature_engineering.R   # Tao features cho ML
+|   |-- alonhadat_scraper.R      # Thu thap du lieu bo sung tu Alonhadat
+|   |-- merge_sources.R          # Gom raw data nhieu nguon ve mot schema
+|   |-- feature_engineering.R    # Tao features cho ML
 |   |-- eda_analysis.R           # Phan tich kham pha, xuat bieu do
 |   |-- train_models.R           # Huan luyen LR / RF / XGBoost / KMeans
 |
 |-- data/
 |   |-- hcmc_bds.sqlite          # Co so du lieu SQLite (chinh)
 |   |-- hcmc_bds_raw.csv         # Du lieu tho sau scrape
+|   |-- hcmc_bds_combined_raw.csv # Du lieu tho da gom nhieu nguon
 |   |-- hcmc_bds_featured.csv    # Du lieu sau feature engineering
+|   |-- sources/
+|       |-- alonhadat_raw.csv    # Raw data rieng tung nguon
 |
 |-- models/
 |   |-- price_models_sale.rds    # Mo hinh du doan gia ban
@@ -231,14 +236,40 @@ Rscript run_app.R
 
 ## Thu thap them du lieu tu nguon khac
 
-He thong hien tai chi scrape tu Cho Tot API. De them du lieu tu cac nguon khac (Nha Tot, Bat Dong San 24h, v.v.), thuc hien theo cac buoc sau:
+He thong hien co 2 nguon:
 
-### Buoc 1: Tao scraper moi
+| Nguon | Script | Output rieng |
+|---|---|---|
+| Cho Tot | `scripts/chotot_scraper_v3.R` | `data/hcmc_bds_raw.csv` |
+| Alonhadat | `scripts/alonhadat_scraper.R` | `data/sources/alonhadat_raw.csv` |
 
-Tao file `scripts/batdongsan24h_scraper.R` (hoac ten khac tuong ung voi ten trang). File nay can xuat ra mot data frame co **cac cot bat buoc** sau:
+Sau khi scrape tung nguon, chay `scripts/merge_sources.R` de gom tat ca ve:
+
+```bash
+Rscript scripts/merge_sources.R
+```
+
+Ket qua gom chung nam o `data/hcmc_bds_combined_raw.csv`. File feature engineering se uu tien doc file combined nay truoc, nen model luon train tren du lieu da gop nhieu nguon.
+
+### Crawl them Alonhadat
+
+```bash
+# Mac dinh 6 trang moi nhom
+Rscript scripts/alonhadat_scraper.R
+
+# Tang so trang neu can nhieu data hon
+ALONHADAT_MAX_PAGES=10 Rscript scripts/alonhadat_scraper.R
+```
+
+### Schema chuan cho moi nguon
+
+Neu them scraper moi (vd Batdongsan, Muaban, Nha Tot khi truy cap duoc), file scraper nen xuat CSV vao `data/sources/` voi cac cot sau:
 
 | Ten cot | Kieu du lieu | Mo ta |
 |---|---|---|
+| `source` | character | Ten nguon, vd `alonhadat` |
+| `source_group` | character | Nhom URL/danh muc trong nguon |
+| `source_id` | character | ID duy nhat theo nguon |
 | `ad_id` | character | ID tin dang, duy nhat |
 | `title` | character | Tieu de tin |
 | `price` | numeric | Gia (don vi: VND) |
@@ -251,6 +282,7 @@ Tao file `scripts/batdongsan24h_scraper.R` (hoac ten khac tuong ung voi ten tran
 | `lat` | numeric | Vi do (co the NA) |
 | `lon` | numeric | Kinh do (co the NA) |
 | `ad_url` | character | URL tin dang |
+| `source_url` | character | URL trang danh sach da crawl |
 | `posted_at` | character | Thoi gian dang (ISO 8601) |
 | `is_rent` | logical | TRUE = cho thue, FALSE = ban |
 
@@ -264,38 +296,12 @@ Tao file `scripts/batdongsan24h_scraper.R` (hoac ten khac tuong ung voi ten tran
 | `1040` | Dat |
 | `1050` | Phong tro |
 
-### Buoc 2: Ghi du lieu vao SQLite
+### Chay lai pipeline sau khi co data moi
 
-De chong trung lap voi du lieu cu, ghi vao SQLite thay vi CSV thang:
-
-```r
-library(DBI)
-library(RSQLite)
-
-# Ket noi vao DB hien co
-con <- dbConnect(SQLite(), "data/hcmc_bds.sqlite")
-
-# du_lieu_moi la data frame tu scraper moi cua ban
-# SQLite dung PRIMARY KEY (ad_id) de tu dong bo qua ban ghi trung
-dbWriteTable(con, "tmp_new", du_lieu_moi, temporary = TRUE, overwrite = TRUE)
-dbExecute(con, "INSERT OR IGNORE INTO listings SELECT * FROM tmp_new")
-dbDisconnect(con)
-```
-
-### Buoc 3: Xuat lai CSV
-
-```r
-con <- dbConnect(SQLite(), "data/hcmc_bds.sqlite")
-all_data <- dbReadTable(con, "listings")
-dbDisconnect(con)
-readr::write_csv(all_data, "data/hcmc_bds_raw.csv")
-```
-
-### Buoc 4: Chay lai pipeline
-
-Sau khi da bo sung du lieu vao SQLite va xuat CSV:
+Sau khi da scrape them nguon:
 
 ```bash
+Rscript scripts/merge_sources.R
 Rscript scripts/feature_engineering.R
 Rscript scripts/train_models.R
 ```
