@@ -38,6 +38,12 @@ SALE_MODEL_PATH <- "models/price_models_sale.rds"
 RENT_MODEL_PATH <- "models/price_models_rent.rds"
 CLUSTER_PATH <- "models/kmeans_area_price.csv"
 
+in_hcmc_bbox <- function(lat, lon) {
+  !is.na(lat) & !is.na(lon) &
+    lat >= 10.30 & lat <= 11.20 &
+    lon >= 106.00 & lon <= 107.30
+}
+
 load_data <- function() {
   if (file.exists(DATA_PATH)) {
     df <- read_csv(DATA_PATH, show_col_types = FALSE)
@@ -58,6 +64,11 @@ load_data <- function() {
       source = if ("source" %in% names(.)) if_else(is.na(source) | source == "", "Không rõ", as.character(source)) else "Không rõ",
       district_name = if_else(is.na(district_name) | district_name == "", "Không rõ", as.character(district_name)),
       category_name = if_else(is.na(category_name) | category_name == "", "Không rõ", as.character(category_name)),
+      transaction_type = if ("transaction_type" %in% names(.)) {
+        if_else(is.na(transaction_type) | transaction_type == "", if_else(as.logical(is_rent), "Cho thuê", "Bán"), as.character(transaction_type))
+      } else {
+        if_else(as.logical(is_rent), "Cho thuê", "Bán")
+      },
       ward = if_else(is.na(ward) | ward == "", "Không rõ", as.character(ward)),
       price = as.numeric(price),
       area = as.numeric(area),
@@ -66,7 +77,9 @@ load_data <- function() {
       price_b = price / 1e9,
       price_per_m2 = if_else(!is.na(area) & area > 0, price / area, NA_real_),
       posted_at = suppressWarnings(as_datetime(posted_at)),
-      is_rent = as.logical(is_rent)
+      is_rent = as.logical(is_rent),
+      lat = if_else(in_hcmc_bbox(lat, lon), lat, NA_real_),
+      lon = if_else(in_hcmc_bbox(lat, lon), lon, NA_real_)
     )
 }
 
@@ -141,6 +154,46 @@ predict_price <- function(input_row, is_rent) {
 
   pred <- tryCatch(predict(model, newdata = input_row), error = function(e) NA_real_)
   expm1(as.numeric(pred))
+}
+
+build_prediction_row <- function(df, district, category, ward, area, rooms, transaction_type) {
+  is_rent <- identical(transaction_type, "Cho thuê")
+  segment_df <- df %>% filter(is_rent == !!is_rent)
+  if (nrow(segment_df) == 0) segment_df <- df
+
+  local_df <- segment_df %>%
+    filter(district_name == district, category_name == category)
+  if (nrow(local_df) == 0) {
+    local_df <- segment_df %>% filter(district_name == district)
+  }
+  if (nrow(local_df) == 0) local_df <- segment_df
+
+  mode_chr <- function(x, default = "Không rõ") {
+    x <- as.character(x[!is.na(x) & x != ""])
+    if (length(x) == 0) default else names(sort(table(x), decreasing = TRUE))[1]
+  }
+
+  tibble(
+    district_name = district,
+    category_name = category,
+    ward = if_else(is.na(ward) | ward == "", "Không rõ", ward),
+    source = mode_chr(local_df$source, "chotot"),
+    area = as.numeric(area),
+    rooms = as.numeric(rooms),
+    posted_hour = hour(Sys.time()),
+    posted_wday = wday(Sys.time(), label = TRUE),
+    listing_age_days = 0,
+    distance_to_center = median(local_df$distance_to_center, na.rm = TRUE),
+    ward_price_encoded = median(local_df$ward_price_encoded, na.rm = TRUE),
+    is_rent = is_rent,
+    transaction_type = transaction_type
+  ) %>%
+    mutate(
+      distance_to_center = if_else(is.na(distance_to_center), median(df$distance_to_center, na.rm = TRUE), distance_to_center),
+      distance_to_center = if_else(is.na(distance_to_center), 0, distance_to_center),
+      ward_price_encoded = if_else(is.na(ward_price_encoded), median(df$ward_price_encoded, na.rm = TRUE), ward_price_encoded),
+      ward_price_encoded = if_else(is.na(ward_price_encoded), 0, ward_price_encoded)
+    )
 }
 
 price_color <- function(price) {
@@ -925,7 +978,7 @@ ui <- fluidPage(
         ),
         div(style = "flex: 1;"),
         div(
-          span(class = "status-badge", span(class = "status-dot"), "Live Data")
+          span(class = "status-badge", span(class = "status-dot"), "Dữ liệu đã cập nhật")
         )
       ),
       tags$main(
@@ -959,6 +1012,7 @@ ui <- fluidPage(
                 div(
                   class = "filter-toolbar",
                   filter_field("Nguồn", uiOutput("map_source_filter"), icon_name = "database"),
+                  filter_field("Giao dịch", uiOutput("map_transaction_filter"), icon_name = "tags"),
                   filter_field("Khu vực", uiOutput("map_district_filter"), icon_name = "location-dot"),
                   filter_field("Loại BĐS", uiOutput("map_category_filter"), icon_name = "building"),
                   filter_field("Khoảng giá", sliderInput("map_price_range", NULL, min = 0, max = 100, value = c(0, 100), step = 1, post = " tỷ"), icon_name = "coins"),
@@ -986,6 +1040,7 @@ ui <- fluidPage(
               fluidRow(
                 column(3, app_panel("Bộ lọc", NULL, div(class = "filter-panel",
                   filter_field("Nguồn", uiOutput("source_filter"), icon_name = "database"),
+                  filter_field("Giao dịch", uiOutput("transaction_filter"), icon_name = "tags"),
                   filter_field("Khu vực", uiOutput("district_filter"), icon_name = "location-dot"),
                   filter_field("Loại BĐS", uiOutput("category_filter"), icon_name = "building"),
                   filter_field("Khoảng giá", sliderInput("price_range", NULL, min = 0, max = 100, value = c(0, 100), step = 1, post = " tỷ"), icon_name = "coins"),
@@ -1012,6 +1067,7 @@ ui <- fluidPage(
                   div(class = "predict-form",
                     filter_field("Quận/huyện", uiOutput("predict_district"), icon_name = "location-dot"),
                     filter_field("Loại BĐS", uiOutput("predict_category"), icon_name = "building"),
+                    filter_field("Giao dịch", selectInput("predict_transaction", NULL, choices = c("Bán", "Cho thuê"), selected = "Bán", selectize = FALSE), icon_name = "tags", class = "wide"),
                     filter_field("Phường/xã", textInput("predict_ward", NULL, value = "Không rõ"), icon_name = "map-pin", class = "wide"),
                     filter_field("Diện tích", numericInput("predict_area", NULL, value = 75, min = 5, max = 5000), icon_name = "ruler-combined"),
                     filter_field("Số phòng", numericInput("predict_rooms", NULL, value = 2, min = 0, max = 20), icon_name = "bed"),
@@ -1039,6 +1095,7 @@ ui <- fluidPage(
               div(
                 class = "filter-toolbar",
                 filter_field("Nguồn", uiOutput("data_source_filter"), icon_name = "database"),
+                filter_field("Giao dịch", uiOutput("data_transaction_filter"), icon_name = "tags"),
                 filter_field("Khu vực", uiOutput("data_district_filter"), icon_name = "location-dot"),
                 filter_field("Loại BĐS", uiOutput("data_category_filter"), icon_name = "building"),
                 filter_field("Khoảng giá", sliderInput("data_price_range", NULL, min = 0, max = 100, value = c(0, 100), step = 1, post = " tỷ"), icon_name = "coins"),
@@ -1051,12 +1108,12 @@ ui <- fluidPage(
             h1(class = "page-title", "Về đồ án"),
             div(class = "page-subtitle", "Pipeline phân tích và dự đoán giá bất động sản TP.HCM bằng R."),
             app_panel("Pipeline thực hiện", NULL, tags$ul(
-              tags$li("Thu thập dữ liệu từ API công khai của Chợ Tốt, lưu SQLite/CSV và chống trùng bằng ad_id."),
+              tags$li("Thu thập dữ liệu từ Chợ Tốt API và Alonhadat HTML, tách raw data theo nguồn rồi gộp về schema chung."),
               tags$li("Làm sạch dữ liệu, xử lý missing values, tạo log features, khoảng cách tới trung tâm và target encoding theo phường/xã."),
               tags$li("Phân tích khám phá bằng ggplot2 và leaflet: phân phối giá, giá/m², cơ cấu loại BĐS, phân bố địa lý."),
               tags$li("Huấn luyện Linear Regression, Random Forest, XGBoost, ensemble và K-Means clustering."),
               tags$li("Triển khai dashboard Shiny để demo trực tiếp kết quả phân tích, bản đồ và dự đoán."))),
-            app_panel("Sơ đồ pipeline", "Xem chi tiết trong README.md và docs/diagrams", tags$pre("Chợ Tốt API → SQLite/CSV → Feature Engineering → EDA → ML Models → Shiny Dashboard"))))
+            app_panel("Sơ đồ pipeline", "Xem chi tiết trong README.md và docs/diagrams", tags$pre("Chợ Tốt API + Alonhadat HTML → Raw theo nguồn → Combined CSV → Feature Engineering → EDA → ML Models → Shiny Dashboard"))))
         )
       )
     )
@@ -1082,6 +1139,7 @@ server <- function(input, output, session) {
   metrics <- reactive(load_metrics())
 
   source_choices <- reactive(sort(unique(listings()$source)))
+  transaction_choices <- reactive(sort(unique(listings()$transaction_type)))
   district_choices <- reactive(sort(unique(listings()$district_name)))
   category_choices <- reactive(sort(unique(listings()$category_name)))
 
@@ -1089,6 +1147,9 @@ server <- function(input, output, session) {
     df <- listings()
     if (is_selected_filter(input$sources)) {
       df <- df %>% filter(source %in% input$sources)
+    }
+    if (is_selected_filter(input$transactions)) {
+      df <- df %>% filter(transaction_type %in% input$transactions)
     }
     if (is_selected_filter(input$districts)) {
       df <- df %>% filter(district_name %in% input$districts)
@@ -1110,6 +1171,9 @@ server <- function(input, output, session) {
     if (is_selected_filter(input$map_sources)) {
       df <- df %>% filter(source %in% input$map_sources)
     }
+    if (is_selected_filter(input$map_transactions)) {
+      df <- df %>% filter(transaction_type %in% input$map_transactions)
+    }
     if (is_selected_filter(input$map_districts)) {
       df <- df %>% filter(district_name %in% input$map_districts)
     }
@@ -1130,6 +1194,9 @@ server <- function(input, output, session) {
     df <- listings()
     if (is_selected_filter(input$data_sources)) {
       df <- df %>% filter(source %in% input$data_sources)
+    }
+    if (is_selected_filter(input$data_transactions)) {
+      df <- df %>% filter(transaction_type %in% input$data_transactions)
     }
     if (is_selected_filter(input$data_districts)) {
       df <- df %>% filter(district_name %in% input$data_districts)
@@ -1162,6 +1229,10 @@ server <- function(input, output, session) {
     filter_select("districts", district_choices(), "Tất cả quận/huyện")
   })
 
+  output$transaction_filter <- renderUI({
+    filter_select("transactions", transaction_choices(), "Tất cả giao dịch")
+  })
+
   output$category_filter <- renderUI({
     filter_select("categories", category_choices(), "Tất cả loại BĐS")
   })
@@ -1174,6 +1245,10 @@ server <- function(input, output, session) {
     filter_select("map_districts", district_choices(), "Tất cả quận/huyện")
   })
 
+  output$map_transaction_filter <- renderUI({
+    filter_select("map_transactions", transaction_choices(), "Tất cả giao dịch")
+  })
+
   output$map_category_filter <- renderUI({
     filter_select("map_categories", category_choices(), "Tất cả loại BĐS")
   })
@@ -1184,6 +1259,10 @@ server <- function(input, output, session) {
 
   output$data_district_filter <- renderUI({
     filter_select("data_districts", district_choices(), "Tất cả quận/huyện")
+  })
+
+  output$data_transaction_filter <- renderUI({
+    filter_select("data_transactions", transaction_choices(), "Tất cả giao dịch")
   })
 
   output$data_category_filter <- renderUI({
@@ -1245,6 +1324,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$reset_analysis_filters, {
     updateSelectInput(session, "sources", selected = "__all__")
+    updateSelectInput(session, "transactions", selected = "__all__")
     updateSelectInput(session, "districts", selected = "__all__")
     updateSelectInput(session, "categories", selected = "__all__")
     updateSliderInput(session, "price_range", value = c(0, 100))
@@ -1253,6 +1333,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$reset_map_filters, {
     updateSelectInput(session, "map_sources", selected = "__all__")
+    updateSelectInput(session, "map_transactions", selected = "__all__")
     updateSelectInput(session, "map_districts", selected = "__all__")
     updateSelectInput(session, "map_categories", selected = "__all__")
     updateSliderInput(session, "map_price_range", value = c(0, 100))
@@ -1261,6 +1342,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$reset_data_filters, {
     updateSelectInput(session, "data_sources", selected = "__all__")
+    updateSelectInput(session, "data_transactions", selected = "__all__")
     updateSelectInput(session, "data_districts", selected = "__all__")
     updateSelectInput(session, "data_categories", selected = "__all__")
     updateSliderInput(session, "data_price_range", value = c(0, 100))
@@ -1423,21 +1505,21 @@ server <- function(input, output, session) {
   })
 
   prediction <- eventReactive(input$predict_btn, {
-    req(input$pred_district, input$pred_category)
-    sample_row <- listings() %>% slice(1)
-    if (nrow(sample_row) == 0) return(NA_real_)
+    req(input$pred_district, input$pred_category, input$predict_transaction)
+    df <- listings()
+    if (nrow(df) == 0) return(NA_real_)
 
-    input_row <- sample_row
-    input_row$district_name <- input$pred_district
-    input_row$category_name <- input$pred_category
-    input_row$ward <- input$predict_ward
-    input_row$area <- input$predict_area
-    input_row$rooms <- input$predict_rooms
-    input_row$posted_hour <- hour(Sys.time())
-    input_row$posted_wday <- wday(Sys.time(), label = TRUE)
-    input_row$is_rent <- input$pred_category %in% c("Phòng trọ", "Văn phòng, Mặt bằng kinh doanh", "Văn phòng/Mặt bằng")
+    input_row <- build_prediction_row(
+      df = df,
+      district = input$pred_district,
+      category = input$pred_category,
+      ward = input$predict_ward,
+      area = input$predict_area,
+      rooms = input$predict_rooms,
+      transaction_type = input$predict_transaction
+    )
 
-    predict_price(input_row, input_row$is_rent)
+    predict_price(input_row, input_row$is_rent[[1]])
   }, ignoreInit = TRUE)
 
   output$prediction_text <- renderText({
@@ -1450,12 +1532,12 @@ server <- function(input, output, session) {
     if (is.na(pred)) {
       "Hãy chọn quận/huyện và loại bất động sản có trong dữ liệu train."
     } else {
-      paste("Loại:", input$pred_category, "· Khu vực:", input$pred_district, "· Diện tích:", input$predict_area, "m²")
+      paste("Giao dịch:", input$predict_transaction, "· Loại:", input$pred_category, "· Khu vực:", input$pred_district, "· Diện tích:", input$predict_area, "m²")
     }
   })
 
   output$importance_plot <- renderPlotly({
-    is_rent_pred <- isTRUE(input$pred_category %in% c("Phòng trọ", "Văn phòng, Mặt bằng kinh doanh", "Văn phòng/Mặt bằng"))
+    is_rent_pred <- identical(input$predict_transaction, "Cho thuê")
     path <- if (is_rent_pred) {
       if (file.exists("models/rf_importance_rent.csv")) "models/rf_importance_rent.csv" else "models/rf_importance_sale.csv"
     } else {
@@ -1501,6 +1583,7 @@ server <- function(input, output, session) {
     data_filtered() %>%
       transmute(
         `Nguồn` = source,
+        `Giao dịch` = transaction_type,
         `Tiêu đề` = title,
         `Quận/huyện` = district_name,
         `Phường/xã` = ward,
@@ -1520,7 +1603,7 @@ server <- function(input, output, session) {
       datatable(
         rownames = FALSE,
         filter = "none",
-        escape = c(0, 1, 2, 3, 4, 5, 6, 7),
+        escape = 1:9,
         options = list(
           pageLength = 15,
           scrollX = TRUE,

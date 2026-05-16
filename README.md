@@ -1,7 +1,7 @@
 # Phan Tich Nha Dat TP.HCM
 
 He thong phan tich va du doan gia bat dong san TP. Ho Chi Minh xay dung bang ngon ngu R.
-Du an thu thap du lieu tu Cho Tot, thuc hien phan tich kham pha (EDA), huan luyen mo hinh hoc may (Linear Regression, Random Forest, XGBoost, Ensemble), phan cum K-Means va trien khai ket qua qua Shiny dashboard tuong tac.
+Du an thu thap du lieu tu nhieu nguon (Cho Tot API va Alonhadat HTML), gop ve mot schema chung, thuc hien phan tich kham pha (EDA), huan luyen mo hinh hoc may (Linear Regression, Random Forest, XGBoost, Ensemble), phan cum K-Means va trien khai ket qua qua Shiny dashboard tuong tac.
 
 Mon: Lap Trinh R — Do an Cuoi ky — HCMUTE
 
@@ -447,12 +447,15 @@ Xu ly va tao them features tu du lieu tho cho phu hop voi ML.
 | `posted_wday` | Thu trong tuan dang tin |
 | `is_weekend_post` | TRUE neu dang vao cuoi tuan |
 | `is_rent` | TRUE neu la tin cho thue |
+| `transaction_type` | Ban / Cho thue |
 | `price_segment` | Nhom tu 1-4 (Re / Trung binh / Cao / Cao cap) |
 
 **Xu ly missing values:**
 - `area` NA: thay bang median theo (district_name, category_name).
 - `rooms` NA: thay bang mode theo category_name.
 - `distance_to_center` NA: thay bang median toan bo.
+- Toa do ngoai khu vuc TP.HCM se duoc dua ve NA de tranh marker lech ban do.
+- `posted_at` bi thieu se fallback theo `scraped_at` neu co.
 
 ---
 
@@ -516,10 +519,12 @@ Du lieu -> Chia train/test 80/20 -> Huan luyen 4 mo hinh -> Danh gia -> Luu .rds
 **Cong nghe:** base R (source)
 
 Script tien loi chay toan bo pipeline theo thu tu:
-1. Scrape du lieu.
-2. Feature engineering.
-3. EDA.
-4. Train models.
+1. Scrape du lieu Cho Tot.
+2. Scrape du lieu Alonhadat.
+3. Gop raw data nhieu nguon.
+4. Feature engineering.
+5. EDA.
+6. Train models.
 
 Su dung khi can chay lai pipeline day du tu dau:
 
@@ -567,18 +572,19 @@ Rscript run_app.R
 | Tab | Chuc nang |
 |---|---|
 | Tong quan | 4 KPI cards, bieu do so tin theo quan, co cau loai BDS, hieu nang mo hinh |
-| Ban do du lieu | Ban do Leaflet tuong tac, mau marker theo gia, popup chi tiet, bo loc quan/loai/gia/dien tich |
-| Phan tich gia | Scatter dien tich vs gia, top quan theo gia/m2, boxplot gia theo loai, histogram log(gia) |
-| Du doan gia | Form nhap thong tin BDS, ket qua du doan bang Random Forest, bieu do feature importance |
+| Ban do du lieu | Ban do Leaflet tuong tac, mau marker theo gia, popup chi tiet, bo loc nguon/giao dich/quan/loai/gia/dien tich |
+| Phan tich gia | Scatter dien tich vs gia, top quan theo gia/m2, boxplot gia theo loai, histogram log(gia), bo loc nguon/giao dich |
+| Du doan gia | Form nhap thong tin BDS va loai giao dich, ket qua du doan bang Random Forest, bieu do feature importance |
 | Phan cum khu vuc | Bubble chart K-Means phan cum quan theo gia/m2 va dien tich |
-| Du lieu | Bang day du co tim kiem, loc cot, link Cho Tot clickable |
+| Du lieu | Bang day du co tim kiem, bo loc nguon/giao dich/khu vuc/loai, link tin dang clickable |
 | Ve do an | Mo ta pipeline va cong nghe su dung |
 
 ---
 
 ## Luu y
 
-- Du lieu scrape tu Cho Tot co the co tin het han (link 404) do trang chu da go tin. Day la hien tuong binh thuong, khong phai loi cua he thong.
+- Du lieu scrape tu Cho Tot/Alonhadat co the co tin het han (link 404) do trang chu da go tin. Day la hien tuong binh thuong, khong phai loi cua he thong.
+- Dashboard doc du lieu da crawl va train gan nhat; day la du lieu cap nhat theo pipeline, khong phai realtime streaming.
 - Khong nen tang `CHOTOT_MAX_PAGES` qua 200 de tranh bi block IP.
 - Neu can du lieu co toa do (lat/lon) cho ban do, nen de `CHOTOT_USE_AREA_FILTER=1` de scrape theo tung quan, do chinh xac toa do se cao hon.
 - Thu muc `R_libs/` (neu co) chua cac package da cai dat local, script se tu dong su dung.

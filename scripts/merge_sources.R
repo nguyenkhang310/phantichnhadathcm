@@ -80,7 +80,8 @@ read_all_sources <- function() {
         source = "chotot",
         source_group = as.character(category_name),
         source_id = paste0("chotot_", ad_id),
-        source_url = ad_url
+        source_url = ad_url,
+        is_rent = as.integer(as.character(category_id) %in% c("1030", "1050"))
       )
     pieces <- append(pieces, list(add_missing_cols(chotot)))
   }
@@ -116,7 +117,7 @@ clean_combined_sources <- function(df) {
       price_m = if_else(is.na(price_m), price / 1e6, as.numeric(price_m)),
       price_per_m2 = if_else(is.na(price_per_m2) & !is.na(area) & area > 0, price / area, as.numeric(price_per_m2)),
       has_coord = as.integer(!is.na(lat) & !is.na(lon)),
-      is_rent = as.integer(as.logical(is_rent) | category_id %in% c("1030", "1050") | price < 500e6)
+      is_rent = as.integer(coalesce(as.logical(is_rent), category_id %in% c("1030", "1050")))
     ) %>%
     filter(!is.na(price), price > 0) %>%
     filter(is.na(area) | (area >= 5 & area <= 5000)) %>%

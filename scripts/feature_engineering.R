@@ -59,6 +59,12 @@ mode_numeric <- function(x, default = 0) {
   as.numeric(names(sort(table(x), decreasing = TRUE))[1])
 }
 
+in_hcmc_bbox <- function(lat, lon) {
+  !is.na(lat) & !is.na(lon) &
+    lat >= 10.30 & lat <= 11.20 &
+    lon >= 106.00 & lon <= 107.30
+}
+
 build_features <- function(df) {
   required_cols <- c("price", "area", "rooms", "district_name", "category_name",
                      "ward", "lat", "lon", "posted_at", "category_id")
@@ -71,6 +77,7 @@ build_features <- function(df) {
   if (!"source_id" %in% names(df)) {
     df$source_id <- if ("ad_id" %in% names(df)) as.character(df$ad_id) else seq_len(nrow(df))
   }
+  if (!"is_rent" %in% names(df)) df$is_rent <- NA
 
   df <- df %>%
     mutate(
@@ -86,9 +93,16 @@ build_features <- function(df) {
       category_name = if_else(is.na(category_name) | category_name == "", "Unknown", as.character(category_name)),
       ward = if_else(is.na(ward) | ward == "", "Unknown", as.character(ward)),
       posted_at = suppressWarnings(as_datetime(posted_at)),
+      scraped_at = if ("scraped_at" %in% names(.)) suppressWarnings(as_datetime(scraped_at)) else as_datetime(NA),
+      posted_at = coalesce(posted_at, scraped_at),
+      lat = if_else(in_hcmc_bbox(lat, lon), lat, NA_real_),
+      lon = if_else(in_hcmc_bbox(lat, lon), lon, NA_real_),
       has_area = !is.na(area) & area > 0,
       has_rooms = !is.na(rooms),
-      has_coord = !is.na(lat) & !is.na(lon)
+      has_coord = !is.na(lat) & !is.na(lon),
+      is_rent_raw = suppressWarnings(as.logical(is_rent)),
+      is_rent = coalesce(is_rent_raw, category_id %in% c("1030", "1050")),
+      transaction_type = if_else(is_rent, "Cho thuê", "Bán")
     ) %>%
     filter(!is.na(price), price > 0)
 
@@ -137,15 +151,15 @@ build_features <- function(df) {
       posted_hour = hour(posted_at),
       posted_wday = wday(posted_at, label = TRUE),
       is_weekend_post = wday(posted_at) %in% c(1, 7),
-      is_rent = category_id %in% c("1030", "1050") | price < 500e6,
       price_segment = ntile(price, 4),
       price_segment = factor(price_segment, labels = c("Re", "Trung binh", "Cao", "Cao cap")),
+      transaction_type = as.factor(transaction_type),
       source = as.factor(source),
       district_name = as.factor(district_name),
       category_name = as.factor(category_name),
       ward = as.factor(ward)
     ) %>%
-    select(-area_median_group, -room_mode_category)
+    select(-area_median_group, -room_mode_category, -is_rent_raw)
 }
 
 if (identical(environment(), globalenv())) {

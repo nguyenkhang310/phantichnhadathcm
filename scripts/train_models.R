@@ -55,6 +55,7 @@ if (!"log_price" %in% names(raw_df)) raw_df$log_price <- NA_real_
 if (!"distance_to_center" %in% names(raw_df)) raw_df$distance_to_center <- NA_real_
 if (!"ward_price_encoded" %in% names(raw_df)) raw_df$ward_price_encoded <- NA_real_
 if (!"source" %in% names(raw_df)) raw_df$source <- "unknown"
+if (!"transaction_type" %in% names(raw_df)) raw_df$transaction_type <- NA_character_
 
 df <- raw_df %>%
   mutate(
@@ -69,7 +70,8 @@ df <- raw_df %>%
     posted_hour = if_else(is.na(as.integer(posted_hour)), hour(posted_at), as.integer(posted_hour)),
     posted_wday = if_else(is.na(as.character(posted_wday)), as.character(wday(posted_at, label = TRUE)), as.character(posted_wday)),
     posted_wday = as.factor(posted_wday),
-    is_rent = if_else(is.na(as.logical(is_rent)), category_id %in% c("1030", "1050") | price < 500e6, as.logical(is_rent)),
+    is_rent = if_else(is.na(as.logical(is_rent)), category_id %in% c("1030", "1050"), as.logical(is_rent)),
+    transaction_type = as.factor(if_else(is_rent, "Cho thuê", "Bán")),
     log_price = if_else(is.na(log_price), log1p(price), log_price),
     price_per_m2 = if_else(!is.na(price_per_m2), price_per_m2,
                            if_else(!is.na(area) & area > 0, price / area, NA_real_)),
@@ -200,6 +202,11 @@ train_regression_set <- function(data, segment_name) {
   )
   xgb_pred <- predict(xgb_model, x_test)
 
+  pred_bounds <- quantile(train$log_price, probs = c(0.01, 0.99), na.rm = TRUE)
+  clamp_pred <- function(x) pmin(pmax(x, pred_bounds[[1]]), pred_bounds[[2]])
+  lm_pred <- clamp_pred(lm_pred)
+  rf_pred <- clamp_pred(rf_pred)
+  xgb_pred <- clamp_pred(xgb_pred)
   ensemble_pred <- (rf_pred + xgb_pred) / 2
 
   metrics <- bind_rows(

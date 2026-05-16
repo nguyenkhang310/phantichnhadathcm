@@ -220,7 +220,7 @@ clean_listings <- function(raw_df) {
       price_m = price / 1e6,
       price_per_m2 = if_else(!is.na(area) & area > 0, price / area, NA_real_),
       has_coord = as.integer(!is.na(lat) & !is.na(lon)),
-      is_rent = as.integer(category_id %in% c("1030", "1050") | price < 500e6)
+      is_rent = as.integer(category_id %in% c("1030", "1050"))
     )
 }
 
