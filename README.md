@@ -77,7 +77,10 @@ phantichnhadathcm/
 |   |-- merge_sources.R          # Gom raw data nhieu nguon ve mot schema
 |   |-- feature_engineering.R    # Tao features cho ML
 |   |-- eda_analysis.R           # Phan tich kham pha, xuat bieu do
-|   |-- train_models.R           # Huan luyen LR / RF / XGBoost / KMeans
+|   |-- train_models.R           # Huan luyen LR / RF / XGBoost / Ensemble / KMeans
+|   |-- update_data.R            # Cap nhat nhanh data, khong retrain
+|   |-- auto_update.R            # Cap nhat data va retrain co dieu kien
+|   |-- validate_project.R       # Kiem tra nhanh data, model, app prediction
 |
 |-- data/
 |   |-- hcmc_bds.sqlite          # Co so du lieu SQLite (chinh)
@@ -296,20 +299,35 @@ Neu them scraper moi (vd Batdongsan, Muaban, Nha Tot khi truy cap duoc), file sc
 | `1040` | Dat |
 | `1050` | Phong tro |
 
-### Chay lai pipeline sau khi co data moi
+### Cap nhat nhanh du lieu moi
 
-Sau khi da scrape them nguon:
+Neu chi muon lay them tin moi va cap nhat dashboard, khong can train lai model moi lan:
 
 ```bash
-Rscript scripts/merge_sources.R
-Rscript scripts/feature_engineering.R
-Rscript scripts/train_models.R
+Rscript scripts/update_data.R
 ```
 
-Dashboard se tu dong doc lai du lieu moi khi khoi dong lai:
+Script nay se scrape nhanh Cho Tot, scrape nhanh Alonhadat, merge sources va tao lai `data/hcmc_bds_featured.csv`.
+
+Neu muon cap nhat data va chi retrain khi that su can:
 
 ```bash
-Rscript run_app.R
+Rscript scripts/auto_update.R
+```
+
+Mac dinh `auto_update.R` se retrain khi model qua 7 ngay hoac so dong data moi tang tu 12% tro len. Co the dieu chinh:
+
+```bash
+RETRAIN_MIN_NEW_RATIO=0.2 RETRAIN_MAX_MODEL_AGE_DAYS=14 Rscript scripts/auto_update.R
+FORCE_RETRAIN=1 Rscript scripts/auto_update.R
+```
+
+Trong dashboard cung co nut **Lam moi du lieu** tren topbar. Nut nay goi `scripts/auto_update.R`, sau do dashboard nap lai data/model moi.
+
+Kiem tra nhanh sau khi cap nhat:
+
+```bash
+Rscript scripts/validate_project.R
 ```
 
 ---
@@ -318,7 +336,8 @@ Rscript run_app.R
 
 ### Khi nao can train lai?
 
-- Da thu thap them du lieu moi.
+- Da thu thap them du lieu moi du nhieu, vi du tang tren 10-20%.
+- Model da cu, vi du qua 7 ngay trong boi canh thi truong thay doi.
 - Muon tang do chinh xac bang cach tang `ntree` cua Random Forest hoac `nrounds` cua XGBoost.
 - Muon them features moi vao mo hinh.
 
@@ -357,7 +376,13 @@ xgb_model <- xgboost(
 )
 ```
 
-**Sau khi train xong**, khoi dong lai app de phan Hieu nang mo hinh va Bieu do Feature Importance cap nhat theo mo hinh moi:
+**Sau khi train xong**, chay validate de dam bao app doc duoc model va du doan duoc ca ban/thue:
+
+```bash
+Rscript scripts/validate_project.R
+```
+
+Khoi dong lai app de phan Hieu nang mo hinh va Bieu do Feature Importance cap nhat theo mo hinh moi:
 
 ```bash
 Rscript run_app.R
@@ -371,7 +396,7 @@ Rscript run_app.R
 
 **Cong nghe:** R, Shiny, plotly, leaflet, DT, ggplot2, randomForest
 
-File duy nhat chua toan bo Shiny application (UI + Server). Duoc to chuc theo cac thanh phan:
+File duy nhat chua toan bo Shiny application (UI + Server). App co nut **Lam moi du lieu** tren topbar, goi `scripts/auto_update.R` de cap nhat data va retrain co dieu kien. Duoc to chuc theo cac thanh phan:
 
 | Thanh phan | Dong | Chuc nang |
 |---|---|---|
@@ -488,7 +513,7 @@ Huan luyen 4 mo hinh hoc may va 1 thuat toan phan cum tren 2 tap du lieu (ban va
 **Quy trinh huan luyen:**
 
 ```
-Du lieu -> Chia train/test 80/20 -> Huan luyen 4 mo hinh -> Danh gia -> Luu .rds
+Du lieu -> Chia train/test theo thoi gian 80/20 -> Target encoding tren train -> Huan luyen 4 mo hinh -> Chon best model -> Luu .rds + registry
 ```
 
 | Mo hinh | Bien muc tieu | Features chinh |
@@ -497,6 +522,13 @@ Du lieu -> Chia train/test 80/20 -> Huan luyen 4 mo hinh -> Danh gia -> Luu .rds
 | Random Forest (ntree=300) | log_price | Nhu tren |
 | XGBoost (nrounds=250) | log_price | Nhu tren (sparse matrix) |
 | RF + XGBoost Ensemble | log_price | Trung binh pred cua RF va XGB |
+
+**Cac diem ML quan trong:**
+- Split uu tien theo thoi gian (`time_based`) de test bang cac tin moi hon, sat voi luc demo thuc te.
+- `ward_price_encoded` duoc fit tren train set roi moi ap dung sang test, tranh data leakage.
+- Moi segment `sale` / `rent` luu best model rieng trong `models/model_registry.csv`.
+- App doc best model trong bundle `.rds`; neu sale tot nhat la ensemble thi app dung ensemble, khong con co dinh Random Forest.
+- Model bundle luu factor levels, target encoding table va cot XGBoost de prediction on-web on dinh hon.
 
 **Chi so danh gia mo hinh:**
 

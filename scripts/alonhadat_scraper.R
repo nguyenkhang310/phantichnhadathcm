@@ -206,6 +206,14 @@ run_alonhadat_scrape <- function(max_pages = CFG_ALO$max_pages) {
   )
   clean <- clean_alonhadat(raw)
   out <- file.path(CFG_ALO$output_dir, CFG_ALO$csv_file)
+
+  if (file.exists(out)) {
+    old <- read_csv(out, show_col_types = FALSE)
+    clean <- bind_rows(old, clean) %>%
+      arrange(desc(scraped_at)) %>%
+      distinct(source_id, .keep_all = TRUE)
+  }
+
   write_csv(clean, out)
   message("Da luu ", nrow(clean), " dong vao ", out)
   invisible(clean)
