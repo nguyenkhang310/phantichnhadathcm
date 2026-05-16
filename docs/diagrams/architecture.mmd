@@ -1,0 +1,39 @@
+flowchart LR
+  subgraph Sources["Nguồn dữ liệu"]
+    CT["Chợ Tốt API<br/>gateway.chotot.com"]
+  end
+
+  subgraph Storage["Lưu trữ"]
+    DB[("data/hcmc_bds.sqlite")]
+    RAW["data/hcmc_bds_raw.csv"]
+    FEAT["data/hcmc_bds_featured.csv"]
+  end
+
+  subgraph Analytics["Xử lý & phân tích"]
+    SCR["scripts/chotot_scraper_v3.R"]
+    FEA["scripts/feature_engineering.R"]
+    EDA["scripts/eda_analysis.R"]
+    ML["scripts/train_models.R"]
+  end
+
+  subgraph Outputs["Đầu ra"]
+    PLOTS["plots/*.png"]
+    MODELS["models/*.rds<br/>models/model_metrics.csv"]
+    APP["app.R<br/>Shiny dashboard"]
+    REPORT["report/*.docx"]
+  end
+
+  CT --> SCR
+  SCR --> DB
+  SCR --> RAW
+  DB --> FEA
+  RAW --> FEA
+  FEA --> FEAT
+  FEAT --> EDA
+  FEAT --> ML
+  EDA --> PLOTS
+  ML --> MODELS
+  FEAT --> APP
+  MODELS --> APP
+  PLOTS --> REPORT
+  MODELS --> REPORT

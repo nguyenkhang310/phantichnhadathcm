@@ -1,0 +1,22 @@
+# R
+.Rhistory
+.RData
+.Rproj.user
+*.Rproj
+
+# Data files (large, not needed in git)
+data/hcmc_bds.sqlite
+data/hcmc_bds_raw.csv
+
+# Local R library
+R_libs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Plots (generated, not needed)
+plots/*.png
+
+# Docs temp
+*.docx~

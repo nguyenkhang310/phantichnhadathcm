@@ -1,0 +1,19 @@
+flowchart TD
+  A["data/hcmc_bds_featured.csv"] --> B["Tách sale / rent"]
+  B --> C["Train/Test split 80/20"]
+  C --> D["Linear Regression<br/>baseline"]
+  C --> E["Random Forest<br/>importance=TRUE"]
+  C --> F["XGBoost<br/>gradient boosting"]
+  E --> G["Ensemble RF + XGBoost"]
+  F --> G
+  D --> H["Đánh giá"]
+  E --> H
+  F --> H
+  G --> H
+  H --> I["Metrics<br/>RMSE, MAE, MAPE, R²"]
+  H --> J["Actual vs Predicted plots"]
+  E --> K["Feature importance"]
+  B --> L["K-Means clustering<br/>giá/m², diện tích, số tin"]
+  I --> M["models/model_metrics.csv"]
+  K --> N["models/rf_importance_*.csv"]
+  L --> O["models/kmeans_area_price.csv"]

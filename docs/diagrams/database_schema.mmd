@@ -1,0 +1,39 @@
+erDiagram
+  LISTINGS {
+    string ad_id PK
+    string title
+    float price
+    string price_str
+    float area
+    float rooms
+    string address
+    string ward
+    string district_id
+    string district_name
+    string category_id
+    string category_name
+    float lat
+    float lon
+    string image
+    string ad_url
+    datetime posted_at
+    datetime scraped_at
+    int page_fetched
+    float price_m
+    float price_per_m2
+    int has_coord
+    int is_rent
+  }
+
+  FEATURED_LISTINGS {
+    string ad_id PK
+    float log_price
+    float log_area
+    float log_price_per_m2
+    float distance_to_center
+    float ward_price_encoded
+    float listing_age_days
+    string price_segment
+  }
+
+  LISTINGS ||--|| FEATURED_LISTINGS : enriches

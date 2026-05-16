@@ -1,0 +1,13 @@
+flowchart TD
+  A["Start"] --> B["Gọi Chợ Tốt API<br/>region_v2=13000, cg, offset o"]
+  B --> C["Parse JSON ads"]
+  C --> D["Chuẩn hóa schema<br/>title, price, area, rooms, ward, district, lat/lon"]
+  D --> E["Lọc dữ liệu bất thường<br/>price range, area range, duplicate ad_id"]
+  E --> F["SQLite INSERT OR IGNORE"]
+  F --> G["Export data/hcmc_bds_raw.csv"]
+  G --> H["Feature engineering"]
+  H --> I["Missing values<br/>median/mode theo nhóm"]
+  I --> J["Log transform<br/>log_price, log_area, log_price_per_m2"]
+  J --> K["Spatial feature<br/>distance_to_center"]
+  K --> L["Target encoding ward"]
+  L --> M["data/hcmc_bds_featured.csv"]
