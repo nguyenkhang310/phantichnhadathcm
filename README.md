@@ -76,6 +76,22 @@ Chay app:
 Rscript run_app.R
 ```
 
+## Dashboard
+
+App Shiny hien co cac nhom chuc nang chinh:
+
+| Tab | Noi dung |
+|---|---|
+| Tong quan | KPI thi truong, top khu vuc, co cau loai BDS, metrics model |
+| Ban do du lieu | Leaflet marker cluster, loc nguon/giao dich/khu vuc/loai/gia/dien tich |
+| Phan tich gia | Scatter, histogram, ECDF, heatmap khu vuc x loai BDS, sunburst nguon, xu huong thoi gian, correlation |
+| Suy luan thong ke | Xac suat co dieu kien, CLT simulation, bootstrap CI, kiem dinh gia thuyet |
+| Du doan gia | Form du doan bang model tot nhat va vung gia tham khao tu listing tuong dong |
+| Danh gia model | Model card, actual vs predicted, residual, sai so theo khu vuc, so sanh metric |
+| Phan cum khu vuc | K-Means theo gia/m2, dien tich trung vi va so tin |
+| Du lieu | Bang data sach, data quality check, do phu nguon va toa do |
+| Tro ly BDS | Tro ly local dung data/model trong project, khong goi API ngoai |
+
 Kiem tra nhanh du an:
 
 ```bash

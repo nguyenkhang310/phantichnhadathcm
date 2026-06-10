@@ -2335,17 +2335,214 @@ chart_theme <- function(base_size = 12) {
 interactive_chart <- function(plot, tooltip = "all") {
   ggplotly(plot, tooltip = tooltip) %>%
     layout(
-      margin = list(l = 130, r = 18, t = 16, b = 68),
+      margin = list(l = 140, r = 24, t = 20, b = 96),
       font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
       hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
       paper_bgcolor = "rgba(0,0,0,0)",
       plot_bgcolor = "rgba(0,0,0,0)",
       hovermode = "closest",
-      legend = list(orientation = "h", x = 0, y = -0.18, font = list(size = 11)),
+      legend = list(orientation = "h", x = 0, y = -0.28, font = list(size = 11), itemwidth = 30),
       xaxis = list(automargin = TRUE, nticks = 4, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb", tickfont = list(size = 10)),
       yaxis = list(automargin = TRUE, tickfont = list(size = 11))
     ) %>%
     config(displayModeBar = FALSE, responsive = TRUE)
+}
+
+# Hàm finite_positive: kiểm tra giá trị số dương hữu hạn.
+finite_positive <- function(x) {
+  !is.na(x) & is.finite(x) & x > 0
+}
+
+# Hàm safe_quantile: tính quantile an toàn khi dữ liệu ít hoặc thiếu.
+safe_quantile <- function(x, probs, default = NA_real_) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[is.finite(x)]
+  if (length(x) == 0) return(rep(default, length(probs)))
+  as.numeric(stats::quantile(x, probs = probs, na.rm = TRUE, names = FALSE))
+}
+
+# Hàm confidence_level_value: chuyển lựa chọn UI thành mức tin cậy.
+confidence_level_value <- function(x) {
+  value <- suppressWarnings(as.numeric(x))
+  if (!is.finite(value) || !(value %in% c(0.90, 0.95, 0.99))) 0.95 else value
+}
+
+# Hàm bootstrap_median_ci: ước lượng CI bootstrap cho trung vị.
+bootstrap_median_ci <- function(x, reps = 600, confidence = 0.95, seed = 2026) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[is.finite(x)]
+  reps <- max(100, min(3000, as.integer(reps %||% 600)))
+  confidence <- confidence_level_value(confidence)
+  if (length(x) < 5) {
+    return(list(
+      observed = ifelse(length(x) == 0, NA_real_, median(x, na.rm = TRUE)),
+      lower = NA_real_,
+      upper = NA_real_,
+      distribution = numeric(),
+      n = length(x),
+      confidence = confidence
+    ))
+  }
+
+  set.seed(seed)
+  boot <- replicate(reps, median(sample(x, size = length(x), replace = TRUE), na.rm = TRUE))
+  alpha <- (1 - confidence) / 2
+  ci <- safe_quantile(boot, c(alpha, 1 - alpha))
+  list(
+    observed = median(x, na.rm = TRUE),
+    lower = ci[[1]],
+    upper = ci[[2]],
+    distribution = boot,
+    n = length(x),
+    confidence = confidence
+  )
+}
+
+# Hàm bootstrap_mean_distribution: mô phỏng phân phối mẫu của trung bình theo CLT.
+bootstrap_mean_distribution <- function(x, sample_size = 30, reps = 600, seed = 2026) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[is.finite(x)]
+  reps <- max(100, min(3000, as.integer(reps %||% 600)))
+  sample_size <- max(2, min(length(x), as.integer(sample_size %||% 30)))
+  if (length(x) < 5) return(numeric())
+  set.seed(seed)
+  replicate(reps, mean(sample(x, size = sample_size, replace = TRUE), na.rm = TRUE))
+}
+
+# Hàm p_value_label: định dạng p-value cho bảng kiểm định.
+p_value_label <- function(p_value) {
+  if (!is.finite(p_value)) return("NA")
+  if (p_value < 0.001) return("< 0,001")
+  format_number_vi(p_value, 3)
+}
+
+# Hàm hypothesis_decision: diễn giải quyết định kiểm định.
+hypothesis_decision <- function(p_value, alpha = 0.05) {
+  if (!is.finite(p_value)) return("Không đủ dữ liệu")
+  if (p_value < alpha) {
+    "Bác bỏ H0"
+  } else {
+    "Chưa đủ bằng chứng bác bỏ H0"
+  }
+}
+
+# Hàm build_data_quality_summary: kiểm tra chất lượng dữ liệu đang dùng.
+build_data_quality_summary <- function(df) {
+  today <- Sys.Date()
+  date_values <- as.Date(df$posted_at)
+  price_hi <- safe_quantile(df$price, 0.995)
+  area_hi <- safe_quantile(df$area, 0.995)
+  duplicate_key <- paste(
+    clean_display_label(df$source),
+    clean_display_label(df$title),
+    round(df$price %||% 0, -3),
+    round(df$area %||% 0, 1),
+    clean_display_label(df$district_name),
+    sep = "|"
+  )
+
+  tibble::tibble(
+    nhom = c(
+      "Ngày đăng tương lai",
+      "Thiếu khu vực/loại BĐS",
+      "Không có giá/m² hợp lệ",
+      "Tọa độ phải ước lượng",
+      "Trùng lặp nghi ngờ",
+      "Giá thuộc 0,5% cao nhất",
+      "Diện tích thuộc 0,5% cao nhất"
+    ),
+    so_dong = c(
+      sum(!is.na(date_values) & date_values > today),
+      sum(is_missing_label(df$district_name) | is_missing_label(df$category_name)),
+      sum(!finite_positive(df$price_per_m2)),
+      sum(df$coord_status != "Tọa độ gốc từ nguồn", na.rm = TRUE),
+      sum(duplicated(duplicate_key), na.rm = TRUE),
+      sum(is.finite(df$price) & df$price >= price_hi[[1]], na.rm = TRUE),
+      sum(is.finite(df$area) & df$area >= area_hi[[1]], na.rm = TRUE)
+    ),
+    muc_do = c(
+      "Cần rà",
+      "Cần rà",
+      "Cần rà",
+      "Theo dõi",
+      "Theo dõi",
+      "Theo dõi",
+      "Theo dõi"
+    ),
+    ghi_chu = c(
+      "Ngày lớn hơn ngày chạy app, nên kiểm tra nguồn crawl hoặc format ngày.",
+      "Các dòng này làm yếu phân tích theo khu vực/loại hình.",
+      "Thiếu giá hoặc diện tích hợp lệ sẽ ảnh hưởng biểu đồ giá/m².",
+      "App đã dùng tâm khu vực cũ và jitter nhẹ để vẫn hiển thị bản đồ.",
+      "Cùng nguồn, tiêu đề, giá, diện tích và khu vực.",
+      "Không xóa tự động; dùng để cảnh báo outlier khi đọc kết quả.",
+      "Không xóa tự động; dùng để cảnh báo outlier khi đọc kết quả."
+    )
+  )
+}
+
+# Hàm prediction_market_band: tạo khoảng tham khảo thị trường cho dự đoán.
+prediction_market_band <- function(df, district, category, transaction_type, area) {
+  area <- suppressWarnings(as.numeric(area))
+  scoped <- df %>%
+    filter(transaction_type == !!transaction_type, district_name == !!district, category_name == !!category)
+  if (is.finite(area) && area > 0) {
+    comparable <- scoped %>% filter(is.na(.data$area) | (.data$area >= area * 0.8 & .data$area <= area * 1.2))
+    if (nrow(comparable) >= 15) scoped <- comparable
+  }
+  if (nrow(scoped) < 10) {
+    scoped <- df %>% filter(transaction_type == !!transaction_type, district_name == !!district)
+  }
+  if (nrow(scoped) < 10) {
+    scoped <- df %>% filter(transaction_type == !!transaction_type, category_name == !!category)
+  }
+  if (nrow(scoped) < 10) {
+    scoped <- df %>% filter(transaction_type == !!transaction_type)
+  }
+
+  prices <- scoped$price[finite_positive(scoped$price)]
+  q <- safe_quantile(prices, c(0.25, 0.5, 0.75))
+  list(
+    data = scoped,
+    lower = q[[1]],
+    median = q[[2]],
+    upper = q[[3]],
+    n = length(prices)
+  )
+}
+
+# Hàm predict_prices_for_rows: dự đoán giá hàng loạt từ model bundle hiện có.
+predict_prices_for_rows <- function(df, bundle) {
+  if (nrow(df) == 0 || is.null(bundle)) return(numeric())
+  input_rows <- prepare_prediction_for_bundle(df, bundle)
+
+  model_vars <- all.vars(bundle$formula)
+  rhs_vars <- setdiff(model_vars, "log_price")
+  missing_vars <- setdiff(rhs_vars, names(input_rows))
+  if (length(missing_vars) > 0) {
+    for (col in missing_vars) input_rows[[col]] <- 0
+  }
+
+  model_name <- best_model_from_bundle(bundle)
+  pred_log <- tryCatch({
+    if (model_name %in% c("RF + XGBoost Ensemble", "Tuned RF/XGBoost Ensemble")) {
+      rf_pred <- predict_log_with_model(bundle, "Random Forest", input_rows)
+      xgb_pred <- predict_log_with_model(bundle, "XGBoost", input_rows)
+      weight_rf <- if (identical(model_name, "Tuned RF/XGBoost Ensemble") && !is.null(bundle$ensemble_weight_rf)) {
+        as.numeric(bundle$ensemble_weight_rf)
+      } else {
+        0.5
+      }
+      weight_rf * rf_pred + (1 - weight_rf) * xgb_pred
+    } else {
+      predict_log_with_model(bundle, model_name, input_rows)
+    }
+  }, error = function(e) rep(NA_real_, nrow(input_rows)))
+
+  if (!is.null(bundle$train_log_bounds) && length(bundle$train_log_bounds) == 2) {
+    pred_log <- pmin(pmax(pred_log, bundle$train_log_bounds[[1]]), bundle$train_log_bounds[[2]])
+  }
+  expm1(as.numeric(pred_log))
 }
 
 app_css <- HTML("
@@ -2522,6 +2719,9 @@ html, body, .container-fluid { min-height: 100%; }
 .chart-mode .radio-inline { min-height: 24px; margin: 0 0 0 8px; padding-left: 24px; color: #334155; font-size: 13px; font-weight: 600; }
 .chart-mode input[type='radio'] { margin-top: 4px; }
 .filter-toolbar { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(150px, 1.15fr) minmax(160px, 1.15fr) minmax(170px, .95fr) minmax(170px, .95fr) auto; gap: 20px; align-items: end; }
+.filter-toolbar.stat-toolbar { grid-template-columns: repeat(6, minmax(135px, 1fr)); }
+.filter-toolbar.stat-toolbar.compact { grid-template-columns: minmax(180px, 260px); }
+.stat-toolbar .chart-mode { margin: 0; }
 .filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .filter-field { min-width: 0; }
 .filter-field .form-group { margin-bottom: 0; }
@@ -3709,12 +3909,14 @@ ui <- fluidPage(
         nav_link("overview", "Tổng quan", "chart-line"),
         nav_link("map", "Bản đồ dữ liệu", "map-location-dot"),
         nav_link("analysis", "Phân tích giá", "chart-column"),
+        nav_link("statistics", "Suy luận thống kê", "square-root-variable"),
         nav_link("predict", "Dự đoán giá", "calculator"),
+        nav_link("diagnostics", "Đánh giá model", "clipboard-check"),
         nav_link("clusters", "Phân cụm khu vực", "layer-group"),
         nav_link("data", "Dữ liệu", "table"),
         nav_link("assistant", "Trợ lý BĐS", "comments")
       ),
-      div(class = "app-sidebar-footer", "Nguồn dữ liệu: Chợ Tốt + Alonhadat + Lựa Chọn Nhà Đất + Mua Bán + Mogi + Homedy", br(), "© 2026 HCMUTE")
+      div(class = "app-sidebar-footer", "Nhóm 21 Lập Trình R", br(), "© 2026 HCMUTE")
     ),
     div(
       class = "app-main",
@@ -3808,6 +4010,59 @@ ui <- fluidPage(
                 column(4, app_panel("Top khu vực cũ theo giá/m²", "Đơn vị tự đổi theo bán hoặc cho thuê", chart_mode_control("price_m2_tx"), plotlyOutput("price_m2_plot", height = 310))),
                 column(4, app_panel("Khoảng giá theo loại BĐS", "Điểm là giá trung vị, thanh ngang là vùng giá phổ biến", chart_mode_control("price_category_tx"), plotlyOutput("price_category_plot", height = 310))),
                 column(4, app_panel("Phân phối giá", "Giá được chuẩn hóa để biểu đồ dễ quan sát hơn", chart_mode_control("log_price_tx"), plotlyOutput("log_price_plot", height = 310)))
+              ),
+              fluidRow(
+                column(6, app_panel("Heatmap khu vực x loại BĐS", "Màu thể hiện giá/m² trung vị", chart_mode_control("district_category_heatmap_tx"), plotlyOutput("district_category_heatmap", height = 390))),
+                column(6, app_panel("Cơ cấu nguồn dữ liệu", "Sunburst nguồn - giao dịch - loại BĐS", chart_mode_control("source_sunburst_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
+              ),
+              fluidRow(
+                column(6, app_panel("Xu hướng theo thời gian", "Loại các ngày đăng trong tương lai để tránh nhiễu", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
+                column(6, app_panel("Tương quan biến số", "Correlation trên các biến số chính", chart_mode_control("correlation_tx"), plotlyOutput("correlation_plot", height = 340)))
+              ),
+              app_panel(
+                "ECDF giá/m²",
+                "So đường phân phối tích lũy để nhìn percentile và độ lệch giữa nhóm",
+                chart_mode_control("ecdf_tx"),
+                plotlyOutput("price_ecdf_plot", height = 340)
+              )
+            )
+          ),
+          tabPanel(
+            title = "statistics", value = "statistics",
+            div(
+              class = "page-wrap",
+              h1(class = "page-title", "Suy luận thống kê"),
+              div(class = "page-subtitle", "Áp dụng xác suất, phân phối mẫu, kiểm định giả thuyết, CLT và bootstrap trực tiếp trên dữ liệu BĐS TP.HCM."),
+              app_panel(
+                "Thiết lập phân tích",
+                NULL,
+                div(
+                  class = "filter-toolbar stat-toolbar",
+                  filter_field("Giao dịch", selectInput("stat_transaction", NULL, choices = c("Bán", "Cho thuê"), selected = "Bán", selectize = FALSE), icon_name = "tags"),
+                  filter_field("Loại BĐS", uiOutput("stat_category_filter"), icon_name = "building"),
+                  filter_field("Khu vực A", uiOutput("stat_district_a_filter"), icon_name = "location-dot"),
+                  filter_field("Khu vực B", uiOutput("stat_district_b_filter"), icon_name = "code-compare"),
+                  filter_field("Cỡ mẫu CLT", sliderInput("stat_sample_size", NULL, min = 10, max = 300, value = 50, step = 10, ticks = FALSE), icon_name = "dice"),
+                  filter_field("Số lần lặp", sliderInput("stat_reps", NULL, min = 200, max = 1500, value = 600, step = 100, ticks = FALSE), icon_name = "rotate")
+                ),
+                div(
+                  class = "filter-toolbar stat-toolbar compact",
+                  filter_field("Mức tin cậy", selectInput("stat_confidence", NULL, choices = c("90%" = 0.90, "95%" = 0.95, "99%" = 0.99), selected = 0.95, selectize = FALSE), icon_name = "shield-halved")
+                ),
+                class = "filter-card"
+              ),
+              uiOutput("stat_kpi_cards"),
+              fluidRow(
+                column(6, app_panel("Xác suất có điều kiện", "P(loại BĐS | khu vực) theo số tin", plotlyOutput("probability_heatmap", height = 390))),
+                column(6, app_panel("Phân phối giá/m²", "ECDF giữa hai khu vực được chọn", plotlyOutput("stat_distribution_plot", height = 390)))
+              ),
+              fluidRow(
+                column(6, app_panel("CLT simulation", "Phân phối trung bình mẫu khi lấy mẫu có hoàn lại", plotlyOutput("clt_plot", height = 360))),
+                column(6, app_panel("Bootstrap CI", "Khoảng tin cậy bootstrap cho trung vị giá/m² khu vực A", plotlyOutput("bootstrap_plot", height = 360)))
+              ),
+              fluidRow(
+                column(7, app_panel("Kiểm định giả thuyết", "H0: giá/m² trung bình log-scale của hai khu vực bằng nhau", tableOutput("hypothesis_table"))),
+                column(5, app_panel("Bảng xác suất thực nghiệm", "Các xác suất nổi bật trong dữ liệu đã lọc", tableOutput("empirical_probability_table")))
               )
             )
           ),
@@ -3833,7 +4088,34 @@ ui <- fluidPage(
                       div(class = "prediction-value", textOutput("prediction_text", inline = TRUE)),
                       div(class = "prediction-note", textOutput("prediction_note", inline = TRUE))),
                   br(),
+                  uiOutput("prediction_market_band"),
+                  br(),
                   app_panel("Các yếu tố ảnh hưởng chính", "Feature importance từ Random Forest", plotlyOutput("importance_plot", height = 260), class = "nested-panel")))
+              )
+            )
+          ),
+          tabPanel(
+            title = "diagnostics", value = "diagnostics",
+            div(
+              class = "page-wrap",
+              h1(class = "page-title", "Đánh giá model"),
+              div(class = "page-subtitle", "Đọc model như một hệ thống dự báo: chỉ số tổng quan, sai số, residual và các nhóm dễ dự đoán sai."),
+              app_panel(
+                "Bộ lọc model",
+                NULL,
+                div(class = "filter-toolbar stat-toolbar compact",
+                  filter_field("Giao dịch", chart_mode_control("diagnostic_tx"), icon_name = "tags")
+                ),
+                class = "filter-card"
+              ),
+              uiOutput("model_card_ui"),
+              fluidRow(
+                column(6, app_panel("Actual vs Predicted", "Đường chéo là dự đoán hoàn hảo; hover để xem loại BĐS", plotlyOutput("diagnostic_scatter_plot", height = 460))),
+                column(6, app_panel("Residual distribution", "Sai số log(actual) - log(predicted)", plotlyOutput("diagnostic_residual_plot", height = 460)))
+              ),
+              fluidRow(
+                column(6, app_panel("Sai số theo khu vực", "Top nhóm có MAPE cao trong mẫu chẩn đoán", plotlyOutput("diagnostic_error_group_plot", height = 430))),
+                column(6, app_panel("So sánh chỉ số model", "RMSE, MAE, MAPE và R² theo từng thuật toán", plotlyOutput("metrics_compare_plot", height = 430)))
               )
             )
           ),
@@ -3857,6 +4139,11 @@ ui <- fluidPage(
                 filter_actions("reset_data_filters")
               ),
               class = "filter-card"
+            ),
+            uiOutput("data_quality_cards"),
+            fluidRow(
+              column(6, app_panel("Kiểm tra chất lượng dữ liệu", "Các cảnh báo không bị xóa tự động, chỉ dùng để đọc kết quả cẩn thận", tableOutput("data_quality_table"))),
+              column(6, app_panel("Độ phủ nguồn dữ liệu", "Số dòng và tỷ lệ tọa độ gốc theo nguồn", plotlyOutput("data_quality_plot", height = 340)))
             ),
             app_panel("Bảng dữ liệu", "Có tìm kiếm nhanh trong bảng", DTOutput("data_table")))),
           tabPanel(title = "assistant", value = "assistant", div(class = "gemini-page-wrap",
@@ -3926,7 +4213,9 @@ server <- function(input, output, session) {
   observeEvent(input$nav_overview, updateTabsetPanel(session, "tabs", selected = "overview"), ignoreInit = TRUE)
   observeEvent(input$nav_map, updateTabsetPanel(session, "tabs", selected = "map"), ignoreInit = TRUE)
   observeEvent(input$nav_analysis, updateTabsetPanel(session, "tabs", selected = "analysis"), ignoreInit = TRUE)
+  observeEvent(input$nav_statistics, updateTabsetPanel(session, "tabs", selected = "statistics"), ignoreInit = TRUE)
   observeEvent(input$nav_predict, updateTabsetPanel(session, "tabs", selected = "predict"), ignoreInit = TRUE)
+  observeEvent(input$nav_diagnostics, updateTabsetPanel(session, "tabs", selected = "diagnostics"), ignoreInit = TRUE)
   observeEvent(input$nav_clusters, updateTabsetPanel(session, "tabs", selected = "clusters"), ignoreInit = TRUE)
   observeEvent(input$nav_data, updateTabsetPanel(session, "tabs", selected = "data"), ignoreInit = TRUE)
   observeEvent(input$nav_assistant, updateTabsetPanel(session, "tabs", selected = "assistant"), ignoreInit = TRUE)
@@ -4232,6 +4521,73 @@ server <- function(input, output, session) {
       )
   }
 
+  stat_base_data <- reactive({
+    tx <- input$stat_transaction %||% "Bán"
+    df <- listings() %>%
+      filter(transaction_type == tx, finite_positive(price_per_m2), finite_positive(price))
+
+    if (is_selected_filter(input$stat_category)) {
+      df <- df %>% filter(category_name %in% input$stat_category)
+    }
+
+    known_rows_or_all(df, "district_name")
+  })
+
+  stat_district_choices <- reactive({
+    choices <- stat_base_data() %>%
+      count(district_name, sort = TRUE) %>%
+      filter(!is_missing_label(district_name)) %>%
+      pull(district_name)
+    if (length(choices) == 0) choices <- district_choices()
+    unique(choices)
+  })
+
+  stat_selected_district_a <- reactive({
+    choices <- stat_district_choices()
+    if (length(choices) == 0) return(NA_character_)
+    value <- input$stat_district_a
+    if (!is.null(value) && length(value) > 0 && value[[1]] %in% choices) value[[1]] else choices[[1]]
+  })
+
+  stat_selected_district_b <- reactive({
+    choices <- stat_district_choices()
+    if (length(choices) == 0) return(NA_character_)
+    value <- input$stat_district_b
+    if (!is.null(value) && length(value) > 0 && value[[1]] %in% choices) {
+      return(value[[1]])
+    }
+    if (length(choices) >= 2) choices[[2]] else choices[[1]]
+  })
+
+  diagnostic_data <- reactive({
+    tx <- chart_transaction("diagnostic_tx")
+    is_rent_diag <- identical(tx, "Cho thuê")
+    model_path <- if (is_rent_diag) RENT_MODEL_PATH else SALE_MODEL_PATH
+    if (!file.exists(model_path)) return(tibble())
+
+    df <- listings() %>%
+      filter(is_rent == !!is_rent_diag, finite_positive(price), finite_positive(price_per_m2))
+    if (nrow(df) == 0) return(tibble())
+
+    set.seed(2026)
+    sample_n <- min(900, nrow(df))
+    if (nrow(df) > sample_n) {
+      df <- df[sample(seq_len(nrow(df)), sample_n), , drop = FALSE]
+    }
+
+    bundle <- readRDS(model_path)
+    predicted <- predict_prices_for_rows(df, bundle)
+    df %>%
+      mutate(
+        predicted_price = predicted,
+        actual_price = price,
+        residual_log = log1p(actual_price) - log1p(predicted_price),
+        ape = abs(actual_price - predicted_price) / actual_price,
+        model_name = model_label_vi(best_model_from_bundle(bundle))
+      ) %>%
+      filter(finite_positive(predicted_price), is.finite(residual_log), is.finite(ape))
+  })
+
   output$kpi_cards <- renderUI({
     df <- listings()
     m <- metrics()
@@ -4305,6 +4661,33 @@ server <- function(input, output, session) {
       sort()
     if (length(choices) == 0) choices <- category_choices()
     selectInput("pred_category", NULL, choices = choices, selectize = FALSE)
+  })
+
+  output$stat_category_filter <- renderUI({
+    tx <- input$stat_transaction %||% "Bán"
+    choices <- listings() %>%
+      filter(transaction_type == tx) %>%
+      pull(category_name) %>%
+      choice_values()
+    selectInput(
+      "stat_category",
+      NULL,
+      choices = c("Tất cả loại BĐS" = "__all__", setNames(choices, choices)),
+      selected = "__all__",
+      selectize = FALSE
+    )
+  })
+
+  output$stat_district_a_filter <- renderUI({
+    choices <- stat_district_choices()
+    selected <- if (length(choices) > 0) choices[[1]] else ""
+    selectInput("stat_district_a", NULL, choices = choices, selected = selected, selectize = FALSE)
+  })
+
+  output$stat_district_b_filter <- renderUI({
+    choices <- stat_district_choices()
+    selected <- if (length(choices) >= 2) choices[[2]] else if (length(choices) == 1) choices[[1]] else ""
+    selectInput("stat_district_b", NULL, choices = choices, selected = selected, selectize = FALSE)
   })
 
   output$filter_summary <- renderUI({
@@ -4541,9 +4924,11 @@ server <- function(input, output, session) {
       ggplot(aes(x = area, y = display_price, color = category_name, text = tooltip)) +
       geom_point(alpha = 0.55, size = 1.7) +
       scale_color_manual(values = color_values) +
-      labs(x = "Diện tích (m²)", y = price_info$axis, color = "Loại") +
+      guides(color = "none") +
+      labs(x = "Diện tích (m²)", y = price_info$axis) +
       chart_theme()
-    interactive_chart(p, tooltip = "text")
+    interactive_chart(p, tooltip = "text") %>%
+      layout(showlegend = FALSE, margin = list(l = 92, r = 28, t = 16, b = 78))
   })
 
   output$price_m2_plot <- renderPlotly({
@@ -4679,6 +5064,406 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  output$district_category_heatmap <- renderPlotly({
+    tx <- chart_transaction("district_category_heatmap_tx")
+    m2_info <- price_m2_display_info(tx)
+    df <- analysis_chart_data("district_category_heatmap_tx") %>%
+      filter(finite_positive(price_per_m2))
+    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "phù hợp bộ lọc.")))
+
+    top_districts <- known_rows_or_all(df, "district_name") %>%
+      count(district_name, sort = TRUE) %>%
+      slice_head(n = 10) %>%
+      pull(district_name)
+    top_categories <- known_rows_or_all(df, "category_name") %>%
+      count(category_name, sort = TRUE) %>%
+      slice_head(n = 8) %>%
+      pull(category_name)
+
+    summary_df <- df %>%
+      filter(district_name %in% top_districts, category_name %in% top_categories) %>%
+      group_by(district_name, category_name) %>%
+      summarise(display_m2 = median(price_per_m2, na.rm = TRUE) / m2_info$scale, n = n(), .groups = "drop")
+
+    z <- matrix(NA_real_, nrow = length(top_categories), ncol = length(top_districts), dimnames = list(top_categories, top_districts))
+    for (i in seq_len(nrow(summary_df))) {
+      z[summary_df$category_name[[i]], summary_df$district_name[[i]]] <- summary_df$display_m2[[i]]
+    }
+
+    plot_ly(
+      x = top_districts,
+      y = top_categories,
+      z = z,
+      type = "heatmap",
+      colorscale = "Viridis",
+      hovertemplate = paste0(
+        "Khu vực: %{x}<br>Loại BĐS: %{y}<br>Giá/m² trung vị: %{z:.1f} ",
+        m2_info$unit,
+        "<extra></extra>"
+      )
+    ) %>%
+      layout(
+        margin = list(l = 158, r = 24, t = 12, b = 120),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        xaxis = list(title = "", automargin = TRUE, tickangle = -35, tickfont = list(size = 10)),
+        yaxis = list(title = "", automargin = TRUE)
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$source_sunburst_plot <- renderPlotly({
+    tx <- chart_transaction("source_sunburst_tx")
+    df <- overview_chart_data("source_sunburst_tx") %>%
+      filter(!is_missing_label(source), !is_missing_label(category_name))
+    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "để vẽ sunburst.")))
+
+    source_df <- df %>% count(source, sort = TRUE)
+    category_df <- df %>%
+      semi_join(source_df, by = "source") %>%
+      count(source, category_name, sort = TRUE)
+
+    root_id <- paste0("tx_", assistant_text_key(tx))
+    source_ids <- paste0("source_", assistant_text_key(source_df$source))
+    category_ids <- paste0("category_", assistant_text_key(category_df$source), "_", seq_len(nrow(category_df)))
+
+    plot_df <- tibble::tibble(
+      ids = c(root_id, source_ids, category_ids),
+      labels = c(tx, source_label_vi(source_df$source), category_df$category_name),
+      parents = c("", rep(root_id, nrow(source_df)), paste0("source_", assistant_text_key(category_df$source))),
+      values = c(nrow(df), source_df$n, category_df$n)
+    )
+
+    plot_ly(
+      plot_df,
+      type = "sunburst",
+      ids = ~ids,
+      labels = ~labels,
+      parents = ~parents,
+      values = ~values,
+      branchvalues = "total",
+      maxdepth = 3,
+      insidetextorientation = "radial",
+      hovertemplate = "%{label}<br>Số tin: %{value}<extra></extra>"
+    ) %>%
+      layout(
+        margin = list(l = 0, r = 0, t = 10, b = 10),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937")
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$time_trend_plot <- renderPlotly({
+    tx <- chart_transaction("time_trend_tx")
+    m2_info <- price_m2_display_info(tx)
+    df <- analysis_chart_data("time_trend_tx") %>%
+      mutate(posted_date = as.Date(posted_at)) %>%
+      filter(!is.na(posted_date), posted_date <= Sys.Date(), finite_positive(price_per_m2))
+    validate(need(nrow(df) > 0, paste("Không có dữ liệu ngày hợp lệ cho", tx)))
+
+    trend_df <- df %>%
+      mutate(posted_month = lubridate::floor_date(posted_date, unit = "month")) %>%
+      group_by(posted_month) %>%
+      summarise(
+        n = n(),
+        median_m2 = median(price_per_m2, na.rm = TRUE) / m2_info$scale,
+        .groups = "drop"
+      ) %>%
+      arrange(posted_month)
+
+    plot_ly(trend_df, x = ~posted_month) %>%
+      add_bars(
+        y = ~n,
+        name = "Số tin",
+        marker = list(color = "rgba(0,114,188,0.25)"),
+        hovertemplate = "Tháng: %{x|%m/%Y}<br>Số tin: %{y}<extra></extra>"
+      ) %>%
+      add_lines(
+        y = ~median_m2,
+        name = paste0("Giá/m² trung vị (", m2_info$unit, ")"),
+        yaxis = "y2",
+        line = list(color = "#ef4444", width = 3),
+        hovertemplate = paste0("Tháng: %{x|%m/%Y}<br>Giá/m²: %{y:.1f} ", m2_info$unit, "<extra></extra>")
+      ) %>%
+      layout(
+        barmode = "overlay",
+        margin = list(l = 82, r = 82, t = 12, b = 96),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        legend = list(orientation = "h", x = 0, y = -0.28, font = list(size = 11), itemwidth = 30),
+        xaxis = list(title = "", automargin = TRUE, gridcolor = "#e5e7eb"),
+        yaxis = list(title = "Số tin", gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
+        yaxis2 = list(title = m2_info$unit, overlaying = "y", side = "right", showgrid = FALSE)
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$correlation_plot <- renderPlotly({
+    tx <- chart_transaction("correlation_tx")
+    df <- analysis_chart_data("correlation_tx") %>%
+      mutate(
+        log_price = log1p(price),
+        log_area = log1p(area),
+        log_price_m2 = log1p(price_per_m2)
+      )
+    numeric_cols <- intersect(
+      c("log_price", "log_price_m2", "log_area", "rooms", "distance_to_center", "listing_age_days", "title_token_count"),
+      names(df)
+    )
+    validate(need(length(numeric_cols) >= 2, "Chưa đủ biến số để tính tương quan."))
+    cor_df <- df[, numeric_cols, drop = FALSE]
+    cor_df[] <- lapply(cor_df, function(x) suppressWarnings(as.numeric(x)))
+    validate(need(sum(stats::complete.cases(cor_df)) >= 20, paste("Không đủ dữ liệu số cho", tx)))
+
+    cor_mat <- stats::cor(cor_df, use = "pairwise.complete.obs")
+    labels <- feature_label_vi(colnames(cor_mat))
+    plot_ly(
+      x = labels,
+      y = labels,
+      z = cor_mat,
+      type = "heatmap",
+      zmin = -1,
+      zmax = 1,
+      colorscale = list(c(0, "#b91c1c"), c(0.5, "#ffffff"), c(1, "#0072bc")),
+      hovertemplate = "Biến X: %{x}<br>Biến Y: %{y}<br>Correlation: %{z:.2f}<extra></extra>"
+    ) %>%
+      layout(
+        margin = list(l = 150, r = 24, t = 12, b = 120),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        xaxis = list(title = "", automargin = TRUE, tickangle = -35, tickfont = list(size = 10)),
+        yaxis = list(title = "", automargin = TRUE)
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$price_ecdf_plot <- renderPlotly({
+    tx <- chart_transaction("ecdf_tx")
+    m2_info <- price_m2_display_info(tx)
+    df <- analysis_chart_data("ecdf_tx") %>%
+      filter(finite_positive(price_per_m2)) %>%
+      mutate(display_m2 = price_per_m2 / m2_info$scale)
+    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "để vẽ ECDF.")))
+
+    top_districts <- known_rows_or_all(df, "district_name") %>%
+      count(district_name, sort = TRUE) %>%
+      slice_head(n = 5) %>%
+      pull(district_name)
+    plot_df <- df %>%
+      filter(district_name %in% top_districts) %>%
+      mutate(tooltip = paste0("Khu vực: ", district_name, "<br>Giá/m²: ", format_number_vi(display_m2, m2_info$digits), " ", m2_info$unit))
+
+    color_values <- setNames(chart_colors(n_distinct(plot_df$district_name)), sort(unique(plot_df$district_name)))
+    p <- plot_df %>%
+      ggplot(aes(x = display_m2, color = district_name, text = tooltip)) +
+      stat_ecdf(linewidth = 0.9) +
+      scale_color_manual(values = color_values) +
+      labs(x = paste0("Giá/m² (", m2_info$unit, ")"), y = "Xác suất tích lũy", color = "Khu vực") +
+      chart_theme()
+    interactive_chart(p, tooltip = "text")
+  })
+
+  output$stat_kpi_cards <- renderUI({
+    df <- stat_base_data()
+    tx <- input$stat_transaction %||% "Bán"
+    m2_info <- price_m2_display_info(tx)
+    values <- df$price_per_m2[finite_positive(df$price_per_m2)]
+    q75 <- safe_quantile(values, 0.75)
+    se_log <- stats::sd(log1p(values), na.rm = TRUE) / sqrt(length(values))
+    div(
+      class = "kpi-grid",
+      kpi_card("Cỡ mẫu thống kê", format_count_vi(nrow(df)), "sau lọc giao dịch/loại BĐS", "database", "default"),
+      kpi_card("Trung vị giá/m²", paste0(format_number_vi(median(values / m2_info$scale, na.rm = TRUE), m2_info$digits), " ", m2_info$unit), "sample statistic", "chart-line", "warning"),
+      kpi_card("Standard error", format_number_vi(se_log, 4), "trên log(giá/m²)", "ruler", "success"),
+      kpi_card("P(giá cao)", paste0(round(mean(values >= q75[[1]], na.rm = TRUE) * 100, 1), "%"), "ngưỡng Q3 của nhóm lọc", "percent", "danger")
+    )
+  })
+
+  output$probability_heatmap <- renderPlotly({
+    df <- stat_base_data() %>%
+      filter(!is_missing_label(district_name), !is_missing_label(category_name))
+    validate(need(nrow(df) > 0, "Không có dữ liệu để tính xác suất có điều kiện."))
+
+    top_districts <- df %>% count(district_name, sort = TRUE) %>% slice_head(n = 10) %>% pull(district_name)
+    top_categories <- df %>% count(category_name, sort = TRUE) %>% slice_head(n = 8) %>% pull(category_name)
+    prob_df <- df %>%
+      filter(district_name %in% top_districts, category_name %in% top_categories) %>%
+      count(district_name, category_name) %>%
+      group_by(district_name) %>%
+      mutate(prob = n / sum(n)) %>%
+      ungroup()
+
+    z <- matrix(0, nrow = length(top_categories), ncol = length(top_districts), dimnames = list(top_categories, top_districts))
+    for (i in seq_len(nrow(prob_df))) {
+      z[prob_df$category_name[[i]], prob_df$district_name[[i]]] <- prob_df$prob[[i]]
+    }
+
+    plot_ly(
+      x = top_districts,
+      y = top_categories,
+      z = z,
+      type = "heatmap",
+      colorscale = "Blues",
+      hovertemplate = "Khu vực: %{x}<br>Loại BĐS: %{y}<br>P(loại | khu vực): %{z:.1%}<extra></extra>"
+    ) %>%
+      layout(
+        margin = list(l = 158, r = 24, t = 12, b = 120),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        xaxis = list(title = "", automargin = TRUE, tickangle = -35, tickfont = list(size = 10)),
+        yaxis = list(title = "", automargin = TRUE)
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$stat_distribution_plot <- renderPlotly({
+    tx <- input$stat_transaction %||% "Bán"
+    m2_info <- price_m2_display_info(tx)
+    districts <- unique(c(stat_selected_district_a(), stat_selected_district_b()))
+    df <- stat_base_data() %>%
+      filter(district_name %in% districts, finite_positive(price_per_m2)) %>%
+      mutate(display_m2 = price_per_m2 / m2_info$scale)
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu cho hai khu vực đã chọn."))
+
+    color_values <- setNames(chart_colors(n_distinct(df$district_name)), sort(unique(df$district_name)))
+    p <- df %>%
+      ggplot(aes(x = display_m2, color = district_name)) +
+      stat_ecdf(linewidth = 1) +
+      scale_color_manual(values = color_values) +
+      labs(x = paste0("Giá/m² (", m2_info$unit, ")"), y = "Xác suất tích lũy", color = "Khu vực") +
+      chart_theme()
+    interactive_chart(p)
+  })
+
+  output$clt_plot <- renderPlotly({
+    tx <- input$stat_transaction %||% "Bán"
+    m2_info <- price_m2_display_info(tx)
+    values <- stat_base_data()$price_per_m2
+    means <- bootstrap_mean_distribution(values / m2_info$scale, input$stat_sample_size, input$stat_reps)
+    validate(need(length(means) > 0, "Cần ít nhất vài dòng giá/m² hợp lệ để mô phỏng CLT."))
+    observed_mean <- mean(values / m2_info$scale, na.rm = TRUE)
+
+    plot_ly(x = means, type = "histogram", nbinsx = 34, marker = list(color = "#0072bc", line = list(color = "#ffffff", width = 0.5))) %>%
+      layout(
+        shapes = list(list(type = "line", x0 = observed_mean, x1 = observed_mean, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))),
+        annotations = list(list(x = observed_mean, y = 1, yref = "paper", text = "Mean mẫu gốc", showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444"))),
+        margin = list(l = 62, r = 20, t = 12, b = 62),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        bargap = 0.04,
+        xaxis = list(title = paste0("Trung bình mẫu giá/m² (", m2_info$unit, ")"), gridcolor = "#e5e7eb"),
+        yaxis = list(title = "Số lần lặp", gridcolor = "#e5e7eb"),
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937")
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$bootstrap_plot <- renderPlotly({
+    tx <- input$stat_transaction %||% "Bán"
+    m2_info <- price_m2_display_info(tx)
+    district <- stat_selected_district_a()
+    values <- stat_base_data() %>%
+      filter(district_name == district, finite_positive(price_per_m2)) %>%
+      pull(price_per_m2) / m2_info$scale
+    boot <- bootstrap_median_ci(values, input$stat_reps, confidence_level_value(input$stat_confidence))
+    validate(need(length(boot$distribution) > 0, "Cần tối thiểu 5 dòng cho bootstrap."))
+
+    plot_ly(x = boot$distribution, type = "histogram", nbinsx = 34, marker = list(color = "#10b981", line = list(color = "#ffffff", width = 0.5))) %>%
+      layout(
+        shapes = list(
+          list(type = "line", x0 = boot$lower, x1 = boot$lower, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#f59e0b", width = 2, dash = "dash")),
+          list(type = "line", x0 = boot$upper, x1 = boot$upper, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#f59e0b", width = 2, dash = "dash")),
+          list(type = "line", x0 = boot$observed, x1 = boot$observed, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))
+        ),
+        annotations = list(list(
+          x = boot$observed, y = 1, yref = "paper",
+          text = paste0("Median: ", format_number_vi(boot$observed, m2_info$digits), " ", m2_info$unit),
+          showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444")
+        )),
+        margin = list(l = 62, r = 20, t = 12, b = 62),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        bargap = 0.04,
+        xaxis = list(title = paste0("Bootstrap median giá/m² (", m2_info$unit, ")"), gridcolor = "#e5e7eb"),
+        yaxis = list(title = "Số lần lặp", gridcolor = "#e5e7eb"),
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937")
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$hypothesis_table <- renderTable({
+    tx <- input$stat_transaction %||% "Bán"
+    m2_info <- price_m2_display_info(tx)
+    district_a <- stat_selected_district_a()
+    district_b <- stat_selected_district_b()
+    alpha <- 0.05
+    test_df <- stat_base_data() %>%
+      filter(district_name %in% c(district_a, district_b), finite_positive(price_per_m2)) %>%
+      mutate(group = district_name, log_m2 = log1p(price_per_m2))
+
+    if (length(unique(test_df$group)) < 2 || nrow(test_df) < 10) {
+      return(data.frame(Ket_qua = "Chưa đủ dữ liệu để kiểm định hai nhóm."))
+    }
+
+    group_a <- test_df %>% filter(group == district_a)
+    group_b <- test_df %>% filter(group == district_b)
+    t_result <- tryCatch(stats::t.test(log_m2 ~ group, data = test_df), error = function(e) NULL)
+    w_result <- tryCatch(stats::wilcox.test(log_m2 ~ group, data = test_df), error = function(e) NULL)
+    diff_median <- median(group_a$price_per_m2, na.rm = TRUE) - median(group_b$price_per_m2, na.rm = TRUE)
+
+    tibble::tibble(
+      `Mục` = c("H0", "Nhóm A", "Nhóm B", "Chênh lệch median A-B", "t-test p-value", "Wilcoxon p-value", "Kết luận α=0,05"),
+      `Giá trị` = c(
+        "Mean log(giá/m²) hai khu vực bằng nhau",
+        paste0(district_a, " · n=", format_count_vi(nrow(group_a))),
+        paste0(district_b, " · n=", format_count_vi(nrow(group_b))),
+        paste0(format_number_vi(diff_median / m2_info$scale, m2_info$digits), " ", m2_info$unit),
+        if (is.null(t_result)) "NA" else p_value_label(t_result$p.value),
+        if (is.null(w_result)) "NA" else p_value_label(w_result$p.value),
+        if (is.null(t_result)) "Không đủ dữ liệu" else hypothesis_decision(t_result$p.value, alpha)
+      )
+    )
+  })
+
+  output$empirical_probability_table <- renderTable({
+    df <- stat_base_data()
+    district <- stat_selected_district_a()
+    category <- input$stat_category
+    top_category <- df %>%
+      filter(!is_missing_label(category_name)) %>%
+      count(category_name, sort = TRUE) %>%
+      slice(1) %>%
+      pull(category_name)
+    if (length(top_category) == 0) top_category <- "Không rõ"
+    focus_category <- if (is_selected_filter(category)) category[[1]] else top_category
+    q75 <- safe_quantile(df$price_per_m2, 0.75)
+
+    tibble::tibble(
+      `Xác suất thực nghiệm` = c(
+        paste0("P(khu vực = ", district, ")"),
+        paste0("P(loại BĐS = ", focus_category, ")"),
+        paste0("P(giá/m² >= Q3)"),
+        paste0("P(", focus_category, " | ", district, ")"),
+        paste0("P(tọa độ gốc từ nguồn)")
+      ),
+      `Giá trị` = paste0(round(c(
+        mean(df$district_name == district, na.rm = TRUE),
+        mean(df$category_name == focus_category, na.rm = TRUE),
+        mean(df$price_per_m2 >= q75[[1]], na.rm = TRUE),
+        {
+          district_df <- df %>% filter(district_name == district)
+          if (nrow(district_df) == 0) NA_real_ else mean(district_df$category_name == focus_category, na.rm = TRUE)
+        },
+        mean(df$coord_status == "Tọa độ gốc từ nguồn", na.rm = TRUE)
+      ) * 100, 1), "%")
+    )
+  })
+
   prediction <- eventReactive(input$predict_btn, {
     req(input$pred_district, input$pred_category, input$predict_transaction, input$predict_area, input$predict_rooms)
     area_val <- as.numeric(input$predict_area)
@@ -4701,12 +5486,12 @@ server <- function(input, output, session) {
 
   output$prediction_text <- renderText({
     pred <- prediction()
-    if (is.na(pred)) "Chưa dự đoán được" else format_vnd_full(pred)
+    if (is.null(pred) || is.na(pred)) "Chưa dự đoán được" else format_vnd_full(pred)
   })
 
   output$prediction_note <- renderText({
     pred <- prediction()
-    if (is.na(pred)) {
+    if (is.null(pred) || is.na(pred)) {
       "Hãy chọn khu vực cũ và loại bất động sản có trong dữ liệu train."
     } else {
       paste("Giao dịch:", input$predict_transaction, "· Loại:", input$pred_category, "· Khu vực:", input$pred_district, "· Diện tích:", input$predict_area, "m²")
@@ -4716,6 +5501,33 @@ server <- function(input, output, session) {
   output$prediction_model_note <- renderText({
     is_rent_pred <- identical(input$predict_transaction, "Cho thuê")
     paste0("Mô hình: ", prediction_model_label(is_rent_pred), " · giá trị mang tính tham khảo")
+  })
+
+  output$prediction_market_band <- renderUI({
+    pred <- prediction()
+    if (is.null(pred) || is.na(pred)) return(NULL)
+    band <- prediction_market_band(
+      listings(),
+      input$pred_district,
+      input$pred_category,
+      input$predict_transaction,
+      input$predict_area
+    )
+    div(
+      class = "filter-summary full",
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Mẫu tương đồng"),
+          div(class = "filter-chip-value", paste0(format_count_vi(band$n), " tin"))),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Q1 thị trường"),
+          div(class = "filter-chip-value", format_vnd(band$lower))),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Median thị trường"),
+          div(class = "filter-chip-value", format_vnd(band$median))),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Q3 thị trường"),
+          div(class = "filter-chip-value", format_vnd(band$upper)))
+    )
   })
 
   output$importance_plot <- renderPlotly({
@@ -4738,6 +5550,164 @@ server <- function(input, output, session) {
       labs(x = NULL, y = "Mức ảnh hưởng") +
       chart_theme()
     interactive_chart(p, tooltip = "text")
+  })
+
+  output$model_card_ui <- renderUI({
+    tx <- chart_transaction("diagnostic_tx")
+    segment_key <- if (identical(tx, "Cho thuê")) "rent" else "sale"
+    m <- metrics() %>% filter(segment == segment_key)
+    r <- registry() %>% filter(segment == segment_key)
+    diag <- diagnostic_data()
+    best <- if (nrow(r) > 0) r$best_model[[1]] else best_model_name_only(m)
+    best_mape <- if (nrow(r) > 0) paste0("MAPE ", round(r$mape[[1]] * 100, 1), "%") else best_model_mape_only(m)
+    diag_mape <- if (nrow(diag) > 0) paste0(round(mean(diag$ape, na.rm = TRUE) * 100, 1), "%") else "NA"
+    diag_residual <- if (nrow(diag) > 0) format_number_vi(stats::sd(diag$residual_log, na.rm = TRUE), 3) else "NA"
+
+    div(
+      class = "kpi-grid",
+      kpi_card("Nhóm model", tx, "bán và thuê được train riêng", "tags", "default", value_class = "text-mode"),
+      kpi_card("Best model", best, "chọn theo MAPE/RMSE validate", "bullseye", "success", delta = best_mape, value_class = "text-mode"),
+      kpi_card("MAPE sanity check", diag_mape, "mẫu dự đoán lại từ dữ liệu hiện có", "chart-simple", "warning"),
+      kpi_card("SD residual log", diag_residual, "độ phân tán sai số log", "ruler", "danger")
+    )
+  })
+
+  output$diagnostic_scatter_plot <- renderPlotly({
+    tx <- chart_transaction("diagnostic_tx")
+    price_info <- price_display_info(tx)
+    df <- diagnostic_data() %>%
+      mutate(
+        actual_display = actual_price / ifelse(identical(tx, "Cho thuê"), 1e6, 1e9),
+        predicted_display = predicted_price / ifelse(identical(tx, "Cho thuê"), 1e6, 1e9),
+        tooltip = paste0(
+          "Khu vực: ", district_name,
+          "<br>Loại BĐS: ", category_name,
+          "<br>Actual: ", format_number_vi(actual_display, price_info$digits), " ", price_info$unit,
+          "<br>Predicted: ", format_number_vi(predicted_display, price_info$digits), " ", price_info$unit,
+          "<br>APE: ", round(ape * 100, 1), "%"
+        )
+      )
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu diagnostics."))
+
+    max_axis <- safe_quantile(c(df$actual_display, df$predicted_display), 0.98)
+    p <- df %>%
+      filter(actual_display <= max_axis[[1]], predicted_display <= max_axis[[1]]) %>%
+      ggplot(aes(x = actual_display, y = predicted_display, color = category_name, text = tooltip)) +
+      geom_point(alpha = 0.55, size = 1.8) +
+      geom_abline(slope = 1, intercept = 0, color = "#ef4444", linewidth = 0.9) +
+      guides(color = "none") +
+      labs(x = paste0("Actual (", price_info$unit, ")"), y = paste0("Predicted (", price_info$unit, ")")) +
+      chart_theme()
+    interactive_chart(p, tooltip = "text") %>%
+      layout(
+        showlegend = FALSE,
+        margin = list(l = 92, r = 28, t = 16, b = 78),
+        xaxis = list(automargin = TRUE, title = list(standoff = 18), gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
+        yaxis = list(automargin = TRUE, title = list(standoff = 18), gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
+      )
+  })
+
+  output$diagnostic_residual_plot <- renderPlotly({
+    df <- diagnostic_data()
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu residual."))
+    plot_ly(
+      df,
+      x = ~residual_log,
+      type = "histogram",
+      nbinsx = 36,
+      marker = list(color = "#f59e0b", line = list(color = "#ffffff", width = 0.5)),
+      hovertemplate = "Residual log: %{x:.3f}<br>Số dòng: %{y}<extra></extra>"
+    ) %>%
+      layout(
+        shapes = list(list(type = "line", x0 = 0, x1 = 0, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))),
+        margin = list(l = 82, r = 28, t = 16, b = 86),
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        bargap = 0.04,
+        xaxis = list(title = list(text = "Residual log(actual) - log(predicted)", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
+        yaxis = list(title = list(text = "Số dòng", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
+  output$diagnostic_error_group_plot <- renderPlotly({
+    df <- diagnostic_data()
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu diagnostics theo khu vực."))
+    plot_df <- df %>%
+      group_by(district_name) %>%
+      summarise(mape = mean(ape, na.rm = TRUE), n = n(), .groups = "drop") %>%
+      filter(n >= 10) %>%
+      slice_max(mape, n = 12) %>%
+      mutate(
+        tooltip = paste0("Khu vực: ", district_name, "<br>MAPE sanity: ", round(mape * 100, 1), "%<br>Số dòng: ", format_count_vi(n))
+      )
+    validate(need(nrow(plot_df) > 0, "Cần ít nhất 10 dòng/khu vực để vẽ sai số nhóm."))
+    p <- plot_df %>%
+      ggplot(aes(x = reorder(district_name, mape), y = mape * 100, text = tooltip)) +
+      geom_col(fill = "#ef4444", width = 0.72) +
+      coord_flip() +
+      labs(x = NULL, y = "MAPE (%)") +
+      chart_theme()
+    interactive_chart(p, tooltip = "text") %>%
+      layout(
+        showlegend = FALSE,
+        margin = list(l = 178, r = 28, t = 16, b = 82),
+        xaxis = list(automargin = TRUE, title = list(standoff = 18), gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
+        yaxis = list(automargin = TRUE, tickfont = list(size = 11))
+      )
+  })
+
+  output$metrics_compare_plot <- renderPlotly({
+    tx <- chart_transaction("diagnostic_tx")
+    segment_key <- if (identical(tx, "Cho thuê")) "rent" else "sale"
+    m <- metrics() %>% filter(segment == segment_key)
+    validate(need(nrow(m) > 0, "Chưa có file metrics model."))
+    min_rmse <- min(m$rmse_vnd, na.rm = TRUE)
+    min_mae <- min(m$mae_vnd, na.rm = TRUE)
+    plot_df <- bind_rows(
+      m %>% transmute(model, metric = "MAPE (%)", value = mape * 100),
+      m %>% transmute(model, metric = "R² (%)", value = pmax(r2, 0) * 100),
+      m %>% transmute(model, metric = "RMSE index", value = rmse_vnd / min_rmse * 100),
+      m %>% transmute(model, metric = "MAE index", value = mae_vnd / min_mae * 100)
+    ) %>%
+      mutate(
+        model_short = dplyr::recode(
+          model,
+          "Linear Regression" = "Linear",
+          "Random Forest" = "RF",
+          "XGBoost" = "XGB",
+          "RF + XGBoost Ensemble" = "RF+XGB",
+          "Tuned RF/XGBoost Ensemble" = "Tuned Ens.",
+          .default = model
+        ),
+        model_short = factor(model_short, levels = unique(model_short)),
+        tooltip = paste0("Model: ", model, "<br>Metric: ", metric, "<br>Giá trị: ", format_number_vi(value, 1))
+      )
+
+    plot_ly(
+      plot_df,
+      x = ~model_short,
+      y = ~value,
+      color = ~metric,
+      type = "bar",
+      text = ~tooltip,
+      hovertemplate = "%{text}<extra></extra>",
+      colors = chart_colors(n_distinct(plot_df$metric))
+    ) %>%
+      layout(
+        barmode = "group",
+        margin = list(l = 82, r = 28, t = 16, b = 120),
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        legend = list(orientation = "h", x = 0, y = -0.30, font = list(size = 11), itemwidth = 30),
+        xaxis = list(title = "", automargin = TRUE, tickangle = 0, tickfont = list(size = 11)),
+        yaxis = list(title = list(text = "Giá trị / index", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
   })
 
   output$cluster_plot <- renderPlotly({
@@ -4777,6 +5747,61 @@ server <- function(input, output, session) {
       geom_point(alpha = 0.78) +
       scale_color_manual(values = color_values) +
       labs(x = "Diện tích trung vị (m²)", y = paste0("Giá/m² trung vị (", m2_info$unit, ")"), color = "Cụm", size = "Số tin") +
+      chart_theme()
+    interactive_chart(p, tooltip = "text")
+  })
+
+  output$data_quality_cards <- renderUI({
+    df <- data_filtered()
+    quality <- build_data_quality_summary(df)
+    exact_rate <- mean(df$coord_status == "Tọa độ gốc từ nguồn", na.rm = TRUE)
+    future_rows <- quality %>% filter(nhom == "Ngày đăng tương lai") %>% pull(so_dong)
+    missing_rows <- quality %>% filter(nhom == "Thiếu khu vực/loại BĐS") %>% pull(so_dong)
+    duplicate_rows <- quality %>% filter(nhom == "Trùng lặp nghi ngờ") %>% pull(so_dong)
+    div(
+      class = "kpi-grid",
+      kpi_card("Dòng sau lọc", format_count_vi(nrow(df)), "đang hiển thị trong bảng", "table", "default"),
+      kpi_card("Tọa độ gốc", paste0(round(exact_rate * 100, 1), "%"), "phần còn lại là ước lượng", "map-location-dot", "success"),
+      kpi_card("Ngày tương lai", format_count_vi(future_rows), "cần rà format/crawl", "calendar-days", ifelse(future_rows > 0, "danger", "success")),
+      kpi_card("Trùng nghi ngờ", format_count_vi(duplicate_rows), paste0("thiếu nhãn: ", format_count_vi(missing_rows)), "copy", "warning")
+    )
+  })
+
+  output$data_quality_table <- renderTable({
+    build_data_quality_summary(data_filtered()) %>%
+      transmute(
+        `Nhóm kiểm tra` = nhom,
+        `Số dòng` = format_count_vi(so_dong),
+        `Mức độ` = muc_do,
+        `Ghi chú` = ghi_chu
+      )
+  })
+
+  output$data_quality_plot <- renderPlotly({
+    df <- data_filtered() %>%
+      mutate(coord_exact = coord_status == "Tọa độ gốc từ nguồn") %>%
+      group_by(source) %>%
+      summarise(
+        listings = n(),
+        exact_rate = mean(coord_exact, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      arrange(desc(listings)) %>%
+      mutate(
+        source_label = source_label_vi(source),
+        tooltip = paste0(
+          "Nguồn: ", source_label,
+          "<br>Số dòng: ", format_count_vi(listings),
+          "<br>Tọa độ gốc: ", round(exact_rate * 100, 1), "%"
+        )
+      )
+    validate(need(nrow(df) > 0, "Không có dữ liệu để vẽ độ phủ nguồn."))
+    p <- df %>%
+      ggplot(aes(x = reorder(source_label, listings), y = listings, fill = exact_rate, text = tooltip)) +
+      geom_col(width = 0.72) +
+      coord_flip() +
+      scale_fill_gradient(low = "#f59e0b", high = "#10b981", labels = function(x) paste0(round(x * 100), "%")) +
+      labs(x = NULL, y = "Số dòng", fill = "Tọa độ gốc") +
       chart_theme()
     interactive_chart(p, tooltip = "text")
   })

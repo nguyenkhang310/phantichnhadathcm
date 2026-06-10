@@ -15,6 +15,8 @@ data/
 
 `main/du_lieu_chinh.csv` la dataset chinh cua dashboard Shiny va cac model du doan.
 
+Dashboard doc file nay de tao cac tab EDA, suy luan thong ke, bootstrap, kiem dinh gia thuyet, model diagnostics va bang data quality. Cac canh bao data quality chi de minh bach hoa do tin cay du lieu; app khong tu dong xoa dong du lieu trong luc hien thi.
+
 ## Interim
 
 `interim/du_lieu_gop_nguon.csv` la dataset da gop tu tat ca raw source ve mot schema chung, truoc feature engineering.
