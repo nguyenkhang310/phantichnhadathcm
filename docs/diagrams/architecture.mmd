@@ -1,33 +1,53 @@
 flowchart LR
   subgraph Sources["Nguồn dữ liệu"]
     CT["Chợ Tốt API<br/>gateway.chotot.com"]
+    ALO["Alonhadat HTML"]
+    LCN["Luachonnhadat API"]
+    MUA["Muaban HTML"]
+    MOGI["Mogi clean CSV<br/>data/raw/mogi"]
+    HOME["Homedy clean CSV<br/>data/raw/homedy"]
+    ALOCSV["Alonhadat local CSV<br/>data/raw/alonhadat"]
   end
 
   subgraph Storage["Lưu trữ"]
-    DB[("data/hcmc_bds.sqlite")]
-    RAW["data/hcmc_bds_raw.csv"]
-    FEAT["data/hcmc_bds_featured.csv"]
+    DB[("data/cache/cache_chotot.sqlite")]
+    RAW["data/raw/chotot/chotot_schema_chuan.csv"]
+    SRC["data/raw/*/*.csv"]
+    COMBINED["data/interim/du_lieu_gop_nguon.csv"]
+    FEAT["data/main/du_lieu_chinh.csv"]
   end
 
   subgraph Analytics["Xử lý & phân tích"]
-    SCR["scripts/chotot_scraper_v3.R"]
-    FEA["scripts/feature_engineering.R"]
-    EDA["scripts/eda_analysis.R"]
-    ML["scripts/train_models.R"]
+    SCR["scripts/scrapers/thu_thap_chotot.R"]
+    SCR2["scripts/scrapers/*.R<br/>scripts/importers/*.R"]
+    MERGE["scripts/processing/gop_nguon_du_lieu.R"]
+    FEA["scripts/processing/tao_dac_trung.R"]
+    EDA["scripts/analysis/phan_tich_eda.R"]
+    ML["scripts/models/huan_luyen_mo_hinh.R"]
   end
 
   subgraph Outputs["Đầu ra"]
     PLOTS["plots/*.png"]
-    MODELS["models/*.rds<br/>models/model_metrics.csv"]
+    MODELS["models/*.rds<br/>models/chi_so_mo_hinh.csv<br/>models/cum_gia_quan_huyen.csv"]
     APP["app.R<br/>Shiny dashboard"]
-    REPORT["report/*.docx"]
+    REPORT["docs/*.docx"]
   end
 
   CT --> SCR
+  ALO --> SCR2
+  LCN --> SCR2
+  MUA --> SCR2
+  MOGI --> SCR2
+  HOME --> SCR2
+  ALOCSV --> SCR2
   SCR --> DB
   SCR --> RAW
-  DB --> FEA
-  RAW --> FEA
+  SCR2 --> SRC
+  RAW --> MERGE
+  SRC --> MERGE
+  MERGE --> COMBINED
+  COMBINED --> FEA
+  DB -. fallback .-> FEA
   FEA --> FEAT
   FEAT --> EDA
   FEAT --> ML

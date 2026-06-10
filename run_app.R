@@ -1,45 +1,53 @@
-if (dir.exists("R_libs")) {
-  .libPaths(c(normalizePath("R_libs"), .libPaths()))
-}
+source("scripts/config/duong_dan_du_an.R")
+use_local_r_libs()
 
 APP_HOST <- "127.0.0.1"
 APP_PORT <- 3838L
 
-free_port <- function(port) {
-  if (Sys.which("lsof") == "") return(invisible(FALSE))
-
-  pid_output <- tryCatch(
+# Hàm port_pids: đếm hoặc kiểm tra điều kiện xử lý.
+port_pids <- function(port) {
+  if (Sys.which("lsof") == "") return(character())
+  pids <- tryCatch(
     system2("lsof", c("-ti", paste0("tcp:", port)), stdout = TRUE, stderr = FALSE),
     warning = function(w) character(),
     error = function(e) character()
   )
+  unique(pids[nzchar(pids)])
+}
 
-  pids <- unique(pid_output[nzchar(pid_output)])
-  if (length(pids) == 0) return(invisible(FALSE))
+# Hàm port_in_use: đếm hoặc kiểm tra điều kiện xử lý.
+port_in_use <- function(port) {
+  length(port_pids(port)) > 0
+}
 
-  message("Port ", port, " dang ban. Dang dung tien trinh: ", paste(pids, collapse = ", "))
-  for (pid in pids) {
-    try(system2("kill", c("-TERM", pid), stdout = FALSE, stderr = FALSE), silent = TRUE)
+# Hàm kill_port: hỗ trợ xử lý dữ liệu trong script.
+kill_port <- function(port, timeout_seconds = 8) {
+  pids <- port_pids(port)
+  if (length(pids) == 0) return(invisible(TRUE))
+
+  message("Port ", port, " dang ban boi PID: ", paste(pids, collapse = ", "), ". Dang dung process cu...")
+  system2("kill", c("-TERM", pids), stdout = FALSE, stderr = FALSE)
+
+  deadline <- Sys.time() + timeout_seconds
+  while (Sys.time() < deadline) {
+    Sys.sleep(0.25)
+    if (!port_in_use(port)) return(invisible(TRUE))
   }
-  Sys.sleep(0.8)
 
-  still_busy <- tryCatch(
-    system2("lsof", c("-ti", paste0("tcp:", port)), stdout = TRUE, stderr = FALSE),
-    warning = function(w) character(),
-    error = function(e) character()
-  )
+  remaining <- port_pids(port)
+  if (length(remaining) > 0) {
+    message("Port ", port, " van ban. Force kill PID: ", paste(remaining, collapse = ", "))
+    system2("kill", c("-KILL", remaining), stdout = FALSE, stderr = FALSE)
+    Sys.sleep(0.5)
+  }
 
-  still_busy <- unique(still_busy[nzchar(still_busy)])
-  if (length(still_busy) > 0) {
-    message("Port ", port, " van ban. Ep dung tien trinh: ", paste(still_busy, collapse = ", "))
-    for (pid in still_busy) {
-      try(system2("kill", c("-KILL", pid), stdout = FALSE, stderr = FALSE), silent = TRUE)
-    }
-    Sys.sleep(0.4)
+  if (port_in_use(port)) {
+    stop("Khong the giai phong port ", port, ". Hay kiem tra process dang giu port nay.")
   }
 
   invisible(TRUE)
 }
 
-free_port(APP_PORT)
+kill_port(APP_PORT)
+
 shiny::runApp(".", host = APP_HOST, port = APP_PORT, launch.browser = FALSE)

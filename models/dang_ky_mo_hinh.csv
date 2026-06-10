@@ -1,0 +1,3 @@
+segment,best_model,mape,rmse_vnd,mae_vnd,r2,split_type,train_rows,test_rows,trained_at
+rent,Tuned RF/XGBoost Ensemble,0.29638325500985296,71868026.36359541,16377705.077014476,0.37180865917927375,stratified_random_by_source,4745,1188,2026-06-07 20:50:18.575727
+sale,Tuned RF/XGBoost Ensemble,0.3911578454950481,24093176109.59222,7718227747.142837,0.7421256282185644,stratified_random_by_source,8218,2056,2026-06-07 20:50:18.575727

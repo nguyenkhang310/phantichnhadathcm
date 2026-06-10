@@ -1,2 +1,0 @@
-updated_at,status,before_rows,after_rows,new_rows,retrained,reason,message
-2026-05-16 23:22:45.980708,success,3210,3171,-39,FALSE,data_refreshed_model_still_valid,

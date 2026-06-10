@@ -5,11 +5,10 @@
 *.Rproj
 
 # Data files (large, not needed in git)
-data/hcmc_bds.sqlite
-data/hcmc_bds_raw.csv
+data/cache/*.sqlite
 
 # Local R library
-R_libs/
+.local/
 
 # OS
 .DS_Store

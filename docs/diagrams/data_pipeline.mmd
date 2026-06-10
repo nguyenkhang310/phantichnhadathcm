@@ -1,13 +1,21 @@
 flowchart TD
-  A["Start"] --> B["Gọi Chợ Tốt API<br/>region_v2=13000, cg, offset o"]
-  B --> C["Parse JSON ads"]
-  C --> D["Chuẩn hóa schema<br/>title, price, area, rooms, ward, district, lat/lon"]
-  D --> E["Lọc dữ liệu bất thường<br/>price range, area range, duplicate ad_id"]
-  E --> F["SQLite INSERT OR IGNORE"]
-  F --> G["Export data/hcmc_bds_raw.csv"]
-  G --> H["Feature engineering"]
-  H --> I["Missing values<br/>median/mode theo nhóm"]
+  A["Start"] --> B["Scrape/import từng nguồn"]
+  B --> C1["Chợ Tốt API<br/>data/raw/chotot/chotot_schema_chuan.csv"]
+  B --> C2["Alonhadat / Luachonnhadat / Muaban<br/>data/raw/*/*.csv"]
+  B --> C3["Mogi clean CSV<br/>scripts/importers/nhap_mogi.R"]
+  B --> C4["Homedy clean CSV<br/>scripts/importers/nhap_homedy.R"]
+  B --> C5["Alonhadat local CSV<br/>scripts/importers/nhap_alonhadat_local.R"]
+  C1 --> D["Chuẩn hóa schema chung<br/>title, price, area, rooms, ward, district, lat/lon, source"]
+  C2 --> D
+  C3 --> D
+  C4 --> D
+  C5 --> D
+  D --> E["Merge sources<br/>data/interim/du_lieu_gop_nguon.csv"]
+  E --> F["Lọc dữ liệu bất thường<br/>price range, area range, duplicate source_id"]
+  F --> G["Feature engineering"]
+  G --> H["Missing values<br/>median/mode theo nhóm"]
+  H --> I["Title/domain features<br/>mặt tiền, hẻm xe hơi, pháp lý, nội thất"]
   I --> J["Log transform<br/>log_price, log_area, log_price_per_m2"]
   J --> K["Spatial feature<br/>distance_to_center"]
   K --> L["Target encoding ward"]
-  L --> M["data/hcmc_bds_featured.csv"]
+  L --> M["data/main/du_lieu_chinh.csv"]
