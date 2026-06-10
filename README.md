@@ -62,11 +62,6 @@ phantichnhadathcm/
 
 `data/cache/` chi chua cache SQLite phuc vu scraper. `data/logs/` chua log update pipeline.
 
-## thu_vien_r La Gi?
-
-`.local/thu_vien_r/` la thu vien package R cai cuc bo trong project, khong phai source code va khong phai data. Thu muc nay lon vi chua cac package nang nhu `terra`, `sf`, `xgboost`, `leaflet`.
-
-Hien tai may nay thieu mot so package trong thu vien R he thong (`randomForest`, `leaflet`, `xgboost`, `chromote`), nen minh da chuyen `thu_vien_r` vao `.local/thu_vien_r` thay vi xoa han. Neu da cai day du package vao R global, co the xoa `.local/thu_vien_r` de giam dung luong.
 
 ## Lenh Hay Dung
 
