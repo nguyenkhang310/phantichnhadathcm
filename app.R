@@ -2348,6 +2348,15 @@ interactive_chart <- function(plot, tooltip = "all") {
     config(displayModeBar = FALSE, responsive = TRUE)
 }
 
+# ============================================================
+# SUY LUAN THONG KE / BOOTSTRAP / CLT HELPERS
+# Cac ham trong khoi nay phuc vu tab "Suy luan thong ke":
+# - empirical probability va conditional probability
+# - standard error, sampling distribution theo CLT
+# - bootstrap confidence interval
+# - hypothesis testing va data quality diagnostics
+# ============================================================
+
 # Hàm finite_positive: kiểm tra giá trị số dương hữu hạn.
 finite_positive <- function(x) {
   !is.na(x) & is.finite(x) & x > 0
@@ -3988,6 +3997,12 @@ ui <- fluidPage(
               )
             )
           ),
+          # ======================================================
+          # UI - PHAN TICH GIA / EDA
+          # Cac panel trong tab nay tra loi cau hoi thi truong:
+          # phan phoi gia, quan he dien tich-gia, gia/m2 theo khu vuc,
+          # heatmap khu vuc x loai BDS, xu huong thoi gian va correlation.
+          # ======================================================
           tabPanel(
             title = "analysis", value = "analysis",
             div(
@@ -4027,6 +4042,11 @@ ui <- fluidPage(
               )
             )
           ),
+          # ======================================================
+          # UI - SUY LUAN THONG KE
+          # Tab nay ap dung truc tiep ly thuyet xac suat thong ke:
+          # conditional probability, CLT, bootstrap CI va kiem dinh gia thuyet.
+          # ======================================================
           tabPanel(
             title = "statistics", value = "statistics",
             div(
@@ -4496,6 +4516,12 @@ server <- function(input, output, session) {
     listings() %>% filter(transaction_type == tx)
   }
 
+  # ------------------------------------------------------------
+  # SERVER DATA SCOPE - PHAN TICH GIA
+  # Ham nay gom tat ca filter cua tab "Phan tich gia" de cac chart EDA
+  # dung cung mot tap du lieu: scatter dien tich-gia, gia/m2, heatmap,
+  # time trend, ECDF va correlation.
+  # ------------------------------------------------------------
   # Hàm analysis_chart_data: tạo thành phần giao diện.
   analysis_chart_data <- function(input_id) {
     tx <- chart_transaction(input_id)
@@ -4521,6 +4547,12 @@ server <- function(input, output, session) {
       )
   }
 
+  # ------------------------------------------------------------
+  # SERVER DATA SCOPE - SUY LUAN THONG KE
+  # stat_base_data() la mau thong ke sau khi loc giao dich/loai BDS.
+  # Cac output xac suat, CLT, bootstrap va hypothesis test deu dung scope nay
+  # de tranh moi bieu do tinh tren mot tap du lieu khac nhau.
+  # ------------------------------------------------------------
   stat_base_data <- reactive({
     tx <- input$stat_transaction %||% "Bán"
     df <- listings() %>%
@@ -4899,6 +4931,17 @@ server <- function(input, output, session) {
       )
   })
 
+  # ============================================================
+  # OUTPUTS - PHAN TICH GIA / EDA
+  # Nhom output nay chuyen data sach thanh insight thi truong:
+  # - scatter dien tich vs gia
+  # - ranking gia/m2 theo khu vuc
+  # - khoang gia theo loai BDS
+  # - histogram/log price distribution
+  # - heatmap, sunburst, time trend, correlation va ECDF
+  # ============================================================
+
+  # EDA: quan he dien tich va gia, dung de nhin pattern phi tuyen/outlier.
   output$area_price_plot <- renderPlotly({
     tx <- chart_transaction("area_price_tx")
     price_info <- price_display_info(tx)
@@ -4931,6 +4974,7 @@ server <- function(input, output, session) {
       layout(showlegend = FALSE, margin = list(l = 92, r = 28, t = 16, b = 78))
   })
 
+  # EDA: top khu vuc theo median gia/m2, dung median de giam anh huong outlier.
   output$price_m2_plot <- renderPlotly({
     tx <- chart_transaction("price_m2_tx")
     m2_info <- price_m2_display_info(tx)
@@ -4959,6 +5003,7 @@ server <- function(input, output, session) {
     interactive_chart(p, tooltip = "text")
   })
 
+  # EDA: so sanh khoang gia theo loai BDS bang median va IQR.
   output$price_category_plot <- renderPlotly({
     selected_transaction <- chart_transaction("price_category_tx")
     price_info <- price_display_info(selected_transaction)
@@ -5036,6 +5081,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA: histogram log(price) de xu ly phan phoi gia lech phai.
   output$log_price_plot <- renderPlotly({
     tx <- chart_transaction("log_price_tx")
     plot_df <- analysis_chart_data("log_price_tx") %>%
@@ -5064,6 +5110,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA nang cao: heatmap median gia/m2 theo khu vuc va loai BDS.
   output$district_category_heatmap <- renderPlotly({
     tx <- chart_transaction("district_category_heatmap_tx")
     m2_info <- price_m2_display_info(tx)
@@ -5113,6 +5160,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA nang cao: sunburst de thay co cau nguon -> giao dich -> loai BDS.
   output$source_sunburst_plot <- renderPlotly({
     tx <- chart_transaction("source_sunburst_tx")
     df <- overview_chart_data("source_sunburst_tx") %>%
@@ -5155,6 +5203,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA nang cao: time trend, loai ngay dang tuong lai de khong lam sai xu huong.
   output$time_trend_plot <- renderPlotly({
     tx <- chart_transaction("time_trend_tx")
     m2_info <- price_m2_display_info(tx)
@@ -5201,6 +5250,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA nang cao: correlation matrix tren cac bien so chinh.
   output$correlation_plot <- renderPlotly({
     tx <- chart_transaction("correlation_tx")
     df <- analysis_chart_data("correlation_tx") %>%
@@ -5241,6 +5291,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # EDA/xac suat: ECDF gia/m2 de doc percentile va so sanh phan phoi khu vuc.
   output$price_ecdf_plot <- renderPlotly({
     tx <- chart_transaction("ecdf_tx")
     m2_info <- price_m2_display_info(tx)
@@ -5267,6 +5318,16 @@ server <- function(input, output, session) {
     interactive_chart(p, tooltip = "text")
   })
 
+  # ============================================================
+  # OUTPUTS - SUY LUAN THONG KE
+  # Nhom output nay gan voi cac bai ly thuyet trong docs:
+  # - Probability: empirical probability, conditional probability
+  # - LoLN/CLT: sampling distribution va standard error
+  # - Bootstrap: bootstrap distribution va confidence interval
+  # - Hypothesis: H0/H1, p-value, ket luan theo alpha
+  # ============================================================
+
+  # Xac suat thong ke mo ta: sample size, median, standard error, P(gia cao).
   output$stat_kpi_cards <- renderUI({
     df <- stat_base_data()
     tx <- input$stat_transaction %||% "Bán"
@@ -5283,6 +5344,7 @@ server <- function(input, output, session) {
     )
   })
 
+  # Probability: conditional probability P(loai BDS | khu vuc).
   output$probability_heatmap <- renderPlotly({
     df <- stat_base_data() %>%
       filter(!is_missing_label(district_name), !is_missing_label(category_name))
@@ -5321,6 +5383,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # Probability distribution: ECDF de so sanh phan phoi gia/m2 giua hai khu vuc.
   output$stat_distribution_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -5340,6 +5403,7 @@ server <- function(input, output, session) {
     interactive_chart(p)
   })
 
+  # CLT: lay mau co hoan lai nhieu lan de tao sampling distribution cua mean.
   output$clt_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -5363,6 +5427,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # Bootstrap: tao bootstrap distribution cua median va lay CI theo confidence level.
   output$bootstrap_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -5396,6 +5461,8 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  # Hypothesis testing: H0 la mean log(gia/m2) cua hai khu vuc bang nhau.
+  # Dung t-test cho mean log-scale va Wilcoxon nhu phuong an robust hon voi du lieu lech.
   output$hypothesis_table <- renderTable({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -5430,6 +5497,7 @@ server <- function(input, output, session) {
     )
   })
 
+  # Empirical probability: cac xac suat uoc luong truc tiep tu mau du lieu dang loc.
   output$empirical_probability_table <- renderTable({
     df <- stat_base_data()
     district <- stat_selected_district_a()
