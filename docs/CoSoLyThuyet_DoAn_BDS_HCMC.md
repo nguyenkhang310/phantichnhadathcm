@@ -9,8 +9,9 @@ Mục tiêu chính của đồ án gồm:
 - Thu thập dữ liệu bất động sản từ nhiều nguồn trực tuyến như Chợ Tốt, Alonhadat, Lựa Chọn Nhà Đất, Mua Bán, Mogi và Homedy.
 - Chuẩn hóa dữ liệu từ các nguồn khác nhau về cùng một schema.
 - Phân tích các yếu tố ảnh hưởng đến giá bất động sản như vị trí, diện tích, loại hình, số phòng, đặc điểm tiêu đề, thời gian đăng tin và khoảng cách tới trung tâm.
+- Áp dụng xác suất thống kê và suy luận thống kê để phân tích mặt bằng giá, xác suất có điều kiện, phân phối mẫu, khoảng tin cậy bootstrap và kiểm định giả thuyết.
 - Xây dựng mô hình dự đoán giá bán và giá thuê bất động sản.
-- Đánh giá mô hình bằng các chỉ số RMSE, MAE, MAPE và R bình phương.
+- Đánh giá mô hình bằng các chỉ số RMSE, MAE, MAPE và R².
 - Trực quan hóa dữ liệu, mô hình và kết quả dự đoán bằng ứng dụng web Shiny.
 
 Về bản chất, đồ án là một bài toán khoa học dữ liệu ứng dụng trong lĩnh vực bất động sản. Quy trình tổng quát gồm các bước:
@@ -19,8 +20,9 @@ Về bản chất, đồ án là một bài toán khoa học dữ liệu ứng d
 2. Làm sạch và chuẩn hóa dữ liệu.
 3. Tạo đặc trưng phục vụ phân tích và mô hình hóa.
 4. Phân tích khám phá dữ liệu.
-5. Huấn luyện và đánh giá mô hình học máy.
-6. Triển khai kết quả trên dashboard tương tác.
+5. Áp dụng xác suất thống kê, bootstrap và kiểm định giả thuyết.
+6. Huấn luyện và đánh giá mô hình học máy.
+7. Triển khai kết quả trên dashboard tương tác.
 
 ## 2. Cơ Sở Lý Thuyết Về Bất Động Sản
 
@@ -460,6 +462,93 @@ Biểu đồ đường số lượng tin đăng theo ngày giúp theo dõi biế
 
 Biểu đồ địa lý theo vĩ độ, kinh độ cho thấy phân bố tin đăng trên không gian TP.HCM. Khi kết hợp màu theo giá, biểu đồ giúp quan sát vùng có giá cao/thấp.
 
+### 7.9. Ma Trận Tương Quan
+
+Ma trận tương quan giúp đo mức độ liên hệ tuyến tính giữa các biến số. Hệ số tương quan Pearson giữa hai biến `X` và `Y`:
+
+```text
+Corr(X, Y) = Cov(X, Y) / (SD(X) * SD(Y))
+```
+
+Trong đó:
+
+```text
+Cov(X, Y) = (1/(n - 1)) * sum((x_i - x_bar) * (y_i - y_bar))
+```
+
+Ý nghĩa:
+
+- `Corr` gần 1: hai biến có xu hướng tăng cùng nhau.
+- `Corr` gần -1: một biến tăng thì biến kia có xu hướng giảm.
+- `Corr` gần 0: quan hệ tuyến tính yếu.
+
+Trong đồ án, ma trận tương quan giúp xem quan hệ giữa giá, diện tích, giá/m², số phòng, khoảng cách tới trung tâm và các đặc trưng số khác. Tuy nhiên, tương quan chỉ phản ánh quan hệ tuyến tính và không chứng minh quan hệ nhân quả.
+
+### 7.10. Heatmap Khu Vực - Loại Hình
+
+Heatmap dùng màu sắc để thể hiện độ lớn của một chỉ số theo hai chiều phân nhóm, ví dụ quận/huyện và loại bất động sản.
+
+Một ô heatmap có thể biểu diễn:
+
+```text
+median_price_per_m2(district, category)
+```
+
+hoặc:
+
+```text
+listing_count(district, category)
+```
+
+Ý nghĩa:
+
+- Nhận diện khu vực nào có mặt bằng giá/m² cao theo từng loại hình.
+- Phát hiện loại hình nào xuất hiện nhiều ở từng quận/huyện.
+- Hỗ trợ giải thích vì sao mô hình cần tương tác `district_category_price_encoded`.
+
+### 7.11. Treemap Và Sunburst
+
+Treemap và sunburst biểu diễn dữ liệu phân cấp, ví dụ:
+
+```text
+Nguồn dữ liệu -> Loại giao dịch -> Loại bất động sản
+```
+
+Tỷ trọng của một nhóm:
+
+```text
+share_group = count_group / total_count
+```
+
+Ý nghĩa:
+
+- Xem nguồn nào đóng góp nhiều dữ liệu.
+- Xem cấu trúc dữ liệu có lệch về loại hình nào không.
+- Giúp giải thích khả năng model học tốt hơn ở nhóm nhiều dữ liệu và kém ổn định hơn ở nhóm ít dữ liệu.
+
+### 7.12. Xu Hướng Thời Gian Và Đường Trung Bình
+
+Với dữ liệu có ngày đăng tin, có thể gom theo ngày hoặc tuần:
+
+```text
+count_t = số tin đăng tại thời điểm t
+median_price_t = median(price tại thời điểm t)
+```
+
+Đường xu hướng giúp quan sát:
+
+- Giai đoạn dữ liệu được thu thập nhiều hay ít.
+- Mặt bằng giá có biến động theo thời gian không.
+- Có ngày bất thường do nguồn dữ liệu thay đổi, lỗi crawl hoặc chiến dịch đăng tin hàng loạt không.
+
+Nếu dùng trung bình trượt:
+
+```text
+moving_average_t = (x_t + x_(t-1) + ... + x_(t-k+1)) / k
+```
+
+Trung bình trượt làm đường xu hướng mượt hơn và giảm nhiễu ngắn hạn.
+
 ## 8. Cơ Sở Lý Thuyết Về Học Máy
 
 ### 8.1. Học Máy
@@ -483,18 +572,70 @@ Sau khi học từ dữ liệu lịch sử, mô hình có thể dự đoán giá
 
 ### 8.3. Bài Toán Hồi Quy
 
-Vì giá là biến liên tục, bài toán thuộc nhóm hồi quy. Mục tiêu của hồi quy là dự đoán một giá trị số. Trong đồ án, mô hình thực tế dự đoán `log_price`, sau đó chuyển ngược về giá VND.
+Vì giá là biến liên tục, bài toán thuộc nhóm hồi quy. Mục tiêu của hồi quy là học một hàm dự đoán:
+
+```text
+f: X -> y
+```
+
+Trong đó:
+
+- `X` là tập đặc trưng mô tả bất động sản.
+- `y` là biến mục tiêu.
+- `f(X)` là giá trị mô hình dự đoán.
+
+Với từng tin đăng thứ `i`, dữ liệu có dạng:
+
+```text
+D = {(x_1, y_1), (x_2, y_2), ..., (x_n, y_n)}
+```
+
+Trong đồ án:
+
+```text
+y_i = log(1 + price_i)
+```
+
+Mô hình không dự đoán trực tiếp `price` mà dự đoán `log_price`. Sau khi có dự đoán trên thang log, hệ thống chuyển ngược về giá VND:
+
+```text
+predicted_price = exp(predicted_log_price) - 1
+```
+
+Lý do dùng `log_price`:
+
+- Giá bất động sản thường lệch phải rất mạnh: đa số tin ở mức vừa phải, một số ít tin rất đắt.
+- Log transform làm phân phối ổn định hơn, giảm ảnh hưởng quá lớn của các giá trị cực trị.
+- Quan hệ giữa diện tích, vị trí, loại hình và giá thường có tính nhân: ví dụ nhà mặt tiền hoặc khu trung tâm có thể làm giá tăng theo tỷ lệ. Khi lấy log, quan hệ nhân được chuyển gần hơn về quan hệ cộng.
+- Dự đoán trên log rồi lấy `exp()` giúp giá dự đoán luôn dương.
+- Sai số trên thang log gần với sai số tương đối, phù hợp với thị trường bất động sản vì lệch 500 triệu ở căn 2 tỷ khác ý nghĩa với lệch 500 triệu ở căn 50 tỷ.
+
+Vector đặc trưng `x_i` trong đồ án gồm các nhóm chính:
+
+- Đặc trưng quy mô: `area`, `log_area`, `rooms`, số tầng/phòng suy luận.
+- Đặc trưng vị trí: quận/huyện, phường/xã, khoảng cách tới trung tâm.
+- Đặc trưng loại hình: căn hộ, nhà phố, đất nền, kho xưởng, phòng trọ...
+- Đặc trưng nguồn dữ liệu: nguồn tin đăng.
+- Đặc trưng thời gian: giờ đăng, thứ đăng, tuổi tin đăng.
+- Đặc trưng văn bản tiêu đề: mặt tiền, hẻm xe hơi, thang máy, pháp lý, nội thất, dòng tiền.
+- Đặc trưng mã hóa giá theo nhóm: mặt bằng giá theo phường, quận, loại hình, nguồn và tổ hợp quận - loại hình.
 
 Các mô hình hồi quy được sử dụng:
 
 - Linear Regression.
 - Random Forest Regression.
 - XGBoost Regression.
-- Ensemble giữa Random Forest và XGBoost.
+- RF + XGBoost Ensemble.
+- Tuned RF/XGBoost Ensemble.
 
 ### 8.4. Chia Train/Test
 
-Để đánh giá mô hình, dữ liệu được chia thành tập train và tập test. Tập train dùng để huấn luyện, tập test dùng để kiểm tra mô hình trên dữ liệu chưa thấy.
+Để đánh giá mô hình, dữ liệu được chia thành hai phần:
+
+- Tập train: dùng để học tham số, học quy luật và fit các bước xử lý phụ thuộc dữ liệu.
+- Tập test/holdout: dùng để kiểm tra mô hình trên dữ liệu chưa được dùng để huấn luyện.
+
+Nếu vừa huấn luyện vừa đánh giá trên cùng một tập dữ liệu, mô hình có thể đạt điểm rất đẹp nhưng không phản ánh khả năng dự đoán dữ liệu mới. Vì vậy, train/test split là bước bắt buộc để ước lượng khả năng tổng quát hóa.
 
 Đồ án dùng tỷ lệ 80/20:
 
@@ -503,7 +644,43 @@ train = 80% dữ liệu
 test = 20% dữ liệu
 ```
 
-Việc chia dữ liệu được stratified theo nguồn dữ liệu khi có đủ mẫu, giúp tập train/test giữ được sự đa dạng giữa các nguồn.
+Trong code, dữ liệu được chia riêng cho hai phân khúc:
+
+- `sale`: dữ liệu bán.
+- `rent`: dữ liệu cho thuê.
+
+Theo kết quả train hiện tại trong `models/dang_ky_mo_hinh.csv`:
+
+```text
+sale: train = 8,218 dòng, test = 2,056 dòng
+rent: train = 4,745 dòng, test = 1,188 dòng
+```
+
+Lý do chọn tỷ lệ 80/20:
+
+- 80% train đủ lớn để các mô hình nhiều tham số như Random Forest và XGBoost học được quan hệ giữa khu vực, loại hình, diện tích, nguồn tin và giá.
+- 20% test vẫn đủ nhiều để tính RMSE, MAE, MAPE và R² tương đối ổn định.
+- Nếu dùng 70/30, tập train nhỏ hơn, mô hình có thể mất dữ liệu học, nhất là ở các nhóm ít mẫu như một số phường hoặc loại hình hiếm.
+- Nếu dùng 90/10, tập test nhỏ hơn, chỉ số đánh giá dễ dao động do vài tin bất thường.
+- 80/20 là tỷ lệ phổ biến trong các đồ án học máy khi dữ liệu ở mức vài nghìn đến vài chục nghìn dòng và chưa triển khai cross-validation đầy đủ.
+
+Việc chia dữ liệu được stratified theo nguồn dữ liệu khi có đủ mẫu:
+
+```text
+Mỗi nguồn dữ liệu được chia xấp xỉ 80% train và 20% test.
+```
+
+Ý nghĩa của stratified split:
+
+- Tránh trường hợp train có nhiều tin từ một nguồn nhưng test lại thiếu nguồn đó.
+- Giữ phân phối nguồn dữ liệu giữa train và test tương đối giống nhau.
+- Đánh giá công bằng hơn vì mỗi nguồn có cách đăng tin, cách ghi giá, chất lượng dữ liệu và phân khúc khác nhau.
+
+Đồ án dùng `set.seed(42)` để kết quả chia dữ liệu có thể tái lập. Khi một nhóm nguồn có quá ít mẫu, code dùng cơ chế fallback ngẫu nhiên để vẫn đảm bảo có dữ liệu train/test hợp lệ.
+
+Một điểm quan trọng là các bước target encoding được fit trên tập train, sau đó mới áp dụng sang test. Điều này giúp tránh data leakage, tức là tránh việc mô hình nhìn thấy thông tin giá của tập test trong quá trình huấn luyện.
+
+Sau khi chọn được mô hình tốt nhất bằng tập holdout, code refit mô hình cuối trên toàn bộ dữ liệu sạch của từng phân khúc. Cách làm này giúp tận dụng tối đa dữ liệu khi lưu mô hình phục vụ dashboard. Tuy nhiên, các chỉ số báo cáo vẫn lấy từ lần đánh giá trên tập holdout để phản ánh khả năng dự đoán dữ liệu chưa thấy.
 
 ### 8.5. Overfitting Và Underfitting
 
@@ -511,7 +688,19 @@ Overfitting xảy ra khi mô hình học quá sát dữ liệu train, bao gồm 
 
 Underfitting xảy ra khi mô hình quá đơn giản, không học được quy luật quan trọng trong dữ liệu.
 
-Trong đồ án, việc đánh giá trên tập test, so sánh nhiều mô hình và dùng chỉ số sai số giúp phát hiện phần nào hai hiện tượng này.
+Có thể hiểu theo quan hệ bias - variance:
+
+- Underfitting thường có bias cao: mô hình quá đơn giản nên sai cả trên train và test.
+- Overfitting thường có variance cao: mô hình rất tốt trên train nhưng kém trên test.
+
+Trong đồ án, các biện pháp giảm rủi ro overfitting gồm:
+
+- Đánh giá trên tập holdout 20%.
+- So sánh mô hình đơn giản và mô hình phức tạp.
+- Dùng nhiều chỉ số: RMSE, MAE, MAPE, R².
+- Với XGBoost, thử nhiều cấu hình và kiểm soát độ phức tạp bằng `max_depth`, `min_child_weight`, `subsample`, `colsample_bytree`.
+- Với Random Forest, dùng nhiều cây và lấy trung bình để giảm phương sai.
+- Giới hạn dự đoán log trong khoảng phân vị 1% - 99% của train để tránh dự đoán quá cực đoan.
 
 ## 9. Linear Regression
 
@@ -533,22 +722,77 @@ Trong đó:
 
 Trong đồ án, `y` là `log_price`.
 
-### 9.2. Ưu Điểm
+Với `n` dòng dữ liệu và `p` đặc trưng, mục tiêu của Linear Regression là tìm bộ hệ số làm tổng bình phương sai số nhỏ nhất:
+
+```text
+minimize sum((y_i - y_hat_i)^2), i = 1..n
+```
+
+Trong đó:
+
+```text
+y_hat_i = beta0 + beta1*x_i1 + beta2*x_i2 + ... + betap*x_ip
+```
+
+Ở dạng ma trận:
+
+```text
+y = X * beta + epsilon
+```
+
+Nếu ma trận `X'X` khả nghịch, nghiệm OLS có dạng:
+
+```text
+beta_hat = (X'X)^(-1) X'y
+```
+
+Vì biến mục tiêu là `log_price`, một hệ số `beta_j` có thể hiểu gần đúng theo tỷ lệ:
+
+```text
+price thay đổi khoảng (exp(beta_j) - 1) * 100%
+```
+
+khi đặc trưng `x_j` tăng 1 đơn vị và các biến khác giữ nguyên. Cách diễn giải này chỉ nên dùng thận trọng vì dữ liệu bất động sản có nhiều biến tương quan nhau.
+
+### 9.2. Giả Định Lý Thuyết
+
+Các giả định kinh điển của hồi quy tuyến tính gồm:
+
+- Quan hệ giữa biến đầu vào và biến mục tiêu gần tuyến tính sau khi biến đổi phù hợp.
+- Sai số có kỳ vọng bằng 0.
+- Phương sai sai số tương đối ổn định.
+- Các quan sát tương đối độc lập.
+- Không có đa cộng tuyến quá mạnh giữa các biến giải thích.
+
+Trong đồ án, Linear Regression chủ yếu đóng vai trò baseline. Vì dữ liệu bất động sản có quan hệ phi tuyến mạnh, ta không kỳ vọng Linear Regression luôn là mô hình tốt nhất, nhưng nó giúp trả lời câu hỏi: mô hình phức tạp có thật sự cải thiện so với cách tuyến tính đơn giản hay không?
+
+### 9.3. Ưu Điểm
 
 - Dễ hiểu và dễ giải thích.
 - Huấn luyện nhanh.
 - Phù hợp làm mô hình baseline.
 - Có thể cho biết chiều tác động của từng biến nếu dữ liệu phù hợp.
 
-### 9.3. Hạn Chế
+### 9.4. Hạn Chế
 
 - Khó học quan hệ phi tuyến phức tạp.
 - Nhạy cảm với ngoại lai.
 - Cần giả định tương đối tuyến tính giữa đặc trưng và biến mục tiêu.
+- Dễ bị ảnh hưởng khi các biến phân loại có nhiều mức hoặc khi các biến tương quan mạnh.
 
-### 9.4. Ứng Dụng Trong Đồ Án
+### 9.5. Ứng Dụng Trong Đồ Án
 
 Trong đồ án, Linear Regression được dùng như mô hình cơ sở để so sánh với các mô hình mạnh hơn. Nếu mô hình phi tuyến như Random Forest hoặc XGBoost không cải thiện nhiều, Linear Regression vẫn là lựa chọn có tính giải thích tốt.
+
+Quy trình trong code:
+
+1. Tạo công thức `log_price ~ feature_1 + feature_2 + ...`.
+2. Loại các biến không hợp lệ hoặc factor chỉ có một mức trong tập train.
+3. Fit mô hình bằng `lm()`.
+4. Dự đoán `log_price` trên test.
+5. Giới hạn dự đoán trong khoảng log giá hợp lý.
+6. Chuyển về VND bằng `exp(pred) - 1`.
+7. Tính RMSE, MAE, MAPE, R².
 
 ## 10. Random Forest
 
@@ -561,6 +805,38 @@ prediction = average(prediction_tree_1, prediction_tree_2, ..., prediction_tree_
 ```
 
 Mỗi cây được huấn luyện trên một mẫu bootstrap của dữ liệu và tại mỗi lần chia nhánh chỉ xét một tập con ngẫu nhiên các biến.
+
+Với `B` cây, dự đoán Random Forest Regression là:
+
+```text
+f_RF(x) = (1 / B) * sum(T_b(x)), b = 1..B
+```
+
+Trong đó:
+
+- `T_b(x)` là dự đoán của cây thứ `b`.
+- `B` là số cây trong rừng.
+
+Một cây quyết định hồi quy chia dữ liệu theo các điều kiện như:
+
+```text
+area < 60
+district_name = "Quận 1"
+category_name = "Nhà phố"
+```
+
+Ở mỗi node, cây chọn phép chia giúp giảm sai số trong các node con. Một tiêu chí phổ biến là giảm tổng bình phương sai số:
+
+```text
+SSE = sum((y_i - mean(y_node))^2)
+```
+
+Random Forest kết hợp hai nguồn ngẫu nhiên:
+
+- Bootstrap sampling: mỗi cây học trên một mẫu lấy lại từ train.
+- Random feature selection: tại mỗi node chỉ xét một tập con đặc trưng.
+
+Nhờ vậy, các cây khác nhau không giống hệt nhau. Khi lấy trung bình nhiều cây, sai số ngẫu nhiên giảm xuống.
 
 ### 10.2. Ưu Điểm
 
@@ -585,14 +861,18 @@ Random Forest có thể đánh giá mức độ quan trọng của từng đặc
 
 Feature importance giúp trả lời câu hỏi biến nào ảnh hưởng nhiều đến dự đoán giá, ví dụ diện tích, khu vực, loại hình hay mặt bằng giá phường/xã.
 
+Trong `randomForest`, độ quan trọng có thể hiểu theo mức độ một biến giúp giảm lỗi khi chia cây. Nếu một biến thường xuyên tạo ra các split làm giảm sai số mạnh, biến đó có importance cao. Tuy nhiên, feature importance không đồng nghĩa quan hệ nhân quả. Ví dụ quận/huyện quan trọng không có nghĩa chỉ cần đổi tên quận là giá đổi, mà vì quận đại diện cho vị trí, hạ tầng, tiện ích và mặt bằng thị trường.
+
 ### 10.5. Ứng Dụng Trong Đồ Án
 
 Trong `scripts/models/huan_luyen_mo_hinh.R`, Random Forest được train với:
 
 ```text
-ntree = 300
+ntree = 500
 importance = TRUE
 ```
+
+`ntree = 500` nghĩa là mô hình huấn luyện 500 cây. Số cây đủ lớn giúp dự đoán ổn định hơn so với một cây đơn lẻ. Sau một mức nhất định, tăng số cây thường cải thiện ít hơn nhưng tốn thời gian hơn, nên 500 là mức cân bằng hợp lý cho đồ án.
 
 Mô hình này vừa phục vụ dự đoán, vừa phục vụ phân tích tầm quan trọng của đặc trưng.
 
@@ -610,9 +890,60 @@ model = tree_1 + tree_2 + ... + tree_n
 
 Mỗi cây được thêm vào nhằm cải thiện phần sai số còn lại.
 
+Mô hình XGBoost có dạng cộng dồn:
+
+```text
+y_hat_i = sum(f_k(x_i)), k = 1..K
+```
+
+Trong đó:
+
+- `K` là số cây boosting.
+- `f_k` là cây thứ `k`.
+- Mỗi cây mới học phần lỗi còn lại của mô hình trước.
+
 ### 11.2. Gradient Boosting
 
 Gradient Boosting là kỹ thuật ensemble trong đó mô hình mới được huấn luyện dựa trên gradient của hàm mất mát. Thay vì tạo nhiều mô hình độc lập như Random Forest, boosting tạo mô hình theo chuỗi, mô hình sau phụ thuộc vào sai số của mô hình trước.
+
+Ở vòng lặp thứ `t`, mô hình cập nhật:
+
+```text
+y_hat_i^(t) = y_hat_i^(t-1) + eta * f_t(x_i)
+```
+
+Trong đó:
+
+- `eta` là learning rate.
+- `f_t` là cây mới ở vòng `t`.
+- `y_hat_i^(t-1)` là dự đoán trước khi thêm cây mới.
+
+XGBoost tối ưu hàm mục tiêu gồm loss và regularization:
+
+```text
+Obj = sum(l(y_i, y_hat_i)) + sum(Omega(f_k))
+```
+
+Với hồi quy bình phương sai số:
+
+```text
+l(y_i, y_hat_i) = (y_i - y_hat_i)^2
+```
+
+Regularization của cây thường được viết:
+
+```text
+Omega(f) = gamma*T + (1/2)*lambda*sum(w_j^2)
+```
+
+Trong đó:
+
+- `T` là số lá của cây.
+- `w_j` là trọng số tại lá thứ `j`.
+- `gamma` phạt cây có quá nhiều lá.
+- `lambda` phạt trọng số lá quá lớn.
+
+Nhờ phần phạt này, XGBoost kiểm soát độ phức tạp tốt hơn boosting cơ bản.
 
 ### 11.3. Ưu Điểm
 
@@ -631,24 +962,59 @@ Gradient Boosting là kỹ thuật ensemble trong đó mô hình mới được 
 
 Đồ án thử nhiều cấu hình XGBoost, gồm:
 
-- `nrounds`: số vòng boosting.
-- `learning_rate`: tốc độ học.
-- `max_depth`: độ sâu tối đa của cây.
-- `min_child_weight`: điều kiện tối thiểu để chia node.
-- `subsample`: tỷ lệ mẫu dùng cho mỗi vòng.
-- `colsample_bytree`: tỷ lệ biến dùng cho mỗi cây.
+- `nrounds`: số vòng boosting, tức số cây được thêm tuần tự.
+- `learning_rate`: tốc độ học. Giá trị nhỏ giúp học chậm và ổn định hơn nhưng cần nhiều vòng hơn.
+- `max_depth`: độ sâu tối đa của cây. Cây sâu học được tương tác phức tạp nhưng dễ overfit hơn.
+- `min_child_weight`: điều kiện tối thiểu để chia node. Giá trị lớn làm mô hình bảo thủ hơn.
+- `subsample`: tỷ lệ mẫu dùng cho mỗi vòng. Dưới 1 giúp giảm overfitting.
+- `colsample_bytree`: tỷ lệ biến dùng cho mỗi cây. Dưới 1 giúp giảm phụ thuộc vào một vài biến mạnh.
 
-Mô hình được chọn theo MAPE thấp nhất, nếu MAPE bằng nhau thì xét RMSE.
+Trong code, XGBoost dùng:
+
+```text
+objective = "reg:squarederror"
+```
+
+Tức là tối ưu hồi quy theo sai số bình phương trên thang `log_price`.
+
+Đồ án thử 8 bộ tham số với `nrounds` từ 180 đến 500, `learning_rate` từ 0.025 đến 0.10 và `max_depth` từ 4 đến 7. Mô hình được chọn theo MAPE thấp nhất trên tập holdout, nếu MAPE bằng nhau thì xét RMSE.
+
+Sau khi dự đoán, giá trị `predicted_log_price` được giới hạn trong khoảng phân vị 1% - 99% của `log_price` trong tập train:
+
+```text
+lower_bound = quantile(train_log_price, 0.01)
+upper_bound = quantile(train_log_price, 0.99)
+pred = min(max(pred, lower_bound), upper_bound)
+```
+
+Mục đích là tránh dự đoán quá cực đoan so với phạm vi dữ liệu đã học.
 
 ### 11.6. Sparse Matrix
 
-XGBoost thường nhận dữ liệu dạng ma trận số. Với biến phân loại như quận, loại hình và thứ đăng tin, đồ án dùng `sparse.model.matrix` để tạo ma trận one-hot encoding dạng sparse. Sparse matrix giúp tiết kiệm bộ nhớ khi có nhiều biến giả bằng 0.
+XGBoost thường nhận dữ liệu dạng ma trận số. Với biến phân loại như quận, loại hình và thứ đăng tin, đồ án dùng `sparse.model.matrix` để tạo ma trận one-hot encoding dạng sparse.
+
+Ví dụ biến `district_name` có nhiều quận/huyện sẽ được chuyển thành nhiều cột nhị phân:
+
+```text
+district_name_Quan_1
+district_name_Quan_3
+district_name_Quan_Binh_Thanh
+...
+```
+
+Với one-hot encoding, mỗi dòng thường chỉ có một vài cột bằng 1 và rất nhiều cột bằng 0. Sparse matrix chỉ lưu các giá trị khác 0 nên tiết kiệm bộ nhớ và tăng tốc huấn luyện.
 
 ## 12. Ensemble Model
 
 ### 12.1. Khái Niệm Ensemble
 
 Ensemble là phương pháp kết hợp nhiều mô hình để tạo dự đoán cuối cùng. Ý tưởng là các mô hình khác nhau có thể học các khía cạnh khác nhau của dữ liệu; khi kết hợp, kết quả có thể ổn định hơn.
+
+Có ba nhóm ensemble phổ biến:
+
+- Bagging: huấn luyện nhiều mô hình độc lập rồi lấy trung bình, ví dụ Random Forest.
+- Boosting: huấn luyện mô hình tuần tự, mô hình sau sửa lỗi mô hình trước, ví dụ XGBoost.
+- Blending/stacking: kết hợp dự đoán của nhiều mô hình khác nhau.
 
 ### 12.2. Ensemble Trong Đồ Án
 
@@ -660,20 +1026,61 @@ ensemble_pred = (rf_pred + xgb_pred) / 2
 
 Dự đoán cuối cùng là trung bình của hai mô hình. Cách này dễ triển khai, giảm phụ thuộc vào một mô hình duy nhất và thường giúp kết quả ổn định hơn nếu hai mô hình có sai số khác nhau.
 
+Ngoài ensemble trung bình 50/50, đồ án còn dùng tuned ensemble:
+
+```text
+ensemble_pred = w * rf_pred + (1 - w) * xgb_pred
+```
+
+Trong đó:
+
+- `w` là trọng số dành cho Random Forest.
+- `1 - w` là trọng số dành cho XGBoost.
+- `w` được thử từ 0 đến 1 với bước 0.05.
+
+Code chọn `w` tạo ra MAPE thấp nhất trên tập holdout. Nếu hai trọng số có MAPE bằng nhau, chọn trọng số có RMSE thấp hơn.
+
+Ý nghĩa:
+
+- Nếu `w = 0.5`, hai mô hình đóng góp ngang nhau.
+- Nếu `w > 0.5`, Random Forest được tin cậy hơn.
+- Nếu `w < 0.5`, XGBoost được tin cậy hơn.
+
+Ensemble có thể tốt hơn từng mô hình riêng lẻ khi lỗi của hai mô hình không hoàn toàn giống nhau. Random Forest thường ổn định do bagging, XGBoost thường bắt quan hệ phức tạp tốt do boosting. Kết hợp hai cách nhìn này giúp dự đoán cân bằng hơn.
+
 ### 12.3. Chọn Mô Hình Tốt Nhất
 
-Sau khi train, đồ án so sánh bốn lựa chọn:
+Sau khi train, đồ án so sánh năm lựa chọn:
 
 - Linear Regression.
 - Random Forest.
 - XGBoost.
 - RF + XGBoost Ensemble.
+- Tuned RF/XGBoost Ensemble.
 
 Mô hình tốt nhất được chọn theo MAPE thấp nhất, sau đó xét RMSE. Kết quả được lưu trong:
 
 ```text
 models/dang_ky_mo_hinh.csv
 ```
+
+Theo kết quả hiện tại, mô hình tốt nhất cho cả phân khúc bán và thuê là:
+
+```text
+Tuned RF/XGBoost Ensemble
+```
+
+Điều này hợp lý vì giá bất động sản chịu tác động đồng thời của nhiều yếu tố phi tuyến và tương tác mạnh. Ensemble tận dụng được điểm mạnh của cả Random Forest và XGBoost.
+
+### 12.4. Refit Mô Hình Cuối
+
+Sau khi chọn được thuật toán tốt nhất và tham số tốt nhất, code huấn luyện lại mô hình cuối trên toàn bộ dữ liệu sạch của từng phân khúc.
+
+Lý do refit:
+
+- Giai đoạn đánh giá cần giữ 20% holdout để đo chất lượng.
+- Khi đã biết mô hình nào tốt, mô hình dùng trong dashboard nên tận dụng cả 100% dữ liệu sạch để học mặt bằng giá mới nhất.
+- Các chỉ số báo cáo vẫn dựa trên holdout, không lấy từ mô hình refit toàn bộ, nên không làm đẹp sai số một cách giả tạo.
 
 ## 13. K-Means Clustering
 
@@ -698,9 +1105,29 @@ Mục tiêu của K-Means là giảm tổng bình phương khoảng cách từ �
 minimize sum(||x_i - centroid_cluster||²)
 ```
 
+Viết đầy đủ hơn:
+
+```text
+minimize sum_{j=1..k} sum_{x_i in C_j} ||x_i - mu_j||^2
+```
+
+Trong đó:
+
+- `C_j` là cụm thứ `j`.
+- `mu_j` là tâm cụm thứ `j`.
+- `||x_i - mu_j||^2` là bình phương khoảng cách Euclidean từ điểm đến tâm cụm.
+
 ### 13.3. Chuẩn Hóa Dữ Liệu Trước Khi Phân Cụm
 
 Các biến như giá/m², diện tích và số lượng tin có thang đo khác nhau. Nếu không chuẩn hóa, biến có giá trị lớn sẽ chi phối khoảng cách. Vì vậy, đồ án dùng `scale()` trước khi chạy K-Means.
+
+Công thức chuẩn hóa z-score:
+
+```text
+z = (x - mean(x)) / sd(x)
+```
+
+Sau chuẩn hóa, mỗi biến có trung bình gần 0 và độ lệch chuẩn gần 1. Nhờ vậy, `median_price_per_m2`, `median_area` và `listing_count` có vai trò cân bằng hơn khi tính khoảng cách.
 
 ### 13.4. Ứng Dụng Trong Đồ Án
 
@@ -717,6 +1144,22 @@ Kết quả được lưu vào:
 
 Phân cụm giúp nhận diện các nhóm thị trường như khu vực giá cao, khu vực diện tích lớn, khu vực có nhiều tin đăng hoặc phân khúc giá thấp hơn.
 
+Trong code, dữ liệu được nhóm theo:
+
+```text
+transaction_type + district_name + category_name
+```
+
+Sau đó tính:
+
+```text
+median_price_per_m2
+median_area
+listing_count
+```
+
+K-Means được chạy riêng theo phân khúc bán/thuê, với số cụm tối đa là 4 và `nstart = 25`. Tham số `nstart = 25` nghĩa là thuật toán thử 25 bộ tâm khởi tạo khác nhau rồi chọn kết quả có tổng sai số trong cụm tốt nhất. Điều này giúp giảm rủi ro kẹt ở nghiệm cục bộ xấu.
+
 ## 14. Đánh Giá Mô Hình
 
 ### 14.1. RMSE
@@ -724,32 +1167,55 @@ Phân cụm giúp nhận diện các nhóm thị trường như khu vực giá c
 RMSE, hay Root Mean Squared Error, đo căn bậc hai trung bình bình phương sai số:
 
 ```text
-RMSE = sqrt(mean((actual - predicted)^2))
+RMSE = sqrt((1/n) * sum((actual_i - predicted_i)^2))
 ```
 
 RMSE phạt mạnh các sai số lớn, phù hợp khi muốn chú ý đến các dự đoán lệch nhiều.
+
+Trong đồ án, RMSE được tính trên thang giá VND sau khi chuyển ngược từ `log_price`. Vì vậy, RMSE có đơn vị là VND. Nếu RMSE cao, nghĩa là tồn tại các dự đoán lệch mạnh, thường xảy ra ở các bất động sản giá rất cao hoặc thông tin thiếu.
 
 ### 14.2. MAE
 
 MAE, hay Mean Absolute Error, đo trung bình trị tuyệt đối sai số:
 
 ```text
-MAE = mean(abs(actual - predicted))
+MAE = (1/n) * sum(abs(actual_i - predicted_i))
 ```
 
 MAE dễ hiểu vì cùng đơn vị với giá. Ví dụ MAE bằng 500 triệu nghĩa là trung bình mô hình lệch khoảng 500 triệu đồng.
+
+So với RMSE, MAE ít bị kéo mạnh bởi các ngoại lệ hơn. Khi trình bày, MAE là chỉ số dễ giải thích nhất với người nghe không chuyên.
 
 ### 14.3. MAPE
 
 MAPE, hay Mean Absolute Percentage Error, đo sai số phần trăm tuyệt đối trung bình:
 
 ```text
-MAPE = mean(abs((actual - predicted) / actual))
+MAPE = (1/n) * sum(abs((actual_i - predicted_i) / actual_i))
 ```
 
-MAPE giúp so sánh sai số tương đối giữa các mức giá khác nhau. Ví dụ MAPE 10% nghĩa là dự đoán trung bình lệch khoảng 10% so với giá thực tế.
+Nếu muốn biểu diễn dạng phần trăm:
+
+```text
+MAPE_percent = MAPE * 100%
+```
+
+MAPE giúp so sánh sai số tương đối giữa các mức giá khác nhau. Ví dụ MAPE 0.10 nghĩa là dự đoán trung bình lệch khoảng 10% so với giá thực tế.
 
 Trong đồ án, MAPE được dùng làm tiêu chí chính để chọn mô hình tốt nhất.
+
+Lý do chọn MAPE làm chỉ số chính:
+
+- Giá bất động sản có biên độ rất rộng, từ phòng trọ vài triệu/tháng đến nhà bán hàng chục tỷ.
+- Sai số tuyệt đối cùng một mức tiền không có ý nghĩa giống nhau ở các phân khúc khác nhau.
+- MAPE trả lời câu hỏi dễ hiểu: mô hình lệch trung bình bao nhiêu phần trăm so với giá đăng.
+
+Hạn chế của MAPE:
+
+- Không phù hợp nếu `actual` gần 0.
+- Có thể phạt mạnh các trường hợp giá thấp.
+
+Trong đồ án, giá bất động sản luôn dương và đã được lọc ngưỡng bất hợp lý, nên MAPE vẫn phù hợp để làm chỉ số chính.
 
 ### 14.4. R Bình Phương
 
@@ -764,7 +1230,23 @@ Trong đó:
 - `SS_res` là tổng bình phương sai số.
 - `SS_tot` là tổng bình phương độ lệch so với trung bình.
 
+Công thức đầy đủ:
+
+```text
+SS_res = sum((actual_i - predicted_i)^2)
+SS_tot = sum((actual_i - mean(actual))^2)
+R² = 1 - SS_res / SS_tot
+```
+
 R² càng gần 1 thì mô hình giải thích dữ liệu càng tốt. Tuy nhiên, với dữ liệu bất động sản nhiều nhiễu, R² chỉ nên xem cùng với RMSE, MAE và MAPE.
+
+Diễn giải:
+
+- `R² = 1`: dự đoán khớp hoàn toàn.
+- `R² = 0`: mô hình không tốt hơn dự đoán bằng giá trung bình.
+- `R² < 0`: mô hình tệ hơn việc luôn dự đoán trung bình.
+
+Với dữ liệu thị trường thực tế, R² không nhất thiết phải cực cao vì nhiều yếu tố quan trọng không có trong dữ liệu, như chất lượng nhà, pháp lý chi tiết, hướng, đường trước nhà, quy hoạch và thương lượng thực tế.
 
 ### 14.5. Actual Vs Predicted
 
@@ -776,6 +1258,38 @@ Biểu đồ actual vs predicted so sánh giá thực tế và giá dự đoán.
 - `plots/du_doan_so_voi_thuc_te_thue.png`
 
 Biểu đồ này giúp phát hiện mô hình có xu hướng dự đoán thấp ở giá cao hoặc dự đoán cao ở giá thấp hay không.
+
+### 14.6. Residual Analysis
+
+Residual là sai số dự đoán:
+
+```text
+residual_i = actual_i - predicted_i
+```
+
+Trên thang log:
+
+```text
+residual_log_i = log(actual_i + 1) - log(predicted_i + 1)
+```
+
+Histogram residual giúp xem sai số có tập trung quanh 0 hay không. Nếu residual lệch hẳn sang dương, mô hình thường dự đoán thấp hơn thực tế. Nếu residual lệch hẳn sang âm, mô hình thường dự đoán cao hơn thực tế.
+
+Biểu đồ residual theo nhóm khu vực giúp phát hiện mô hình sai nhiều ở những quận/huyện nào. Đây là phần rất quan trọng khi phản biện vì mô hình bất động sản thường không sai đều nhau trên toàn thị trường.
+
+### 14.7. So Sánh Metric Giữa Các Model
+
+Bảng/biểu đồ so sánh model trả lời ba câu hỏi:
+
+- Mô hình nào chính xác nhất theo MAPE?
+- Mô hình nào ít lỗi lớn nhất theo RMSE?
+- Mô hình nào dễ giải thích nhất?
+
+Không nên chỉ nhìn một chỉ số duy nhất. Ví dụ:
+
+- MAPE thấp nhưng RMSE cao: mô hình khá ổn trung bình nhưng vẫn có vài ca lệch rất lớn.
+- RMSE thấp nhưng MAPE cao: mô hình tốt ở tin giá cao nhưng có thể lệch tỷ lệ ở tin giá thấp.
+- R² cao nhưng MAPE chưa tốt: mô hình giải thích xu hướng chung tốt nhưng dự đoán từng tin vẫn còn sai tương đối lớn.
 
 ## 15. Trực Quan Hóa Dữ Liệu
 
@@ -1116,8 +1630,657 @@ Có thể cải thiện hệ thống bằng cách:
 
 Kết quả dự đoán nên được xem là tham khảo, không thay thế thẩm định chuyên nghiệp hoặc quyết định đầu tư thực tế.
 
-## 23. Kết Luận Cơ Sở Lý Thuyết
+## 23. Lý Thuyết Xác Suất, Thống Kê Và Suy Luận Trong Đồ Án
 
-Đồ án kết hợp nhiều mảng kiến thức: bất động sản, xử lý dữ liệu, khai phá dữ liệu, học máy, trực quan hóa và phát triển ứng dụng web bằng R. Hệ thống bắt đầu từ dữ liệu phân tán trên nhiều nguồn, sau đó chuẩn hóa, làm sạch, tạo đặc trưng và huấn luyện các mô hình hồi quy để dự đoán giá. Các mô hình Linear Regression, Random Forest, XGBoost và Ensemble được đánh giá bằng RMSE, MAE, MAPE và R². Ngoài ra, K-Means được sử dụng để phân cụm thị trường theo giá/m², diện tích và số lượng tin đăng.
+Phần này dùng để nối trực tiếp kiến thức xác suất thống kê đã học với các chức năng trong dashboard. Nếu làm slide, có thể tách thành các nhóm: thống kê mô tả, xác suất, phân phối mẫu, bootstrap, kiểm định giả thuyết và diễn giải kết quả.
 
-Việc triển khai bằng Shiny giúp chuyển kết quả phân tích thành một dashboard tương tác, hỗ trợ người dùng xem dữ liệu, lọc tin đăng, xem bản đồ, đánh giá mô hình và thử dự đoán giá. Nhờ đó, đồ án không chỉ dừng ở bước phân tích dữ liệu mà còn tạo ra một sản phẩm ứng dụng hoàn chỉnh, có thể trình bày trong báo cáo và demo trực tiếp.
+### 23.1. Tổng Thể, Mẫu Và Biến Ngẫu Nhiên
+
+Trong thống kê, tổng thể là toàn bộ đối tượng ta muốn nghiên cứu. Với đề tài này, tổng thể lý tưởng là toàn bộ tin đăng hoặc toàn bộ bất động sản bán/cho thuê tại TP.HCM trong một giai đoạn.
+
+Mẫu là phần dữ liệu thu thập được từ các nguồn như website, API hoặc file CSV. Dữ liệu của đồ án là mẫu quan sát từ thị trường, không phải toàn bộ thị trường.
+
+Một biến ngẫu nhiên là đại lượng có thể nhận nhiều giá trị khác nhau tùy quan sát. Trong đồ án:
+
+- `price`: giá bán hoặc giá thuê.
+- `area`: diện tích.
+- `price_per_m2`: giá trên mét vuông.
+- `district_name`: khu vực.
+- `category_name`: loại bất động sản.
+- `source`: nguồn dữ liệu.
+
+Nếu gọi `X` là giá/m² của một tin đăng được chọn ngẫu nhiên, thì `X` là biến ngẫu nhiên. Khi lấy dữ liệu, ta quan sát được các giá trị:
+
+```text
+x_1, x_2, ..., x_n
+```
+
+### 23.2. Thống Kê Mô Tả
+
+Thống kê mô tả giúp tóm tắt mẫu dữ liệu trước khi suy luận hoặc huấn luyện model.
+
+Cỡ mẫu:
+
+```text
+n = số dòng dữ liệu hợp lệ
+```
+
+Trung bình mẫu:
+
+```text
+x_bar = (1/n) * sum(x_i)
+```
+
+Trung vị:
+
+```text
+median = giá trị nằm giữa khi sắp xếp dữ liệu tăng dần
+```
+
+Nếu `n` lẻ, trung vị là giá trị thứ `(n + 1) / 2`. Nếu `n` chẵn, trung vị là trung bình của hai giá trị giữa.
+
+Phương sai mẫu:
+
+```text
+s² = (1/(n - 1)) * sum((x_i - x_bar)^2)
+```
+
+Độ lệch chuẩn mẫu:
+
+```text
+s = sqrt(s²)
+```
+
+Sai số chuẩn của trung bình:
+
+```text
+SE = s / sqrt(n)
+```
+
+Ý nghĩa:
+
+- `x_bar` cho biết mặt bằng trung bình.
+- `median` ổn định hơn khi dữ liệu có ngoại lai.
+- `s` cho biết mức phân tán.
+- `SE` cho biết trung bình mẫu dao động bao nhiêu nếu lấy mẫu nhiều lần.
+
+Trong dữ liệu bất động sản, trung vị thường đáng tin hơn trung bình vì giá có nhiều ngoại lệ. Một vài căn cực đắt có thể kéo trung bình lên rất cao, nhưng trung vị ít bị ảnh hưởng hơn.
+
+### 23.3. Giá Trên Mét Vuông Và Ý Nghĩa Chuẩn Hóa Quy Mô
+
+Giá tổng phụ thuộc mạnh vào diện tích. Để so sánh giữa các bất động sản khác diện tích, đồ án dùng:
+
+```text
+price_per_m2 = price / area
+```
+
+Với dữ liệu bán, đơn vị thường trình bày là triệu đồng/m²:
+
+```text
+price_per_m2_million = price_per_m2 / 1,000,000
+```
+
+Với dữ liệu thuê, có thể trình bày theo nghìn đồng/m² hoặc triệu đồng/m² tùy giao diện:
+
+```text
+price_per_m2_thousand = price_per_m2 / 1,000
+```
+
+Ý nghĩa:
+
+- So sánh mặt bằng giá giữa các quận/huyện.
+- Phát hiện khu vực đắt/rẻ theo đơn vị diện tích.
+- Phục vụ phân tích xác suất, bootstrap và kiểm định giữa hai khu vực.
+
+### 23.4. Quantile, IQR Và Ngoại Lệ
+
+Quantile là điểm chia phân phối. Ba quantile hay dùng:
+
+```text
+Q1 = quantile 25%
+Q2 = median = quantile 50%
+Q3 = quantile 75%
+```
+
+Khoảng tứ phân vị:
+
+```text
+IQR = Q3 - Q1
+```
+
+Quy tắc phát hiện ngoại lệ phổ biến:
+
+```text
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+```
+
+Nếu một giá trị nhỏ hơn `lower_bound` hoặc lớn hơn `upper_bound`, nó có thể được xem là ngoại lệ. Trong bất động sản, ngoại lệ không phải lúc nào cũng sai, vì có thể là biệt thự, nhà mặt tiền trung tâm hoặc tài sản đặc biệt. Do đó, đồ án lọc giá/diện tích bất hợp lý ở mức nghiệp vụ, đồng thời vẫn dùng log transform và biểu đồ để quan sát ngoại lệ.
+
+### 23.5. Xác Suất Thực Nghiệm
+
+Xác suất thực nghiệm được ước lượng trực tiếp từ dữ liệu:
+
+```text
+P(A) = số quan sát thỏa sự kiện A / tổng số quan sát
+```
+
+Ví dụ:
+
+```text
+P(khu vực = Quận 1) = số tin ở Quận 1 / tổng số tin
+```
+
+```text
+P(giá/m² >= Q3) = số tin có giá/m² từ Q3 trở lên / tổng số tin
+```
+
+Trong dashboard, bảng xác suất thực nghiệm tính các xác suất như:
+
+- `P(khu vực = A)`.
+- `P(loại BĐS = C)`.
+- `P(giá/m² >= Q3)`.
+- `P(C | A)`: xác suất loại bất động sản C khi đã biết khu vực A.
+- `P(tọa độ gốc từ nguồn)`: tỷ lệ tin có tọa độ gốc thay vì tọa độ suy luận.
+
+Các xác suất này không phải xác suất lý thuyết tuyệt đối của toàn thị trường, mà là ước lượng từ mẫu dữ liệu đã thu thập.
+
+### 23.6. Xác Suất Có Điều Kiện
+
+Xác suất có điều kiện đo xác suất xảy ra sự kiện A khi biết sự kiện B đã xảy ra:
+
+```text
+P(A | B) = P(A ∩ B) / P(B), với P(B) > 0
+```
+
+Trong đồ án:
+
+```text
+P(loại BĐS = căn hộ | khu vực = Quận 7)
+```
+
+được tính bằng:
+
+```text
+số tin căn hộ ở Quận 7 / tổng số tin ở Quận 7
+```
+
+Heatmap xác suất có điều kiện trong tab `Suy luận thống kê` thể hiện:
+
+```text
+P(category_name | district_name)
+```
+
+Ý nghĩa:
+
+- Khu vực nào tập trung nhiều căn hộ, nhà phố, đất nền hoặc phòng trọ.
+- Phân bố loại hình có khác nhau giữa các khu vực hay không.
+- Giải thích vì sao model cần biến `district_name`, `category_name` và tương tác quận - loại hình.
+
+### 23.7. Hàm Phân Phối Tích Lũy Thực Nghiệm ECDF
+
+ECDF, hay empirical cumulative distribution function, mô tả xác suất một biến nhỏ hơn hoặc bằng một giá trị `x`:
+
+```text
+F_n(x) = (1/n) * sum(I(x_i <= x))
+```
+
+Trong đó `I(condition)` là hàm chỉ báo:
+
+```text
+I(condition) = 1 nếu condition đúng
+I(condition) = 0 nếu condition sai
+```
+
+Trong dashboard, ECDF dùng để so sánh phân phối giá/m² giữa hai khu vực.
+
+Ví dụ nếu tại `x = 100 triệu/m²`, ECDF của Quận A bằng 0.80, nghĩa là khoảng 80% tin ở Quận A có giá/m² không vượt quá 100 triệu/m².
+
+Khi so sánh hai đường ECDF:
+
+- Đường nằm bên phải thường biểu thị mặt bằng giá cao hơn.
+- Đường dốc nhanh nghĩa là dữ liệu tập trung hơn.
+- Đường thoải nghĩa là giá phân tán rộng hơn.
+
+### 23.8. Kỳ Vọng, Phương Sai, Hiệp Phương Sai Và Tương Quan
+
+Kỳ vọng là giá trị trung bình lý thuyết của biến ngẫu nhiên:
+
+```text
+E(X) = tổng x * P(X = x)          với biến rời rạc
+E(X) = tích phân x*f(x) dx        với biến liên tục
+```
+
+Trong mẫu dữ liệu, kỳ vọng thường được ước lượng bằng trung bình mẫu:
+
+```text
+E(X) ≈ x_bar
+```
+
+Phương sai đo mức độ phân tán quanh kỳ vọng:
+
+```text
+Var(X) = E((X - E(X))^2)
+```
+
+Độ lệch chuẩn:
+
+```text
+SD(X) = sqrt(Var(X))
+```
+
+Hiệp phương sai giữa hai biến:
+
+```text
+Cov(X, Y) = E((X - E(X)) * (Y - E(Y)))
+```
+
+Hệ số tương quan Pearson:
+
+```text
+Corr(X, Y) = Cov(X, Y) / (SD(X) * SD(Y))
+```
+
+Trong EDA, tương quan giúp xem các biến số như diện tích, số phòng, khoảng cách tới trung tâm, giá/m² và giá tổng có quan hệ tuyến tính mạnh hay yếu. Tuy nhiên, tương quan không chứng minh quan hệ nhân quả.
+
+### 23.9. Luật Số Lớn
+
+Luật số lớn nói rằng khi cỡ mẫu tăng, trung bình mẫu có xu hướng tiến gần kỳ vọng thật của tổng thể:
+
+```text
+x_bar_n -> E(X) khi n -> infinity
+```
+
+Ý nghĩa trong đồ án:
+
+- Khu vực có nhiều tin đăng thì thống kê trung bình/trung vị thường ổn định hơn.
+- Khu vực có ít tin đăng thì giá trung vị hoặc xác suất ước lượng dễ dao động.
+- Đây là lý do dashboard hiển thị cỡ mẫu và mô hình cần cẩn trọng với phân khúc ít dữ liệu.
+
+### 23.10. Định Lý Giới Hạn Trung Tâm CLT
+
+Định lý giới hạn trung tâm cho biết: nếu lấy nhiều mẫu độc lập có cùng cỡ mẫu `n`, phân phối của trung bình mẫu sẽ tiến gần phân phối chuẩn khi `n` đủ lớn, kể cả khi dữ liệu gốc không phân phối chuẩn.
+
+Nếu tổng thể có kỳ vọng `mu` và độ lệch chuẩn `sigma`, thì:
+
+```text
+x_bar ≈ Normal(mu, sigma²/n)
+```
+
+Chuẩn hóa:
+
+```text
+Z = (x_bar - mu) / (sigma / sqrt(n)) ≈ Normal(0, 1)
+```
+
+Trong thực tế không biết `sigma`, ta dùng độ lệch chuẩn mẫu `s`:
+
+```text
+SE = s / sqrt(n)
+```
+
+Trong dashboard, biểu đồ CLT mô phỏng bằng cách:
+
+1. Lấy nhiều mẫu có hoàn lại từ dữ liệu giá/m² đang lọc.
+2. Mỗi lần lấy mẫu, tính trung bình mẫu.
+3. Vẽ histogram các trung bình mẫu.
+4. So sánh phân phối trung bình mẫu với mean của mẫu gốc.
+
+Ý nghĩa khi thuyết trình:
+
+- Dữ liệu giá/m² gốc có thể lệch, nhưng trung bình mẫu có xu hướng ổn định hơn.
+- Cỡ mẫu càng lớn, phân phối trung bình mẫu càng hẹp.
+- Standard error giảm theo `sqrt(n)`, nên tăng dữ liệu giúp ước lượng ổn định hơn.
+
+### 23.11. Khoảng Tin Cậy
+
+Khoảng tin cậy ước lượng một khoảng giá trị có khả năng chứa tham số tổng thể.
+
+Với trung bình và giả định gần chuẩn:
+
+```text
+CI = x_bar ± z_(1-alpha/2) * SE
+```
+
+Một số giá trị `z` thường dùng:
+
+```text
+90% CI: z ≈ 1.645
+95% CI: z ≈ 1.96
+99% CI: z ≈ 2.576
+```
+
+Ý nghĩa của khoảng tin cậy 95%:
+
+Nếu lặp lại quá trình lấy mẫu rất nhiều lần và mỗi lần tính một khoảng tin cậy 95%, khoảng 95% các khoảng đó sẽ chứa tham số thật. Không nên nói "xác suất tham số thật nằm trong khoảng này là 95%" theo cách tuyệt đối, vì trong thống kê tần suất tham số thật là cố định, còn khoảng tin cậy thay đổi theo mẫu.
+
+### 23.12. Bootstrap
+
+Bootstrap là phương pháp lấy mẫu lại có hoàn lại từ chính mẫu dữ liệu để ước lượng độ bất định của một thống kê.
+
+Quy trình bootstrap cho trung vị giá/m²:
+
+1. Có mẫu gốc gồm `n` giá trị:
+
+```text
+x_1, x_2, ..., x_n
+```
+
+2. Lấy ngẫu nhiên có hoàn lại `n` giá trị từ mẫu gốc để tạo mẫu bootstrap.
+3. Tính trung vị của mẫu bootstrap.
+4. Lặp lại `B` lần, ví dụ trong dashboard là 600 lần mặc định và có thể tăng lên.
+5. Thu được phân phối bootstrap của trung vị.
+6. Lấy quantile để tạo khoảng tin cậy.
+
+Công thức percentile bootstrap:
+
+```text
+lower = quantile(bootstrap_statistics, alpha/2)
+upper = quantile(bootstrap_statistics, 1 - alpha/2)
+```
+
+Với mức tin cậy 95%:
+
+```text
+alpha = 0.05
+lower = quantile(boot, 0.025)
+upper = quantile(boot, 0.975)
+```
+
+Lý do dùng bootstrap trong đồ án:
+
+- Giá bất động sản lệch mạnh, không chắc phân phối chuẩn.
+- Trung vị là thống kê robust nhưng công thức sai số chuẩn của trung vị không trực quan như trung bình.
+- Bootstrap dễ giải thích bằng mô phỏng và phù hợp để đưa vào dashboard.
+
+Trong dashboard, Bootstrap CI trả lời câu hỏi:
+
+```text
+Trung vị giá/m² của khu vực A có thể dao động trong khoảng nào nếu dữ liệu thu thập là một mẫu từ thị trường?
+```
+
+### 23.13. Kiểm Định Giả Thuyết
+
+Kiểm định giả thuyết dùng để đánh giá liệu sự khác biệt quan sát được có đủ bằng chứng thống kê hay chỉ có thể do dao động mẫu.
+
+Các thành phần chính:
+
+- `H0`: giả thuyết không, thường là "không có khác biệt".
+- `H1`: giả thuyết đối, thường là "có khác biệt".
+- `alpha`: mức ý nghĩa, thường chọn 0.05.
+- `p-value`: xác suất quan sát kết quả cực đoan như hiện tại hoặc hơn, nếu `H0` đúng.
+
+Quy tắc quyết định:
+
+```text
+Nếu p-value < alpha: bác bỏ H0
+Nếu p-value >= alpha: chưa đủ bằng chứng bác bỏ H0
+```
+
+Trong dashboard, kiểm định so sánh hai khu vực theo `log(giá/m²)`:
+
+```text
+H0: mean(log(price_per_m2)) của hai khu vực bằng nhau
+H1: mean(log(price_per_m2)) của hai khu vực khác nhau
+```
+
+Lý do dùng log giá/m²:
+
+- Giá/m² lệch phải mạnh.
+- Log giúp giảm ảnh hưởng của giá trị cực trị.
+- Khác biệt trên log có thể hiểu gần với khác biệt theo tỷ lệ.
+
+### 23.14. t-test Hai Mẫu
+
+t-test hai mẫu so sánh trung bình của hai nhóm. Với hai nhóm độc lập A và B:
+
+```text
+H0: mu_A = mu_B
+H1: mu_A != mu_B
+```
+
+Thống kê kiểm định dạng tổng quát:
+
+```text
+t = (x_bar_A - x_bar_B) / SE_difference
+```
+
+Với Welch t-test, sai số chuẩn khác biệt:
+
+```text
+SE_difference = sqrt(s_A²/n_A + s_B²/n_B)
+```
+
+Trong đó:
+
+- `x_bar_A`, `x_bar_B`: trung bình mẫu hai nhóm.
+- `s_A²`, `s_B²`: phương sai mẫu hai nhóm.
+- `n_A`, `n_B`: cỡ mẫu hai nhóm.
+
+Đồ án dùng `t.test(log_m2 ~ group)` trong R. Mặc định `t.test()` của R dùng Welch t-test, không yêu cầu hai nhóm có phương sai bằng nhau. Điều này phù hợp với dữ liệu bất động sản vì mỗi khu vực có độ biến động khác nhau.
+
+### 23.15. Wilcoxon Test
+
+Wilcoxon rank-sum test là kiểm định phi tham số để so sánh hai nhóm. Kiểm định này không yêu cầu dữ liệu phân phối chuẩn như t-test.
+
+Ý tưởng:
+
+1. Gộp dữ liệu hai nhóm.
+2. Xếp hạng tất cả giá trị.
+3. So sánh tổng hạng giữa hai nhóm.
+
+Nếu hai nhóm có phân phối giống nhau, tổng hạng không nên khác biệt quá lớn. Nếu p-value nhỏ, có bằng chứng rằng hai nhóm khác nhau.
+
+Trong dashboard, Wilcoxon được hiển thị bên cạnh t-test như một phương án robust hơn khi dữ liệu lệch hoặc có ngoại lệ.
+
+### 23.16. Sai Lầm Loại I Và Loại II
+
+Khi kiểm định giả thuyết có hai loại sai lầm:
+
+```text
+Type I error: bác bỏ H0 khi H0 đúng
+Type II error: không bác bỏ H0 khi H1 đúng
+```
+
+Mức ý nghĩa `alpha = 0.05` nghĩa là ta chấp nhận xác suất sai lầm loại I khoảng 5% nếu các giả định kiểm định đúng.
+
+Trong báo cáo nên dùng câu:
+
+```text
+Chưa đủ bằng chứng bác bỏ H0
+```
+
+thay vì:
+
+```text
+Chấp nhận H0 là đúng tuyệt đối
+```
+
+Vì p-value lớn không chứng minh hai khu vực chắc chắn giống nhau, mà chỉ nói dữ liệu hiện tại chưa đủ mạnh để kết luận khác biệt.
+
+### 23.17. Liên Hệ Lý Thuyết Với Các Tab Trong Dashboard
+
+| Thành phần dashboard | Lý thuyết áp dụng | Ý nghĩa trình bày |
+|---|---|---|
+| KPI cỡ mẫu | Tổng thể, mẫu, luật số lớn | Cỡ mẫu càng lớn thì thống kê càng ổn định |
+| Trung vị giá/m² | Thống kê mô tả, robust statistic | Đại diện mặt bằng giá ít bị ảnh hưởng bởi ngoại lệ |
+| Standard error | Phân phối mẫu, CLT | Độ bất định của trung bình mẫu |
+| P(giá cao) | Xác suất thực nghiệm | Tỷ lệ tin thuộc nhóm giá cao |
+| Probability heatmap | Xác suất có điều kiện | Cấu trúc loại hình theo khu vực |
+| ECDF | Hàm phân phối thực nghiệm | So sánh toàn bộ phân phối, không chỉ trung bình |
+| CLT simulation | Định lý giới hạn trung tâm | Trung bình mẫu ổn định khi lấy mẫu nhiều lần |
+| Bootstrap CI | Bootstrap, khoảng tin cậy | Ước lượng độ bất định của trung vị |
+| Hypothesis table | t-test, Wilcoxon, p-value | Kiểm tra khác biệt giá/m² giữa hai khu vực |
+| Model diagnostics | Residual, sai số, phân phối lỗi | Đánh giá mô hình ngoài các chỉ số tổng hợp |
+
+## 24. Câu Hỏi Giám Khảo Thường Hỏi Về Model Và Trả Lời Gợi Ý
+
+Phần này nên dùng như speaker notes khi làm PPT. Khi trả lời, nên nói ngắn gọn theo cấu trúc: mục tiêu, lý do chọn, công thức/logic, hạn chế và hướng cải thiện.
+
+### 24.1. Vì sao chia dữ liệu 80/20?
+
+Đồ án chia 80% train và 20% test/holdout để cân bằng giữa hai mục tiêu. Tập train cần đủ lớn để Random Forest, XGBoost và target encoding học được quy luật theo khu vực, loại hình, diện tích và nguồn dữ liệu. Tập test cũng cần đủ lớn để các chỉ số MAPE, RMSE, MAE và R² ổn định. Nếu dùng 90/10, test có thể quá ít và metric dễ dao động. Nếu dùng 70/30, train giảm nhiều, mô hình mất dữ liệu học, đặc biệt với các nhóm ít mẫu. 80/20 là lựa chọn thực tế, phổ biến và phù hợp với quy mô dữ liệu hiện tại.
+
+### 24.2. Vì sao phải tách mô hình bán và thuê?
+
+Giá bán và giá thuê khác bản chất:
+
+- Giá bán thường tính bằng tỷ đồng.
+- Giá thuê thường tính theo tháng.
+- Phân phối, thang đo và yếu tố ảnh hưởng khác nhau.
+- Một căn nhà có giá bán cao chưa chắc tỷ suất thuê tương ứng tuyến tính.
+
+Nếu trộn chung bán và thuê vào một model, mô hình phải học hai cơ chế giá rất khác nhau, dễ nhiễu và khó giải thích. Vì vậy, đồ án tách `sale` và `rent` để mỗi mô hình học đúng phân khúc.
+
+### 24.3. Vì sao dùng `log_price` thay vì giá gốc?
+
+Giá bất động sản lệch phải mạnh và có nhiều ngoại lệ. Dùng `log_price = log(1 + price)` giúp giảm độ lệch, làm mô hình ổn định hơn và hạn chế việc vài bất động sản cực đắt chi phối quá trình học. Ngoài ra, sai số trên thang log gần với sai số theo tỷ lệ, phù hợp với bài toán định giá vì người dùng thường quan tâm lệch bao nhiêu phần trăm hơn là chỉ lệch bao nhiêu đồng.
+
+### 24.4. Vì sao dùng MAPE làm tiêu chí chính?
+
+MAPE đo sai số tương đối:
+
+```text
+MAPE = mean(abs((actual - predicted) / actual))
+```
+
+Trong bất động sản, giá có thang đo rất rộng. Lệch 1 tỷ ở căn 3 tỷ là rất lớn, nhưng lệch 1 tỷ ở căn 100 tỷ lại nhỏ hơn về tỷ lệ. MAPE giúp so sánh công bằng hơn giữa các mức giá. Tuy nhiên, đồ án vẫn xem thêm RMSE, MAE và R² để không bỏ sót lỗi lớn hoặc xu hướng tổng quát.
+
+### 24.5. Vì sao không chỉ dùng R²?
+
+R² đo tỷ lệ biến thiên được giải thích, nhưng không trực tiếp cho biết mô hình lệch bao nhiêu tiền hoặc bao nhiêu phần trăm. Với dữ liệu bất động sản nhiễu và có nhiều yếu tố không quan sát được, R² cần xem cùng RMSE, MAE và MAPE. Một mô hình có R² khá tốt vẫn có thể dự đoán sai nhiều ở từng tin cụ thể.
+
+### 24.6. Vì sao chọn Linear Regression, Random Forest, XGBoost và Ensemble?
+
+Linear Regression là baseline đơn giản, dễ giải thích. Random Forest học tốt quan hệ phi tuyến và ổn định nhờ nhiều cây độc lập. XGBoost học tuần tự để sửa lỗi, thường mạnh với dữ liệu bảng. Ensemble kết hợp Random Forest và XGBoost để tận dụng hai cơ chế khác nhau: bagging và boosting. Cách chọn này cho thấy đồ án không chỉ dùng một thuật toán mà có so sánh từ đơn giản đến mạnh hơn.
+
+### 24.7. Random Forest khác XGBoost như thế nào?
+
+Random Forest huấn luyện nhiều cây độc lập song song trên các mẫu bootstrap rồi lấy trung bình. Nó giảm phương sai và khá ổn định.
+
+XGBoost huấn luyện cây tuần tự. Mỗi cây mới tập trung sửa lỗi của mô hình trước. Nó có khả năng học pattern phức tạp hơn nhưng cần kiểm soát tham số để tránh overfitting.
+
+Tóm tắt:
+
+```text
+Random Forest = nhiều cây độc lập + lấy trung bình
+XGBoost = nhiều cây tuần tự + sửa lỗi dần
+```
+
+### 24.8. Vì sao Ensemble tốt hơn?
+
+Nếu hai mô hình sai theo các cách khác nhau, trung bình hoặc kết hợp có trọng số có thể làm dự đoán ổn định hơn. Trong đồ án:
+
+```text
+ensemble_pred = w * rf_pred + (1 - w) * xgb_pred
+```
+
+Trọng số `w` được thử từ 0 đến 1 với bước 0.05 và chọn theo MAPE thấp nhất. Kết quả hiện tại cho thấy Tuned RF/XGBoost Ensemble là model tốt nhất cho cả bán và thuê.
+
+### 24.9. Target encoding là gì và có bị leakage không?
+
+Target encoding mã hóa biến phân loại bằng thống kê của biến mục tiêu. Ví dụ phường/xã được mã hóa bằng mặt bằng giá trung vị có smoothing:
+
+```text
+encoded_value = log(1 + (n * median_price_group + smoothing * global_median) / (n + smoothing))
+```
+
+Để tránh leakage, encoding được fit trên train rồi áp dụng sang test. Nghĩa là giá của test không được dùng để tạo encoding cho test. Nếu gặp nhóm chưa từng xuất hiện trong train, code dùng global median làm giá trị thay thế.
+
+### 24.10. Vì sao cần smoothing trong target encoding?
+
+Nếu một phường chỉ có 1-2 tin, trung vị của phường đó rất dễ nhiễu. Smoothing kéo thống kê nhóm nhỏ về trung vị toàn cục:
+
+```text
+smoothed = (n * group_median + smoothing * global_median) / (n + smoothing)
+```
+
+Khi `n` lớn, nhóm tự quyết định nhiều hơn. Khi `n` nhỏ, global median có ảnh hưởng lớn hơn. Điều này giúp model không học quá mức từ nhóm ít dữ liệu.
+
+### 24.11. Mô hình có dự đoán đúng giá giao dịch thực tế không?
+
+Không đảm bảo. Dữ liệu là giá đăng, không phải giá giao dịch cuối cùng. Giá thực tế còn phụ thuộc thương lượng, pháp lý, tình trạng nhà, quy hoạch, hướng, nội thất, đường trước nhà và nhiều yếu tố không có trong dataset. Vì vậy, kết quả nên được xem là giá tham khảo theo mặt bằng dữ liệu thu thập.
+
+### 24.12. Mô hình xử lý ngoại lệ như thế nào?
+
+Đồ án xử lý ngoại lệ theo nhiều lớp:
+
+- Lọc giá và diện tích bất hợp lý ở bước làm sạch.
+- Dùng `log_price` để giảm ảnh hưởng của giá cực lớn.
+- Dùng median và quantile trong phân tích vì ít nhạy với ngoại lệ.
+- Giới hạn dự đoán log trong khoảng phân vị 1% - 99% của train để tránh kết quả quá cực đoan.
+- Dùng biểu đồ residual và actual vs predicted để phát hiện nhóm dự đoán lệch nhiều.
+
+### 24.13. Vì sao mô hình thuê có thể khó dự đoán hơn mô hình bán?
+
+Giá thuê thường bị ảnh hưởng mạnh bởi nội thất, thời hạn thuê, dịch vụ đi kèm, tình trạng phòng, số người ở, điện nước, phí quản lý và yếu tố chủ nhà. Nhiều yếu tố này không có cấu trúc rõ trong dữ liệu. Vì vậy, mô hình thuê có thể có R² thấp hơn hoặc MAPE cao hơn dù quy trình huấn luyện đúng.
+
+### 24.14. Vì sao một số khu vực model sai nhiều?
+
+Một khu vực có thể sai nhiều vì:
+
+- Ít dữ liệu train.
+- Giá trong khu vực phân tán mạnh.
+- Có nhiều loại hình trộn lẫn.
+- Tin đăng thiếu thông tin quan trọng.
+- Khu vực có nhiều bất động sản đặc biệt, ví dụ mặt tiền lớn, biệt thự, đất dự án.
+
+Đó là lý do dashboard có biểu đồ MAPE theo khu vực và residual analysis để không chỉ nhìn metric tổng thể.
+
+### 24.15. Vì sao cần kiểm định giả thuyết nếu đã có model?
+
+Model trả lời câu hỏi dự đoán: "Giá của một bất động sản mới khoảng bao nhiêu?"
+
+Kiểm định thống kê trả lời câu hỏi suy luận: "Hai khu vực có khác biệt giá/m² có ý nghĩa thống kê không?"
+
+Hai phần bổ sung cho nhau. Model phục vụ dự đoán, còn kiểm định giúp giải thích thị trường và chứng minh sự khác biệt không chỉ là cảm giác nhìn biểu đồ.
+
+### 24.16. Vì sao dùng bootstrap nếu đã có công thức khoảng tin cậy?
+
+Công thức khoảng tin cậy cổ điển thường thuận tiện nhất cho trung bình và giả định gần chuẩn. Nhưng giá bất động sản lệch mạnh, trung vị lại phù hợp hơn trung bình. Bootstrap cho phép ước lượng khoảng tin cậy của trung vị mà không cần giả định phân phối chuẩn mạnh. Vì vậy, bootstrap rất phù hợp cho dashboard bất động sản.
+
+### 24.17. p-value có nghĩa là gì?
+
+p-value là xác suất quan sát kết quả cực đoan như hiện tại hoặc cực đoan hơn nếu giả thuyết H0 đúng. Nếu p-value nhỏ hơn 0.05, ta bác bỏ H0 ở mức ý nghĩa 5%. Không nên hiểu p-value là xác suất H0 đúng.
+
+### 24.18. Nếu p-value lớn thì có kết luận hai khu vực giống nhau không?
+
+Không. p-value lớn chỉ nói rằng dữ liệu hiện tại chưa đủ bằng chứng để bác bỏ H0. Có thể hai khu vực thật sự giống nhau, nhưng cũng có thể dữ liệu còn ít hoặc nhiễu quá lớn. Cách nói đúng là:
+
+```text
+Chưa đủ bằng chứng thống kê để kết luận hai khu vực khác nhau.
+```
+
+### 24.19. Mô hình có bị overfitting không?
+
+Đồ án kiểm soát overfitting bằng cách đánh giá trên holdout 20%, so sánh nhiều model, dùng tham số regularization của XGBoost, dùng bagging trong Random Forest và kiểm tra actual vs predicted/residual. Tuy nhiên, để chắc hơn trong sản phẩm thật, có thể bổ sung cross-validation hoặc một tập test cuối hoàn toàn độc lập.
+
+### 24.20. Vì sao không dùng deep learning?
+
+Dữ liệu của đồ án chủ yếu là dữ liệu bảng có kích thước vừa phải. Với dữ liệu bảng, Random Forest và XGBoost thường hiệu quả, dễ huấn luyện và dễ giải thích hơn deep learning. Deep learning phù hợp hơn nếu có dữ liệu rất lớn, ảnh nhà, mô tả văn bản dài hoặc chuỗi thời gian phức tạp.
+
+### 24.21. Nếu có thêm thời gian, nâng cấp model thế nào?
+
+Các hướng nâng cấp:
+
+- Dùng cross-validation theo thời gian hoặc theo nguồn dữ liệu.
+- Tách model sâu hơn theo loại hình bất động sản.
+- Thêm biến tiện ích: khoảng cách tới metro, trường học, bệnh viện, trung tâm thương mại.
+- Thêm dữ liệu quy hoạch và pháp lý.
+- Dùng NLP tốt hơn cho tiêu đề/mô tả.
+- Thêm explainability như SHAP để giải thích từng dự đoán.
+- Theo dõi drift dữ liệu và retrain định kỳ.
+
+### 24.22. Câu trả lời ngắn khi giám khảo hỏi "Điểm mạnh nhất của model là gì?"
+
+Điểm mạnh là pipeline đầy đủ từ làm sạch, feature engineering, tách bán/thuê, log transform, target encoding chống nhiễu, so sánh nhiều mô hình và chọn Tuned RF/XGBoost Ensemble theo MAPE. Ngoài dự đoán, đồ án còn có phần diagnostics để xem model sai ở đâu, không chỉ báo một con số tổng thể.
+
+### 24.23. Câu trả lời ngắn khi giám khảo hỏi "Hạn chế lớn nhất là gì?"
+
+Hạn chế lớn nhất là dữ liệu là giá đăng chứ không phải giá giao dịch thực tế, và còn thiếu nhiều yếu tố quan trọng như pháp lý chi tiết, chất lượng nhà, hướng, đường trước nhà, quy hoạch và tiện ích xung quanh. Vì vậy, kết quả dự đoán nên dùng như tham khảo định lượng, không thay thế thẩm định chuyên nghiệp.
+
+## 25. Kết Luận Cơ Sở Lý Thuyết
+
+Đồ án kết hợp nhiều mảng kiến thức: bất động sản, xử lý dữ liệu, khai phá dữ liệu, xác suất thống kê, suy luận thống kê, học máy, trực quan hóa và phát triển ứng dụng web bằng R. Hệ thống bắt đầu từ dữ liệu phân tán trên nhiều nguồn, sau đó chuẩn hóa, làm sạch, tạo đặc trưng và huấn luyện các mô hình hồi quy để dự đoán giá. Các mô hình Linear Regression, Random Forest, XGBoost và Ensemble được đánh giá bằng RMSE, MAE, MAPE và R². Ngoài ra, K-Means được sử dụng để phân cụm thị trường theo giá/m², diện tích và số lượng tin đăng.
+
+Việc triển khai bằng Shiny giúp chuyển kết quả phân tích thành một dashboard tương tác, hỗ trợ người dùng xem dữ liệu, lọc tin đăng, xem bản đồ, đánh giá mô hình, thử dự đoán giá và quan sát trực tiếp các nội dung thống kê như xác suất có điều kiện, ECDF, CLT, bootstrap confidence interval và kiểm định giả thuyết. Nhờ đó, đồ án không chỉ dừng ở bước phân tích dữ liệu mà còn tạo ra một sản phẩm ứng dụng hoàn chỉnh, có thể trình bày trong báo cáo, làm slide thuyết trình và demo trực tiếp.
