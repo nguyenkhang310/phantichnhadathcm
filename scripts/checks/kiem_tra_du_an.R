@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 
-# Fast local validation for the dashboard + ML artifacts.
-# This does not scrape the web; it checks that generated data/models can be loaded and used.
+# Kiem tra nhanh dashboard va artifact model.
+# Script nay khong crawl web, chi kiem tra data/model da tao co doc va du doan duoc.
 
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
 
-required_packages <- c("readr", "dplyr", "shiny", "plotly", "DT", "leaflet", "randomForest", "xgboost", "Matrix")
+required_packages <- c("readr", "dplyr")
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
 ]
@@ -17,7 +17,6 @@ if (length(missing_packages) > 0) {
 library(readr)
 library(dplyr)
 
-# Hàm must_exist: đếm hoặc kiểm tra điều kiện xử lý.
 must_exist <- function(path) {
   if (!file.exists(path)) stop("Thieu file bat buoc: ", path)
 }
@@ -43,7 +42,6 @@ registry <- app_env$load_registry()
 if (nrow(metrics) == 0) stop(METRICS_PATH, " rong")
 if (nrow(registry) == 0) stop(REGISTRY_PATH, " rong")
 
-# Hàm make_segment_prediction: tạo dữ liệu phục vụ xử lý hoặc trực quan hóa.
 make_segment_prediction <- function(transaction_type) {
   segment_df <- df %>% filter(transaction_type == !!transaction_type)
   if (nrow(segment_df) == 0) stop("Khong co du lieu segment: ", transaction_type)

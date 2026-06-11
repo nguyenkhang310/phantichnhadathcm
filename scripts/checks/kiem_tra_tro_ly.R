@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
 
-# Smoke test for the local BDS assistant engine.
-# It sources app.R without launching a browser, then checks intent parsing,
-# entity extraction, memory merge, and response generation on representative questions.
+# Smoke test cho bo may tro ly BDS local.
+# Script nay nap app ma khong bind server, sau do kiem tra intent,
+# trich entity, memory hoi thoai va HTML tra loi tren cac cau hoi mau.
 
 cmd_args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", cmd_args, value = TRUE)
 script_file <- if (length(file_arg) > 0) sub("^--file=", "", file_arg[[1]]) else "scripts/checks/kiem_tra_tro_ly.R"
-project_root <- normalizePath(file.path(dirname(script_file), ".."), mustWork = FALSE)
+project_root <- normalizePath(file.path(dirname(script_file), "..", ".."), mustWork = FALSE)
 if (!dir.exists(file.path(project_root, "scripts"))) project_root <- getwd()
 setwd(project_root)
 
@@ -19,7 +19,6 @@ if (nrow(df) == 0) stop("No listing data loaded; assistant smoke test cannot run
 
 failures <- character()
 
-# Hàm expect: hỗ trợ xử lý dữ liệu trong script.
 expect <- function(label, ok, detail = "") {
   if (isTRUE(ok)) {
     cat("[PASS]", label, "\n")
@@ -30,7 +29,6 @@ expect <- function(label, ok, detail = "") {
   }
 }
 
-# Hàm parse_case: phân tích chuỗi đầu vào thành giá trị chuẩn.
 parse_case <- function(question, context = env$assistant_empty_context()) {
   criteria <- env$assistant_extract_criteria(question, df)
   criteria <- env$assistant_merge_criteria(criteria, context)

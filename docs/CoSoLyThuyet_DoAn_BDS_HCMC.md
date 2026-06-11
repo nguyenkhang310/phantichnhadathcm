@@ -1490,7 +1490,7 @@ File `scripts/pipeline/chay_pipeline.R` chạy toàn bộ quy trình gồm 11 b�
 Sau pipeline, người dùng có thể chạy:
 
 ```text
-Rscript run_app.R
+Rscript chay_ung_dung.R
 ```
 
 để mở dashboard tại địa chỉ local.

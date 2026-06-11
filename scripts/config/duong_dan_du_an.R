@@ -1,6 +1,5 @@
 # Cấu hình đường dẫn dùng chung cho toàn dự án.
 
-# Hàm use_local_r_libs: nạp thư viện R cục bộ nếu có.
 use_local_r_libs <- function() {
   local_libs <- ".local/thu_vien_r"
   existing <- local_libs[dir.exists(local_libs)]

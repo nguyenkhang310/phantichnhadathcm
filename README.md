@@ -7,8 +7,12 @@ Du an R/Shiny phan tich, truc quan hoa va du doan gia bat dong san TP.HCM tu nhi
 ```text
 phantichnhadathcm/
 |-- app.R
-|-- run_app.R
+|-- chay_ung_dung.R
 |-- README.md
+|-- ung_dung/
+|   |-- ham_ho_tro_ung_dung.R           # Ham xu ly data, model, thong ke, tro ly
+|   |-- giao_dien_ung_dung.R            # Layout va input/output placeholder
+|   `-- may_chu_ung_dung.R              # Reactive, observer va render output
 |-- .local/
 |   `-- thu_vien_r/                       # Thu vien R local, khong phai data
 |-- data/
@@ -68,7 +72,7 @@ phantichnhadathcm/
 Chay app:
 
 ```bash
-Rscript run_app.R
+Rscript chay_ung_dung.R
 ```
 
 ## Dashboard
