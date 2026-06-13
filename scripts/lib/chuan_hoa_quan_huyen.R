@@ -120,9 +120,29 @@ canonical_hcmc_district_one <- function(...) {
 
 # Hàm canonical_hcmc_district: chuẩn hóa tên quận huyện.
 canonical_hcmc_district <- function(current, address = "", title = "", url = "") {
-  mapply(
-    function(a, b, c, d) canonical_hcmc_district_one(a, b, c, d),
-    current, address, title, url,
-    USE.NAMES = FALSE
-  )
+  current <- trimws(as.character(current))
+  current[is.na(current)] <- "Không rõ"
+
+  is_canonical <- current %in% canonical_district_labels | current == "Không rõ"
+
+  res <- current
+
+  needs_normalization <- !is_canonical
+  if (any(needs_normalization)) {
+    len <- length(current)
+    address <- rep_len(address, len)
+    title <- rep_len(title, len)
+    url <- rep_len(url, len)
+
+    res[needs_normalization] <- mapply(
+      canonical_hcmc_district_one,
+      current[needs_normalization],
+      address[needs_normalization],
+      title[needs_normalization],
+      url[needs_normalization],
+      USE.NAMES = FALSE
+    )
+  }
+  res
 }
+

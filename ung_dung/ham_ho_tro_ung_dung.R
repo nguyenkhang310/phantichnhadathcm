@@ -465,11 +465,42 @@ predict_log_with_model <- function(bundle, model_name, input_row) {
   as.numeric(pred)
 }
 
+# Cache để giữ model trong bộ nhớ tránh đọc đĩa liên tục
+GLOBAL_MODEL_CACHE <- new.env(parent = emptyenv())
+
+load_model_cached <- function(model_path) {
+  if (!file.exists(model_path)) return(NULL)
+
+  # Tạo key duy nhất dựa trên đường dẫn và thời gian sửa đổi file
+  mtime <- file.info(model_path)$mtime
+  cache_key <- paste0(model_path, "_", as.character(as.numeric(mtime)))
+
+  if (exists(cache_key, envir = GLOBAL_MODEL_CACHE)) {
+    return(get(cache_key, envir = GLOBAL_MODEL_CACHE))
+  }
+
+  # Đọc model mới và lưu vào cache
+  message("Đang tải model từ đĩa: ", model_path)
+  bundle <- readRDS(model_path)
+
+  # Xóa các cache cũ của file này để tránh rò rỉ bộ nhớ
+  existing_keys <- ls(envir = GLOBAL_MODEL_CACHE)
+  old_keys <- existing_keys[startsWith(existing_keys, paste0(model_path, "_"))]
+  if (length(old_keys) > 0) {
+    rm(list = old_keys, envir = GLOBAL_MODEL_CACHE)
+  }
+
+  assign(cache_key, bundle, envir = GLOBAL_MODEL_CACHE)
+  bundle
+}
+
 predict_price <- function(input_row, is_rent) {
   model_path <- if (is_rent) RENT_MODEL_PATH else SALE_MODEL_PATH
   if (!file.exists(model_path)) return(NA_real_)
 
-  bundle <- readRDS(model_path)
+  bundle <- load_model_cached(model_path)
+  if (is.null(bundle)) return(NA_real_)
+
   input_row <- prepare_prediction_for_bundle(input_row, bundle)
   model_name <- best_model_from_bundle(bundle)
 
@@ -498,9 +529,11 @@ predict_price <- function(input_row, is_rent) {
 prediction_model_label <- function(is_rent) {
   model_path <- if (is_rent) RENT_MODEL_PATH else SALE_MODEL_PATH
   if (!file.exists(model_path)) return("Chưa có model")
-  bundle <- readRDS(model_path)
+  bundle <- load_model_cached(model_path)
+  if (is.null(bundle)) return("Chưa có model")
   model_label_vi(best_model_from_bundle(bundle))
 }
+
 
 build_prediction_row <- function(df, district, category, ward, area, rooms, transaction_type) {
   is_rent <- identical(transaction_type, "Cho thuê")

@@ -38,6 +38,13 @@ server <- function(input, output, session) {
     updateSliderInput(session, "map_area_range", max = bounds$area_max, value = c(0, bounds$area_max))
   })
 
+  observe({
+    cat(sprintf("[DEBUG] Nhận tin từ slider - Cỡ mẫu CLT: %s, Số lần lặp: %s\n",
+                as.character(input$stat_sample_size %||% "NULL"),
+                as.character(input$stat_reps %||% "NULL")))
+  })
+
+
   metrics <- reactive({
     load_metrics()
   })
@@ -367,7 +374,8 @@ server <- function(input, output, session) {
       df <- df[sample(seq_len(nrow(df)), sample_n), , drop = FALSE]
     }
 
-    bundle <- readRDS(model_path)
+    bundle <- load_model_cached(model_path)
+    if (is.null(bundle)) return(tibble())
     predicted <- predict_prices_for_rows(df, bundle)
     df %>%
       mutate(
