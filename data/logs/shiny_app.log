@@ -1,3 +1,4 @@
+Port 3838 dang ban boi PID: 46409, 56893. Dang dung process cu...
 Loading required package: shiny
 
 Attaching package: ‘dplyr’
@@ -54,3 +55,5 @@ The following object is masked from ‘package:dplyr’:
 
 
 Listening on http://127.0.0.1:3838
+[DEBUG] Nhận tin từ slider - Cỡ mẫu CLT: 50, Số lần lặp: 600
+Đang tải model từ đĩa: models/mo_hinh_gia_ban.rds

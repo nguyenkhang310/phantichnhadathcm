@@ -15,9 +15,13 @@
       $(document).on('shiny:connected', function() {
         $('#nav_overview').addClass('active');
       });
-      function resizeDashboardWidgets() {
-        setTimeout(function() {
-          window.dispatchEvent(new Event('resize'));
+      var dashboardResizeTimer = null;
+      function resizeDashboardWidgets(shouldNotifyWindow) {
+        clearTimeout(dashboardResizeTimer);
+        dashboardResizeTimer = setTimeout(function() {
+          if (shouldNotifyWindow) {
+            window.dispatchEvent(new Event('resize'));
+          }
           if (window.Plotly) {
             $('.js-plotly-plot').each(function() {
               Plotly.Plots.resize(this);
@@ -25,9 +29,9 @@
           }
         }, 120);
       }
-      $(document).on('click', '.app-nav-link', resizeDashboardWidgets);
-      $(document).on('shiny:value', resizeDashboardWidgets);
-      $(window).on('resize', resizeDashboardWidgets);
+      $(document).on('click', '.app-nav-link', function() { resizeDashboardWidgets(true); });
+      $(document).on('shiny:value', function() { resizeDashboardWidgets(false); });
+      $(window).on('resize', function() { resizeDashboardWidgets(false); });
       function scrollAssistantChat() {
         setTimeout(function() {
           var logs = document.querySelectorAll('.gemini-chat-container');

@@ -75,7 +75,43 @@ clean_display_label <- function(x, fallback = "Không rõ") {
   ifelse(is_missing_label(x), fallback, x)
 }
 
+add_missing_columns <- function(df, defaults) {
+  for (col in names(defaults)) {
+    if (!col %in% names(df)) {
+      df[[col]] <- rep(defaults[[col]], length.out = nrow(df))
+    }
+  }
+  df
+}
+
+coerce_logical_flag <- function(x, default = FALSE) {
+  if (is.logical(x)) {
+    x[is.na(x)] <- default
+    return(x)
+  }
+
+  key <- strip_vietnamese(trimws(as.character(x)))
+  out <- rep(default, length(key))
+  out[key %in% c("true", "t", "1", "yes", "y", "co", "cho thue", "rent")] <- TRUE
+  out[key %in% c("false", "f", "0", "no", "n", "khong", "ban", "sale")] <- FALSE
+  out
+}
+
+normalize_transaction_type <- function(transaction_type, is_rent) {
+  tx <- clean_display_label(transaction_type, fallback = NA_character_)
+  key <- strip_vietnamese(trimws(as.character(tx)))
+  inferred <- if_else(is_rent, "Cho thuê", "Bán")
+
+  case_when(
+    key %in% c("cho thue", "thue", "rent", "rental") ~ "Cho thuê",
+    key %in% c("ban", "sale", "sell", "mua ban") ~ "Bán",
+    is.na(tx) ~ inferred,
+    TRUE ~ as.character(tx)
+  )
+}
+
 known_rows_or_all <- function(df, col) {
+  if (!col %in% names(df)) return(df)
   values <- df[[col]]
   known <- df[!is_missing_label(values), , drop = FALSE]
   if (nrow(known) > 0) known else df
@@ -150,20 +186,35 @@ load_data <- function() {
     )
   }
 
-  for (col in c("address", "ad_url", "title", "district_name", "category_name", "ward")) {
-    if (!col %in% names(df)) df[[col]] <- NA_character_
-  }
+  df <- add_missing_columns(df, list(
+    address = NA_character_,
+    ad_url = NA_character_,
+    title = NA_character_,
+    district_name = NA_character_,
+    category_name = NA_character_,
+    ward = NA_character_,
+    source = NA_character_,
+    price = NA_real_,
+    area = NA_real_,
+    rooms = NA_real_,
+    posted_at = NA_character_,
+    lat = NA_real_,
+    lon = NA_real_,
+    is_rent = FALSE
+  ))
+  has_transaction_type <- "transaction_type" %in% names(df)
 
   df %>%
     mutate(
       title = if_else(is.na(title) | title == "", "Tin bất động sản", as.character(title)),
-      source = if ("source" %in% names(.)) clean_display_label(source) else "Không rõ",
+      source = clean_display_label(source),
       district_name = canonical_hcmc_district(district_name, address, title, ad_url),
       category_name = clean_display_label(category_name),
-      transaction_type = if ("transaction_type" %in% names(.)) {
-        if_else(is.na(transaction_type) | transaction_type == "", if_else(as.logical(is_rent), "Cho thuê", "Bán"), as.character(transaction_type))
+      is_rent = coerce_logical_flag(is_rent),
+      transaction_type = if (has_transaction_type) {
+        normalize_transaction_type(transaction_type, is_rent)
       } else {
-        if_else(as.logical(is_rent), "Cho thuê", "Bán")
+        if_else(is_rent, "Cho thuê", "Bán")
       },
       ward = clean_display_label(ward),
       price = as.numeric(price),
@@ -173,7 +224,6 @@ load_data <- function() {
       price_b = price / 1e9,
       price_per_m2 = if_else(!is.na(area) & area > 0, price / area, NA_real_),
       posted_at = suppressWarnings(as_datetime(posted_at)),
-      is_rent = as.logical(is_rent),
       lat = if_else(in_hcmc_bbox(lat, lon), lat, NA_real_),
       lon = if_else(in_hcmc_bbox(lat, lon), lon, NA_real_)
     ) %>%
@@ -321,7 +371,18 @@ active_source_or_all <- function(x, all_label = "Tất cả") {
 }
 
 safe_range <- function(x, default) {
-  if (is.null(x) || length(x) < 2) default else x
+  default <- suppressWarnings(as.numeric(default[1:2]))
+  if (length(default) < 2 || any(!is.finite(default))) default <- c(0, 1)
+  default <- sort(default)
+
+  if (is.null(x) || length(x) < 2) return(default)
+  range <- suppressWarnings(as.numeric(x[1:2]))
+  if (any(!is.finite(range))) return(default)
+
+  range <- sort(range)
+  range[1] <- max(range[1], default[1])
+  range[2] <- min(range[2], default[2])
+  if (range[1] > range[2]) default else range
 }
 
 is_selected_filter <- function(x) {
@@ -480,7 +541,9 @@ load_model_cached <- function(model_path) {
   }
 
   # Đọc model mới và lưu vào cache
-  message("Đang tải model từ đĩa: ", model_path)
+  if (isTRUE(getOption("bds.verbose_model_cache", FALSE))) {
+    message("Đang tải model từ đĩa: ", model_path)
+  }
   bundle <- readRDS(model_path)
 
   # Xóa các cache cũ của file này để tránh rò rỉ bộ nhớ
@@ -2047,5 +2110,3 @@ predict_prices_for_rows <- function(df, bundle) {
   }
   expm1(as.numeric(pred_log))
 }
-
-

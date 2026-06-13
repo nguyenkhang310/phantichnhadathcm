@@ -62,7 +62,7 @@ run_pipeline <- function() {
   source(PATHS$train_models_script, local = TRUE)
 
   message("Hoàn tất pipeline. Featured data: ", PATHS$featured_csv)
-  message("Chạy app bằng: Rscript chay_ung_dung.R")
+  message("Chạy app bằng: Rscript app.R")
 }
 
 if (sys.nframe() == 0) {
