@@ -50,6 +50,11 @@ server <- function(input, output, session) {
   transaction_choices <- reactive(choice_values(listings()$transaction_type))
   district_choices <- reactive(choice_values(listings()$district_name))
   category_choices <- reactive(choice_values(listings()$category_name))
+  report_district_choices <- reactive(district_report_choices(listings()))
+
+  selected_report_district <- reactive({
+    district_report_selected(listings(), input$report_district)
+  })
 
   assistant_messages <- reactiveVal(list())
   assistant_context <- reactiveVal(assistant_empty_context())
@@ -392,6 +397,72 @@ server <- function(input, output, session) {
       kpi_card("Mô hình tốt nhất", best_model_name_only(m), "chọn theo MAPE/RMSE", "bullseye", "success", delta = best_model_mape_only(m), value_class = "text-mode")
     )
   })
+
+  output$report_district_picker <- renderUI({
+    choices <- report_district_choices()
+    if (length(choices) == 0) {
+      return(div(class = "report-empty", "Chưa có khu vực"))
+    }
+
+    selectizeInput(
+      "report_district",
+      NULL,
+      choices = setNames(choices, choices),
+      selected = district_report_selected(listings()),
+      width = "100%",
+      options = list(
+        placeholder = "Chọn khu vực...",
+        maxOptions = 50,
+        create = FALSE
+      )
+    )
+  })
+
+  output$report_quick_insight <- renderUI({
+    district <- selected_report_district()
+    req(!is.na(district))
+
+    profile <- build_district_report_profile(listings(), district)
+    focus <- profile$focus_tx
+    if (nrow(focus) == 0) return(NULL)
+
+    count_text <- format_count_vi(profile$total)
+
+    div(
+      class = "report-stats",
+      div(
+        class = "report-stat",
+        title = paste0(count_text, " tin tại ", profile$district),
+        icon("layer-group"),
+        div(
+          class = "report-stat-content",
+          span(class = "report-stat-value", count_text),
+          span(class = "report-stat-label", "tin đăng")
+        )
+      ),
+      div(
+        class = "report-stat",
+        title = paste0("Giá trung vị ", tolower(focus$transaction_type[[1]]), " tại ", profile$district),
+        icon("coins"),
+        div(
+          class = "report-stat-content",
+          span(class = "report-stat-value", format_vnd(focus$median_price[[1]])),
+          span(class = "report-stat-label", paste0("trung vị ", tolower(focus$transaction_type[[1]])))
+        )
+      )
+    )
+  })
+
+  output$download_district_report <- downloadHandler(
+    filename = function() {
+      district_report_filename(selected_report_district())
+    },
+    content = function(file) {
+      district <- selected_report_district()
+      req(!is.na(district))
+      build_district_report_pdf(file, listings(), district)
+    }
+  )
 
   output$source_filter <- renderUI({
     filter_source_select("sources", source_choices(), "Tất cả nguồn")

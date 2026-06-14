@@ -22,7 +22,7 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css"),
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=report-toolbar-20260614-5"),
     tags$script(src = "tuong_tac.js")
   ),
   div(
@@ -65,7 +65,26 @@ ui <- fluidPage(
         div(style = "flex: 1;"),
         div(
           class = "topbar-actions",
-          span(class = "status-badge", span(class = "status-dot"), "Snapshot dữ liệu")
+          div(
+            class = "report-toolbar",
+            # --- Chọn khu vực ---
+            div(
+              class = "report-search",
+              div(class = "report-search-icon", icon("location-dot")),
+              uiOutput("report_district_picker")
+            ),
+            # --- Thống kê nhanh ---
+            tags$span(class = "report-divider"),
+            uiOutput("report_quick_insight"),
+            # --- Xuất PDF ---
+            tags$span(class = "report-divider"),
+            downloadLink(
+              "download_district_report",
+              label = tagList(icon("file-arrow-down"), span("Xuất PDF")),
+              class = "report-download-button",
+              title = "Xuất báo cáo PDF cho khu vực đang chọn"
+            )
+          )
         )
       ),
       tags$main(

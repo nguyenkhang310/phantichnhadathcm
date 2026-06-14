@@ -1792,6 +1792,387 @@ price_color <- function(price, low_cutoff = 3e9, high_cutoff = 8e9) {
   )
 }
 
+district_report_choices <- function(df) {
+  df %>%
+    filter(!is_missing_label(district_name)) %>%
+    count(district_name, sort = TRUE) %>%
+    pull(district_name) %>%
+    unique()
+}
+
+district_report_selected <- function(df, district = NULL) {
+  choices <- district_report_choices(df)
+  if (length(choices) == 0) return(NA_character_)
+
+  district <- as.character(district %||% "")
+  if (length(district) > 0 && district[[1]] %in% choices) {
+    district[[1]]
+  } else {
+    choices[[1]]
+  }
+}
+
+district_report_filename <- function(district) {
+  slug <- strip_vietnamese(district)
+  slug <- gsub("[^a-z0-9]+", "-", slug)
+  slug <- gsub("(^-+|-+$)", "", slug)
+  if (!nzchar(slug)) slug <- "khu-vuc"
+  paste0("bao-cao-bds-", slug, "-", format(Sys.Date(), "%Y%m%d"), ".pdf")
+}
+
+report_median <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[is.finite(x)]
+  if (length(x) == 0) NA_real_ else stats::median(x, na.rm = TRUE)
+}
+
+report_ratio_text <- function(value, baseline, label = "mặt bằng TP.HCM") {
+  if (!is.finite(value) || !is.finite(baseline) || baseline <= 0) {
+    return(paste0("chưa đủ dữ liệu để so với ", label))
+  }
+
+  pct <- (value / baseline - 1) * 100
+  if (abs(pct) < 5) return(paste0("gần ngang ", label))
+  paste0(ifelse(pct > 0, "cao hơn ", "thấp hơn "), label, " khoảng ", format_number_vi(abs(pct), 1), "%")
+}
+
+report_density_label <- function(n) {
+  dplyr::case_when(
+    n >= 700 ~ "rất dày",
+    n >= 250 ~ "khá tốt",
+    n >= 80 ~ "vừa đủ để đọc xu hướng",
+    TRUE ~ "còn mỏng, nên xem như tín hiệu tham khảo"
+  )
+}
+
+build_district_report_profile <- function(df, district) {
+  district <- district_report_selected(df, district)
+  if (is.na(district)) {
+    return(list(district = NA_character_, scoped = tibble(), total = 0))
+  }
+
+  market <- df %>% filter(!is_missing_label(district_name))
+  scoped <- market %>% filter(district_name == district)
+
+  tx_summary <- scoped %>%
+    filter(finite_positive(price), finite_positive(price_per_m2)) %>%
+    group_by(transaction_type) %>%
+    summarise(
+      listings = n(),
+      median_price = report_median(price),
+      median_m2 = report_median(price_per_m2),
+      median_area = report_median(area),
+      .groups = "drop"
+    ) %>%
+    arrange(desc(listings))
+
+  city_tx <- market %>%
+    filter(finite_positive(price), finite_positive(price_per_m2)) %>%
+    group_by(transaction_type) %>%
+    summarise(
+      city_median_price = report_median(price),
+      city_median_m2 = report_median(price_per_m2),
+      .groups = "drop"
+    )
+
+  tx_summary <- tx_summary %>%
+    left_join(city_tx, by = "transaction_type") %>%
+    mutate(m2_gap_pct = (median_m2 / city_median_m2 - 1) * 100)
+
+  category_summary <- scoped %>%
+    filter(!is_missing_label(category_name)) %>%
+    count(category_name, sort = TRUE) %>%
+    mutate(share = n / sum(n))
+
+  source_summary <- scoped %>%
+    filter(!is_missing_label(source)) %>%
+    count(source, sort = TRUE) %>%
+    mutate(source_label = source_label_vi(source), share = n / sum(n))
+
+  focus_tx <- if (nrow(tx_summary) > 0) tx_summary[1, , drop = FALSE] else tibble()
+  rank <- tibble()
+  if (nrow(focus_tx) > 0) {
+    rank_df <- market %>%
+      filter(transaction_type == focus_tx$transaction_type[[1]], finite_positive(price_per_m2)) %>%
+      group_by(district_name) %>%
+      summarise(median_m2 = report_median(price_per_m2), listings = n(), .groups = "drop") %>%
+      filter(listings >= 3) %>%
+      arrange(desc(median_m2))
+    if (nrow(rank_df) > 0) {
+      rank_df$rank <- seq_len(nrow(rank_df))
+      rank <- rank_df %>% filter(district_name == district)
+      if (nrow(rank) > 0) rank$total_districts <- nrow(rank_df)
+    }
+  }
+
+  list(
+    district = district,
+    scoped = scoped,
+    total = nrow(scoped),
+    tx_summary = tx_summary,
+    category_summary = category_summary,
+    source_summary = source_summary,
+    focus_tx = focus_tx,
+    rank = rank
+  )
+}
+
+district_report_tx_sentence <- function(row) {
+  tx <- row$transaction_type[[1]]
+  m2_info <- price_m2_display_info(tx)
+  paste0(
+    "Ở nhóm ", tolower(tx), ", giá trung vị đạt ", format_vnd(row$median_price[[1]]),
+    "; giá/m² trung vị khoảng ",
+    format_number_vi(row$median_m2[[1]] / m2_info$scale, m2_info$digits), " ", m2_info$unit,
+    ", ", report_ratio_text(row$median_m2[[1]], row$city_median_m2[[1]]), "."
+  )
+}
+
+build_district_report_insights <- function(profile) {
+  if (is.na(profile$district) || profile$total == 0) {
+    return("Chưa có đủ dữ liệu để viết nhận xét cho khu vực này.")
+  }
+
+  district <- profile$district
+  total <- profile$total
+  focus <- profile$focus_tx
+  categories <- profile$category_summary
+  sources <- profile$source_summary
+
+  top_category <- if (nrow(categories) > 0) categories[1, , drop = FALSE] else tibble()
+  top_source <- if (nrow(sources) > 0) sources[1, , drop = FALSE] else tibble()
+  rank_text <- ""
+  if (nrow(profile$rank) > 0) {
+    rank_text <- paste0(
+      " Trong nhóm ", tolower(focus$transaction_type[[1]]), ", khu vực này xếp thứ ",
+      profile$rank$rank[[1]], "/", profile$rank$total_districts[[1]],
+      " nếu sắp theo giá/m² từ cao xuống thấp."
+    )
+  }
+
+  opening <- paste0(
+    district, " hiện có ", format_count_vi(total), " tin hợp lệ trong bộ dữ liệu, độ phủ ",
+    report_density_label(total), ". Đây là mẫu đủ hữu ích để nhìn mặt bằng giá, cơ cấu sản phẩm và độ lệch so với toàn TP.HCM, nhưng vẫn nên đọc cùng bối cảnh từng tuyến đường/phường."
+  )
+
+  price_text <- if (nrow(profile$tx_summary) > 0) {
+    paste(vapply(seq_len(nrow(profile$tx_summary)), function(i) {
+      district_report_tx_sentence(profile$tx_summary[i, , drop = FALSE])
+    }, character(1)), collapse = " ")
+  } else {
+    "Phần giá chưa đủ dữ liệu hợp lệ để tính trung vị và giá/m²."
+  }
+
+  mix_text <- if (nrow(top_category) > 0) {
+    paste0(
+      "Cơ cấu nguồn cung nghiêng về ", top_category$category_name[[1]], " với ",
+      format_count_vi(top_category$n[[1]]), " tin, tương đương ",
+      format_number_vi(top_category$share[[1]] * 100, 1), "% mẫu của khu vực."
+    )
+  } else {
+    "Cơ cấu loại bất động sản chưa đủ rõ vì thiếu nhãn loại BĐS."
+  }
+
+  source_text <- if (nrow(top_source) > 0) {
+    paste0(
+      "Nguồn dữ liệu đóng góp nhiều nhất là ", top_source$source_label[[1]],
+      " (", format_number_vi(top_source$share[[1]] * 100, 1), "%), vì vậy các kết luận nên được xem là lát cắt từ dữ liệu rao đăng hơn là giá giao dịch chốt."
+    )
+  } else {
+    "Nguồn dữ liệu chưa đủ rõ để đánh giá độ lệch theo nền tảng đăng tin."
+  }
+
+  action_text <- if (nrow(focus) > 0 && nrow(top_category) > 0) {
+    paste0(
+      "Gợi ý đọc nhanh: nếu đang quan tâm ", tolower(top_category$category_name[[1]]), " tại ",
+      district, ", hãy ưu tiên so sánh giá/m² trước, sau đó mới nhìn tổng giá. Cách đọc này giúp tách phần 'đắt do diện tích lớn' khỏi phần 'đắt thật theo mặt bằng khu vực'.",
+      rank_text
+    )
+  } else {
+    paste0("Gợi ý đọc nhanh: hãy xem biểu đồ cơ cấu và so sánh giá/m² để xác định nhóm sản phẩm đại diện nhất tại ", district, ".")
+  }
+
+  c(opening, price_text, mix_text, source_text, action_text)
+}
+
+district_report_kpis <- function(profile) {
+  focus <- profile$focus_tx
+  categories <- profile$category_summary
+  m2_label <- "Chưa có dữ liệu"
+  price_label <- "Chưa có dữ liệu"
+  area_label <- "Chưa có dữ liệu"
+  tx_label <- "Chưa rõ"
+
+  if (nrow(focus) > 0) {
+    m2_info <- price_m2_display_info(focus$transaction_type[[1]])
+    tx_label <- focus$transaction_type[[1]]
+    price_label <- format_vnd(focus$median_price[[1]])
+    m2_label <- paste0(format_number_vi(focus$median_m2[[1]] / m2_info$scale, m2_info$digits), " ", m2_info$unit)
+    area_label <- paste0(format_number_vi(focus$median_area[[1]], 1), " m²")
+  }
+
+  top_category <- if (nrow(categories) > 0) {
+    paste0(categories$category_name[[1]], " · ", format_number_vi(categories$share[[1]] * 100, 1), "%")
+  } else {
+    "Chưa rõ"
+  }
+
+  tibble::tibble(
+    label = c("Số tin", "Giao dịch nổi bật", "Giá trung vị", "Giá/m² trung vị", "Diện tích trung vị", "Loại BĐS chủ đạo"),
+    value = c(format_count_vi(profile$total), tx_label, price_label, m2_label, area_label, top_category)
+  )
+}
+
+draw_report_wrapped_text <- function(text, x, y, width = 118, cex = 0.86, line_gap = 0.033, col = "#334155") {
+  lines <- unlist(strwrap(text, width = width), use.names = FALSE)
+  if (length(lines) == 0) return(y)
+
+  for (i in seq_along(lines)) {
+    graphics::text(x, y - (i - 1) * line_gap, lines[[i]], adj = c(0, 1), cex = cex, col = col)
+  }
+  y - length(lines) * line_gap
+}
+
+draw_district_report_text_page <- function(profile, insights) {
+  graphics::par(mar = c(0, 0, 0, 0))
+  graphics::plot.new()
+  graphics::plot.window(xlim = c(0, 1), ylim = c(0, 1), asp = NA)
+
+  graphics::text(0.05, 0.94, paste0("Báo cáo thị trường BĐS: ", profile$district), adj = c(0, 1), cex = 1.8, font = 2, col = "#1e293b")
+  graphics::text(0.05, 0.895, paste0("Tạo ngày ", format(Sys.Date(), "%d/%m/%Y"), " · Dữ liệu rao đăng TP.HCM"), adj = c(0, 1), cex = 0.9, col = "#64748b")
+
+  kpis <- district_report_kpis(profile)
+  card_w <- 0.285
+  card_h <- 0.095
+  xs <- c(0.05, 0.36, 0.67, 0.05, 0.36, 0.67)
+  ys <- c(0.785, 0.785, 0.785, 0.665, 0.665, 0.665)
+  for (i in seq_len(nrow(kpis))) {
+    graphics::rect(xs[[i]], ys[[i]] - card_h, xs[[i]] + card_w, ys[[i]], col = "#f8fafc", border = "#dbe7f3", lwd = 1)
+    graphics::text(xs[[i]] + 0.018, ys[[i]] - 0.022, kpis$label[[i]], adj = c(0, 1), cex = 0.72, font = 2, col = "#64748b")
+    graphics::text(xs[[i]] + 0.018, ys[[i]] - 0.055, kpis$value[[i]], adj = c(0, 1), cex = 0.98, font = 2, col = "#0f172a")
+  }
+
+  graphics::text(0.05, 0.525, "Nhận xét tự động", adj = c(0, 1), cex = 1.15, font = 2, col = "#0072bc")
+  y <- 0.485
+  for (item in insights) {
+    y <- draw_report_wrapped_text(paste0("- ", item), 0.065, y, width = 128, cex = 0.82, line_gap = 0.031)
+    y <- y - 0.018
+    if (y < 0.09) break
+  }
+
+  graphics::text(
+    0.05, 0.055,
+    "Ghi chú: Báo cáo dùng dữ liệu rao đăng đã làm sạch; giá thực tế có thể khác theo pháp lý, vị trí hẻm/mặt tiền, nội thất và thời điểm thương lượng.",
+    adj = c(0, 1), cex = 0.72, col = "#94a3b8"
+  )
+}
+
+district_report_category_plot <- function(profile) {
+  plot_df <- profile$category_summary %>%
+    slice_head(n = 8) %>%
+    mutate(category_name = factor(category_name, levels = rev(category_name)))
+  if (nrow(plot_df) == 0) return(NULL)
+
+  ggplot(plot_df, aes(x = category_name, y = n)) +
+    geom_col(fill = "#0072bc", width = 0.72) +
+    coord_flip() +
+    geom_text(aes(label = paste0(format_count_vi(n), " tin")), hjust = -0.08, size = 3.6, color = "#334155") +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.16))) +
+    labs(
+      title = paste0("Cơ cấu loại bất động sản tại ", profile$district),
+      subtitle = "Top nhóm xuất hiện nhiều nhất trong dữ liệu rao đăng",
+      x = NULL,
+      y = "Số tin"
+    ) +
+    chart_theme(base_size = 12) +
+    theme(plot.title = element_text(face = "bold", size = 16, color = "#1e293b"),
+          plot.subtitle = element_text(color = "#64748b"),
+          legend.position = "none")
+}
+
+district_report_price_m2_plot <- function(profile) {
+  if (nrow(profile$tx_summary) == 0) return(NULL)
+
+  plot_df <- bind_rows(lapply(seq_len(nrow(profile$tx_summary)), function(i) {
+    row <- profile$tx_summary[i, , drop = FALSE]
+    info <- price_m2_display_info(row$transaction_type[[1]])
+    tibble::tibble(
+      transaction_type = row$transaction_type[[1]],
+      scope = c(profile$district, "Mặt bằng TP.HCM"),
+      display_m2 = c(row$median_m2[[1]], row$city_median_m2[[1]]) / info$scale,
+      unit = info$unit
+    )
+  })) %>%
+    filter(is.finite(display_m2))
+
+  if (nrow(plot_df) == 0) return(NULL)
+
+  ggplot(plot_df, aes(x = transaction_type, y = display_m2, fill = scope)) +
+    geom_col(position = position_dodge(width = 0.72), width = 0.62) +
+    facet_wrap(~unit, scales = "free_y") +
+    scale_fill_manual(values = setNames(c("#0072bc", "#10b981"), unique(plot_df$scope))) +
+    labs(
+      title = paste0("So sánh giá/m²: ", profile$district, " và TP.HCM"),
+      subtitle = "Dùng trung vị để giảm ảnh hưởng của outlier",
+      x = NULL,
+      y = "Giá/m²",
+      fill = NULL
+    ) +
+    chart_theme(base_size = 12) +
+    theme(plot.title = element_text(face = "bold", size = 16, color = "#1e293b"),
+          plot.subtitle = element_text(color = "#64748b"),
+          legend.position = "bottom")
+}
+
+open_district_report_pdf <- function(file, width = 11, height = 8.5) {
+  if (isTRUE(capabilities("aqua")) && exists("quartz", envir = asNamespace("grDevices"))) {
+    grDevices::quartz(type = "pdf", file = file, width = width, height = height)
+    return(invisible(TRUE))
+  }
+
+  cairo_opened <- FALSE
+  if (isTRUE(capabilities("cairo"))) {
+    cairo_opened <- tryCatch({
+      withCallingHandlers(
+        grDevices::cairo_pdf(file, width = width, height = height, onefile = TRUE, family = "sans"),
+        warning = function(w) {
+          message <- conditionMessage(w)
+          if (grepl("failed to load cairo|unable to load", message, ignore.case = TRUE)) {
+            stop(w)
+          }
+        }
+      )
+      TRUE
+    }, error = function(e) FALSE)
+  }
+
+  if (!isTRUE(cairo_opened)) {
+    grDevices::pdf(file, width = width, height = height, onefile = TRUE, family = "Helvetica")
+  }
+  invisible(TRUE)
+}
+
+build_district_report_pdf <- function(file, df, district) {
+  profile <- build_district_report_profile(df, district)
+  if (is.na(profile$district) || profile$total == 0) {
+    stop("Chưa có dữ liệu phù hợp để tạo báo cáo khu vực.")
+  }
+
+  open_district_report_pdf(file)
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  insights <- build_district_report_insights(profile)
+  draw_district_report_text_page(profile, insights)
+
+  category_plot <- district_report_category_plot(profile)
+  if (!is.null(category_plot)) print(category_plot)
+
+  price_plot <- district_report_price_m2_plot(profile)
+  if (!is.null(price_plot)) print(price_plot)
+
+  invisible(file)
+}
+
 kpi_card <- function(label, value, hint = NULL, icon = "chart-line", tone = "default", delta = NULL, value_class = "") {
   div(
     class = paste("kpi-card", paste0("tone-", tone)),
