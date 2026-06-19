@@ -509,8 +509,25 @@ html, body, .container-fluid { min-height: 100%; }
 .map-shell { position: relative; overflow: hidden; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); flex: 1; min-height: 600px; }
 .map-legend { position: absolute; z-index: 500; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1); }
 .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-.dot-low { background: var(--success); } .dot-mid { background: var(--warning); } .dot-high { background: var(--danger); }
-
+.dot-low { background: #059669; } .dot-mid { background: #d97706; } .dot-high { background: #ed1c24; }
+.bds-marker-cluster { background: transparent; border: 0; }
+.bds-marker-cluster div {
+  width: 100%; height: 100%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.bds-marker-cluster span { color: #ffffff; font-size: 13px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(15, 23, 42, 0.24); }
+.bds-marker-cluster:hover div { transform: scale(1.06); box-shadow: 0 16px 34px rgba(15, 23, 42, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+.bds-marker-cluster-low div { background: radial-gradient(circle at 30% 24%, rgba(255,255,255,0.34), rgba(255,255,255,0) 34%), linear-gradient(135deg, #10b981, #059669); }
+.bds-marker-cluster-mid div { background: radial-gradient(circle at 30% 24%, rgba(255,255,255,0.34), rgba(255,255,255,0) 34%), linear-gradient(135deg, #f59e0b, #d97706); }
+.bds-marker-cluster-high div { background: radial-gradient(circle at 30% 24%, rgba(255,255,255,0.34), rgba(255,255,255,0) 34%), linear-gradient(135deg, #fb7185, #ed1c24); }
+.bds-marker-cluster-mixed div {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,0.32), rgba(255,255,255,0) 34%),
+    conic-gradient(from 140deg, #059669 0 var(--low-end, 120deg), #d97706 var(--low-end, 120deg) var(--mid-end, 240deg), #ed1c24 var(--mid-end, 240deg) 360deg);
+}
 .dataTables_wrapper { font-size: 14px; }
 .table > thead > tr > th { background: #f8fafc; color: #334155; border-bottom: 2px solid var(--border); font-weight: 700; padding: 12px; }
 .table > tbody > tr > td { padding: 12px; border-bottom: 1px solid #f1f5f9; }

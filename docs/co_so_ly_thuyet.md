@@ -17,8 +17,8 @@ Ve mo hinh hoa, do an tach rieng hai bai toan: du doan **gia ban** va du doan **
 
 | Phan khuc | Best model | Train validate | Test validate | RMSE | MAE | MAPE | R2 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Ban | Tuned RF/XGBoost Ensemble | 11,911 | 2,978 | 24.20 ty VND | 6.89 ty VND | 37.78% | 0.680 |
-| Cho thue | Tuned RF/XGBoost Ensemble | 12,285 | 3,074 | 84.79 trieu VND | 26.87 trieu VND | 41.23% | 0.564 |
+| Ban | Tuned RF/XGBoost Ensemble | 11,911 | 2,978 | 24.16 ty VND | 6.89 ty VND | 37.84% | 0.680 |
+| Cho thue | Tuned RF/XGBoost Ensemble | 12,285 | 3,074 | 84.81 trieu VND | 26.94 trieu VND | 41.21% | 0.564 |
 
 Ket qua cho thay mo hinh cay va ensemble tot hon hoi quy tuyen tinh, nhung sai so van con lon do du lieu bat dong san rat phan tan, gia dang tin khong phai gia giao dich thuc, nhieu loai BDS co don vi gia khac nhau va mot so dac trung quan trong nhu huong nha, phap ly chi tiet, chat luong noi that, vi tri hem/duong thuc te chua duoc cau truc hoa day du.
 
@@ -619,20 +619,147 @@ Tro ly khong goi API ngoai. Tat ca cau tra loi duoc tao tu du lieu/model local t
 
 ---
 
-## 5. MO HINH HOA DU LIEU (DATA MODELING)
+## 5. MÔ HÌNH HÓA DỮ LIỆU (DATA MODELING)
 
-### 5.1 Bai toan du doan
+Phần này trình bày toàn bộ lớp mô hình hóa dữ liệu trong dự án: cách chia dữ liệu huấn luyện/kiểm tra, cơ chế chống rò rỉ dữ liệu, các thuật toán học có giám sát dùng để dự đoán giá, thuật toán học không giám sát dùng để phân cụm thị trường, và mô-đun trợ lý NLP local trong ứng dụng Shiny.
 
-Do an co hai bai toan hoi quy:
+### 5.1 Thiết lập mô hình
 
-1. Du doan **gia ban** cho cac tin co `is_rent = FALSE`.
-2. Du doan **gia thue** cho cac tin co `is_rent = TRUE`.
+#### 5.1.1 Bài toán mô hình hóa
 
-Bien muc tieu cua ca hai bai toan la `log_price = log1p(price)`. Dung log-price giup mo hinh on dinh hon voi cac muc gia rat lon.
+Dữ liệu bất động sản trong dự án có hai nhóm giao dịch rất khác nhau về đơn vị giá, biên độ dao động và cơ chế định giá:
 
-### 5.2 Tap dac trung cho mo hinh
+| Bài toán | Điều kiện lọc | Biến mục tiêu gốc | Ý nghĩa |
+|---|---|---:|---|
+| Dự đoán giá bán | `is_rent = FALSE` hoặc `transaction_type = "Bán"` | `price` | Giá rao bán của nhà/đất/căn hộ, đơn vị VND |
+| Dự đoán giá thuê | `is_rent = TRUE` hoặc `transaction_type = "Cho thuê"` | `price` | Giá thuê theo tháng, đơn vị VND/tháng |
 
-Cong thuc mo hinh cuoi cung trong RDS hien tai:
+Do phân phối giá bất động sản lệch phải rất mạnh, mô hình không học trực tiếp `price` mà học trên biến log:
+
+$$
+y = \log(1 + price)
+$$
+
+Sau khi dự đoán, kết quả được đưa về đơn vị VND bằng phép biến đổi ngược:
+
+$$
+\widehat{price} = \exp(\widehat{y}) - 1
+$$
+
+Cách làm này có ba lợi ích chính:
+
+- Giảm ảnh hưởng của các tin rao giá cực cao.
+- Làm quan hệ giữa giá và diện tích ổn định hơn.
+- Giúp các mô hình cây và mô hình tuyến tính học tốt hơn ở cả phân khúc phổ thông và cao cấp.
+
+#### 5.1.2 Luồng huấn luyện tổng quát
+
+```mermaid
+flowchart TD
+    A["data/main/du_lieu_chinh.csv<br/>30.250 dòng, 56 cột"] --> B["Lọc dữ liệu hợp lệ<br/>price > 0, area > 0, đúng ngưỡng bán/thuê"]
+    B --> C{"Tách phân khúc"}
+    C --> D["Tập Bán<br/>14.891 tin"]
+    C --> E["Tập Cho thuê<br/>15.359 tin"]
+    D --> F["Train/Test 80/20<br/>phân tầng theo source"]
+    E --> G["Train/Test 80/20<br/>phân tầng theo source"]
+    F --> H["Fit Target Encoding<br/>chỉ trên Train"]
+    G --> I["Fit Target Encoding<br/>chỉ trên Train"]
+    H --> J["Train OLS, Random Forest,<br/>XGBoost, Ensemble"]
+    I --> K["Train OLS, Random Forest,<br/>XGBoost, Ensemble"]
+    J --> L["Đánh giá Test<br/>RMSE, MAE, MAPE, R²"]
+    K --> M["Đánh giá Test<br/>RMSE, MAE, MAPE, R²"]
+    L --> N["Chọn best model theo MAPE,<br/>sau đó xét RMSE"]
+    M --> N
+    N --> O["Refit model cuối trên 100% dữ liệu sạch<br/>lưu RDS, metrics, registry, importance"]
+```
+
+#### 5.1.3 Chia Train/Test 80/20 phân tầng
+
+Hàm `make_split()` trong `scripts/models/huan_luyen_mo_hinh.R` chia dữ liệu theo tỉ lệ 80/20 và phân tầng theo biến `source`. Lý do chọn `source` làm biến phân tầng là vì các nguồn dữ liệu có cấu trúc rất khác nhau:
+
+- Mogi chiếm tỉ trọng lớn và có nhiều tin cho thuê.
+- Chợ Tốt nghiêng mạnh về tin bán.
+- Một số nguồn như Muaban, Homedy, Luachonnhadat có số dòng ít hơn.
+
+Nếu chia ngẫu nhiên đơn thuần, tập test có thể thiếu một số nguồn nhỏ hoặc bị lệch phân phối nguồn. Vì vậy, script chia từng nhóm nguồn riêng:
+
+$$
+n_{train,g} \approx \lfloor 0.8 \times n_g \rfloor
+$$
+
+Trong đó:
+
+- \(g\) là một nguồn dữ liệu, ví dụ `mogi`, `chotot`, `alonhadat`.
+- \(n_g\) là số dòng thuộc nguồn \(g\).
+- \(n_{train,g}\) là số dòng được đưa vào train từ nguồn \(g\).
+
+Kết quả chia validate hiện tại:
+
+| Phân khúc | Tổng dòng | Train validate | Test validate | Tỉ lệ train | Split type |
+|---|---:|---:|---:|---:|---|
+| Bán | 14.891 | 11.911 | 2.978 | 80,0% | `stratified_random_by_source` |
+| Cho thuê | 15.359 | 12.285 | 3.074 | 80,0% | `stratified_random_by_source` |
+
+Sau khi đánh giá xong trên tập test, script refit mô hình cuối trên **100% dữ liệu sạch** của từng phân khúc để dùng trong ứng dụng dự đoán giá.
+
+#### 5.1.4 Chống rò rỉ dữ liệu bằng Target Encoding
+
+Target Encoding là kỹ thuật thay biến phân loại bằng thống kê của biến mục tiêu trong từng nhóm. Ví dụ, thay vì đưa trực tiếp tên phường vào mô hình, ta có thể thay bằng “mặt bằng giá trung vị của phường đó”.
+
+Nếu tính Target Encoding trên toàn bộ dữ liệu trước khi chia train/test thì mô hình sẽ nhìn thấy thông tin từ tập test. Đây là rò rỉ dữ liệu (data leakage). Dự án xử lý vấn đề này bằng quy trình:
+
+1. Chia train/test trước.
+2. Fit bảng Target Encoding chỉ trên train.
+3. Apply bảng encoding đó cho train và test.
+4. Nhóm nào ở test không xuất hiện trong train thì dùng median toàn cục của train.
+
+```mermaid
+flowchart LR
+    A["Dữ liệu đầy đủ"] --> B["Chia Train/Test"]
+    B --> C["Train"]
+    B --> D["Test"]
+    C --> E["Fit Target Encoding<br/>median theo nhóm trong Train"]
+    E --> F["Apply cho Train"]
+    E --> G["Apply cho Test"]
+    F --> H["Huấn luyện mô hình"]
+    G --> I["Đánh giá mô hình"]
+```
+
+Công thức làm mượt Target Encoding trong code:
+
+$$
+encoded_g =
+\log\left(
+1 +
+\frac{n_g \times median_g + \lambda \times median_{global}}
+{n_g + \lambda}
+\right)
+$$
+
+Trong đó:
+
+| Ký hiệu | Ý nghĩa |
+|---|---|
+| \(g\) | Nhóm cần encoding, ví dụ một phường, một quận, một loại BĐS |
+| \(n_g\) | Số dòng của nhóm \(g\) trong tập train |
+| \(median_g\) | Trung vị giá của nhóm \(g\) trong tập train |
+| \(median_{global}\) | Trung vị giá toàn tập train |
+| \(\lambda\) | Hệ số làm mượt, trong code là `smoothing = 10` |
+
+Các bảng encoding được fit trong quá trình train:
+
+| Biến encoding | Nhóm gốc | Ý nghĩa |
+|---|---|---|
+| `ward_price_encoded` | `ward` | Mặt bằng giá theo phường/xã |
+| `district_price_encoded` | `district_name` | Mặt bằng giá theo khu vực cũ/quận/huyện |
+| `category_price_encoded` | `category_name` | Mặt bằng giá theo loại BĐS |
+| `source_price_encoded` | `source` | Khác biệt mặt bằng giá theo nguồn đăng tin |
+| `district_category_price_encoded` | `district_name + category_name` | Tương tác khu vực và loại BĐS |
+| `source_category_price_encoded` | `source + category_name` | Tương tác nguồn dữ liệu và loại BĐS |
+
+#### 5.1.5 Tập đặc trưng đưa vào mô hình
+
+Công thức mô hình cuối cùng được sinh động theo cột có sẵn trong dữ liệu. Với artifact hiện tại, công thức có dạng:
 
 ```r
 log_price ~ area + log_area + rooms + inferred_rooms +
@@ -647,119 +774,165 @@ log_price ~ area + log_area + rooms + inferred_rooms +
   listing_age_days + source + district_name + category_name + posted_wday
 ```
 
-Nhom bien:
+Nhóm đặc trưng:
 
-- **Quy mo**: `area`, `log_area`, `rooms`, `inferred_rooms`, `inferred_floors`.
-- **Hinh hoc nha dat**: `frontage_width_m`, `frontage_length_m`, `frontage_ratio`.
-- **Tu khoa gia tri trong title**: mat tien, hem, xe hoi, goc, thang may, noi that, phap ly, dong tien.
-- **Van ban**: `title_token_count`.
-- **Khong gian**: `distance_to_center`.
-- **Thoi gian**: `posted_hour`, `posted_wday`, `listing_age_days`.
-- **Gia khu vuc/nguon da encode**: ward, district, category, source, district-category, source-category.
-- **Bien phan loai**: `source`, `district_name`, `category_name`, `posted_wday`.
+| Nhóm | Biến tiêu biểu | Vai trò trong định giá |
+|---|---|---|
+| Quy mô tài sản | `area`, `log_area`, `rooms`, `inferred_rooms`, `inferred_floors` | Diện tích và số phòng thường là nhân tố cơ bản nhất của giá |
+| Hình học nhà đất | `frontage_width_m`, `frontage_length_m`, `frontage_ratio` | Nhà ngang rộng, chiều sâu hợp lý thường có giá trị thương mại tốt hơn |
+| Từ khóa trong tiêu đề | `title_has_frontage`, `title_has_alley`, `title_has_car_access`, `title_has_corner`, `title_has_elevator`, `title_has_furnished`, `title_has_legal`, `title_has_income_info` | Trích tín hiệu “mặt tiền”, “hẻm xe hơi”, “sổ hồng”, “nội thất” từ văn bản |
+| Văn bản | `title_token_count` | Tiêu đề dài/ngắn phản ánh mức độ mô tả và có thể liên quan đến loại tin |
+| Không gian | `distance_to_center` | Khoảng cách đến trung tâm Quận 1 ảnh hưởng đến mặt bằng giá |
+| Thời gian | `posted_hour`, `posted_wday`, `listing_age_days` | Thời điểm đăng và tuổi tin có thể phản ánh thanh khoản/chất lượng tin |
+| Target Encoding | 6 biến encoding giá | Tóm tắt mặt bằng giá theo khu vực, loại BĐS, nguồn |
+| Biến phân loại | `source`, `district_name`, `category_name`, `posted_wday` | Giữ thêm hiệu ứng phân loại sau khi đã có encoding |
 
-### 5.3 Chia train/test
+### 5.2 Thuật toán học có giám sát: Dự đoán giá
 
-Ham `make_split()` chia du lieu theo ti le 80/20, phan tang theo `source`:
+Dự án so sánh 5 mô hình hồi quy cho mỗi phân khúc Bán và Cho thuê:
 
-- Moi nguon du lieu duoc shuffle bang `runif`.
-- Neu nhom nguon co tu 5 dong tro len, lay xap xi 80% train va giu toi thieu 1 dong test.
-- Neu so dong qua it, fallback chia random theo ti le.
+| Nhóm mô hình | Tên trong artifact | Mục đích |
+|---|---|---|
+| Baseline tuyến tính | `Linear Regression` | Làm mốc so sánh, dễ giải thích |
+| Bagging | `Random Forest` | Học quan hệ phi tuyến và tương tác biến |
+| Boosting | `XGBoost` | Tối ưu sai số tuần tự, mạnh với dữ liệu tabular |
+| Ensemble đơn giản | `RF + XGBoost Ensemble` | Trung bình hai mô hình RF và XGBoost |
+| Ensemble tối ưu trọng số | `Tuned RF/XGBoost Ensemble` | Tìm trọng số RF/XGBoost có MAPE tốt nhất |
 
-Trong artifact hien tai:
+#### 5.2.1 Hồi quy tuyến tính Baseline OLS
 
-| Phan khuc | Train validate | Test validate | Split type |
-|---|---:|---:|---|
-| Ban | 11,911 | 2,978 | `stratified_random_by_source` |
-| Cho thue | 12,285 | 3,074 | `stratified_random_by_source` |
+Mô hình hồi quy tuyến tính giả định quan hệ tuyến tính giữa log-price và các đặc trưng:
 
-Sau khi validate, model cuoi cung duoc refit tren **100% du lieu sach** cua tung phan khuc:
+$$
+y_i = \beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + \cdots + \beta_px_{ip} + \epsilon_i
+$$
 
-- Ban: 14,891 dong.
-- Cho thue: 15,359 dong.
+Trong đó:
 
-### 5.4 Hoi quy tuyen tinh (Linear Regression)
+- \(y_i = \log(1 + price_i)\)
+- \(x_{ij}\) là đặc trưng thứ \(j\) của dòng dữ liệu \(i\)
+- \(\beta_j\) là hệ số cần học
+- \(\epsilon_i\) là sai số ngẫu nhiên
 
-Linear Regression duoc dung lam baseline. Mo hinh co dang:
+Ước lượng OLS tối thiểu hóa tổng bình phương sai số:
 
-```text
-log_price = beta0 + beta1*x1 + beta2*x2 + ... + betap*xp + epsilon
-```
+$$
+\widehat{\beta}
+= \arg\min_{\beta}
+\sum_{i=1}^{n}(y_i - x_i^T\beta)^2
+$$
 
-Uoc luong OLS:
+Nếu ma trận \(X^TX\) khả nghịch:
 
-```text
-beta_hat = (X'X)^(-1) X'Y
-```
+$$
+\widehat{\beta} = (X^TX)^{-1}X^Ty
+$$
 
-Uu diem:
+Vai trò trong dự án:
 
-- De giai thich.
-- Train nhanh.
-- Lam baseline tot de so sanh.
+- Là baseline để chứng minh mô hình phi tuyến có cải thiện hay không.
+- Giúp đánh giá mức độ khó của bài toán: nếu OLS đã tốt thì quan hệ có thể gần tuyến tính; nếu OLS kém xa mô hình cây thì dữ liệu có nhiều tương tác phi tuyến.
 
-Han che:
+Hạn chế:
 
-- Gia bat dong san co quan he phi tuyen voi dien tich/khu vuc/loai BDS.
-- Rat nhay voi outlier.
-- Kho xu ly tuong tac phuc tap giua khu vuc va loai BDS.
+- Khó bắt quan hệ kiểu “cùng diện tích nhưng khác quận thì giá tăng không đều”.
+- Nhạy với outlier rất cao.
+- Không tự học được tương tác phức tạp nếu không tạo thủ công các biến tương tác.
 
-Ket qua thuc te cho thay Linear Regression kem hon cac mo hinh cay: MAPE ban 52.17%, MAPE cho thue 47.65%.
+#### 5.2.2 Random Forest Regression
 
-### 5.5 Random Forest Regression
-
-Random Forest la tap hop nhieu cay quyet dinh hoi quy. Trong code:
-
-```r
-randomForest(formula, data = train, ntree = 500, importance = TRUE)
-```
-
-Cong thuc du doan:
-
-```text
-f_RF(x) = (1/B) * sum(T_b(x)), voi B = 500
-```
-
-Uu diem:
-
-- Hoc duoc quan he phi tuyen.
-- Tu dong xu ly tuong tac giua bien.
-- Giam phuong sai bang bagging.
-- Co feature importance bang `IncNodePurity` va `%IncMSE`.
-
-Han che:
-
-- Mo hinh lon, giai thich kem hon OLS.
-- Co the du doan kem o cac vung it mau.
-- Khong ngoai suy tot ngoai mien du lieu train.
-
-### 5.6 XGBoost Regression
-
-XGBoost dung gradient boosting, them cay moi de sua sai so cua cac cay truoc:
-
-```text
-y_hat_i^(t) = y_hat_i^(t-1) + eta * f_t(x_i)
-```
+Random Forest là mô hình bagging gồm nhiều cây quyết định hồi quy. Mỗi cây được huấn luyện trên một mẫu bootstrap và tại mỗi nút tách chỉ xét một tập con biến ngẫu nhiên.
 
 Trong code:
 
 ```r
-xgboost(
-  objective = "reg:squarederror",
-  nthread = 1,
-  verbosity = 0
+randomForest(
+  formula,
+  data = train,
+  ntree = 500,
+  importance = TRUE
 )
 ```
 
-Du lieu dau vao XGBoost duoc chuyen thanh sparse matrix bang:
+Với \(B = 500\) cây, dự đoán cuối cùng là trung bình dự đoán của từng cây:
+
+$$
+\widehat{f}_{RF}(x)
+= \frac{1}{B}\sum_{b=1}^{B}T_b(x)
+$$
+
+Trong đó \(T_b(x)\) là dự đoán của cây thứ \(b\).
+
+```mermaid
+flowchart LR
+    A["Train data"] --> B1["Bootstrap sample 1<br/>Cây 1"]
+    A --> B2["Bootstrap sample 2<br/>Cây 2"]
+    A --> B3["..."]
+    A --> B4["Bootstrap sample 500<br/>Cây 500"]
+    B1 --> C["Trung bình dự đoán"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    C --> D["Giá dự đoán"]
+```
+
+Ưu điểm:
+
+- Học tốt quan hệ phi tuyến giữa giá, diện tích, khu vực, loại BĐS.
+- Tự học được tương tác giữa biến, ví dụ `district_name x category_name`.
+- Ít overfit hơn một cây đơn lẻ nhờ bagging.
+- Có thước đo Feature Importance như `%IncMSE` và `IncNodePurity`.
+
+Hạn chế:
+
+- Mô hình nặng hơn OLS.
+- Khó diễn giải từng dự đoán cụ thể.
+- Khả năng ngoại suy ngoài miền dữ liệu train kém.
+
+#### 5.2.3 XGBoost Regression
+
+XGBoost là mô hình gradient boosting trên cây quyết định. Khác với Random Forest huấn luyện nhiều cây độc lập, XGBoost thêm cây tuần tự để sửa phần sai số còn lại của các cây trước.
+
+Dạng dự đoán:
+
+$$
+\widehat{y}_i^{(t)}
+= \widehat{y}_i^{(t-1)} + \eta f_t(x_i)
+$$
+
+Trong đó:
+
+- \(\widehat{y}_i^{(t)}\) là dự đoán sau vòng boosting thứ \(t\)
+- \(f_t\) là cây mới được thêm vào
+- \(\eta\) là learning rate
+
+Hàm mục tiêu tổng quát:
+
+$$
+\mathcal{L}^{(t)}
+= \sum_{i=1}^{n} l(y_i, \widehat{y}_i^{(t)})
++ \sum_{k=1}^{t}\Omega(f_k)
+$$
+
+Trong đó \(\Omega(f_k)\) là thành phần regularization để kiểm soát độ phức tạp của cây.
+
+Dự án dùng objective:
+
+```r
+objective = "reg:squarederror"
+```
+
+Để tối ưu bộ nhớ, dữ liệu đầu vào cho XGBoost được chuyển thành ma trận thưa:
 
 ```r
 sparse.model.matrix(rhs_formula, data = data)
 ```
 
-Luoi tham so gom 8 ung vien:
+Việc dùng sparse matrix đặc biệt quan trọng vì các biến factor như `district_name`, `category_name`, `source`, `posted_wday` khi one-hot encoding sẽ tạo nhiều cột, phần lớn giá trị là 0.
 
-| Ung vien | nrounds | learning_rate | max_depth | min_child_weight | subsample | colsample_bytree |
+Lưới tham số XGBoost:
+
+| Ứng viên | nrounds | learning_rate | max_depth | min_child_weight | subsample | colsample_bytree |
 |---:|---:|---:|---:|---:|---:|---:|
 | 1 | 220 | 0.08 | 5 | 1 | 0.85 | 0.85 |
 | 2 | 300 | 0.05 | 6 | 1 | 0.80 | 0.80 |
@@ -770,351 +943,550 @@ Luoi tham so gom 8 ung vien:
 | 7 | 500 | 0.025 | 6 | 2 | 0.85 | 0.85 |
 | 8 | 360 | 0.04 | 7 | 1 | 0.78 | 0.82 |
 
-Ca model ban va thue hien tai chon bo tham so:
+Theo artifact hiện tại, cả hai phân khúc Bán và Cho thuê đều chọn cấu hình:
 
-```text
-nrounds = 240
-learning_rate = 0.05
-max_depth = 7
-min_child_weight = 2
-subsample = 0.80
-colsample_bytree = 0.80
+| Tham số | Giá trị |
+|---|---:|
+| `nrounds` | 240 |
+| `learning_rate` | 0.05 |
+| `max_depth` | 7 |
+| `min_child_weight` | 2 |
+| `subsample` | 0.80 |
+| `colsample_bytree` | 0.80 |
+
+#### 5.2.4 Mô hình Ensemble RF + XGBoost
+
+Random Forest và XGBoost có thiên hướng học khác nhau:
+
+- Random Forest giảm phương sai bằng trung bình nhiều cây độc lập.
+- XGBoost giảm bias bằng cách thêm cây tuần tự sửa lỗi.
+
+Vì vậy dự án kết hợp hai mô hình để tận dụng ưu điểm của cả bagging và boosting.
+
+Ensemble trung bình cố định:
+
+$$
+\widehat{y}_{ens}
+= 0.5\widehat{y}_{RF} + 0.5\widehat{y}_{XGB}
+$$
+
+Tuned Ensemble tìm trọng số \(w\) tốt nhất cho Random Forest:
+
+$$
+\widehat{y}_{tuned}
+= w\widehat{y}_{RF} + (1-w)\widehat{y}_{XGB}
+$$
+
+Trong code, \(w\) được quét từ 0 đến 1 với bước 0.05:
+
+```r
+for (weight_rf in seq(0, 1, by = 0.05)) {
+  pred <- weight_rf * rf_pred + (1 - weight_rf) * xgb_pred
+}
 ```
 
-### 5.7 Ensemble RF + XGBoost
+Trọng số tốt nhất hiện tại:
 
-Do an thu hai cach ensemble:
+| Phân khúc | Best model | Trọng số RF | Trọng số XGBoost | Diễn giải |
+|---|---|---:|---:|---|
+| Bán | Tuned RF/XGBoost Ensemble | 0.45 | 0.55 | XGBoost nhỉnh hơn trong việc xử lý phân khúc bán nhiều outlier |
+| Cho thuê | Tuned RF/XGBoost Ensemble | 0.55 | 0.45 | Random Forest đóng góp nhiều hơn ở dữ liệu thuê hiện tại |
 
-1. **RF + XGBoost Ensemble**: trung binh 0.5:
+#### 5.2.5 Giới hạn dự đoán bằng quantile log-price
 
-```text
-y_hat = 0.5 * y_hat_RF + 0.5 * y_hat_XGB
-```
+Để tránh mô hình trả về giá quá xa miền huấn luyện, script clamp dự đoán log-price trong khoảng quantile 1% và 99% của tập train:
 
-2. **Tuned RF/XGBoost Ensemble**: quet `weight_rf` tu 0 den 1 voi buoc 0.05:
+$$
+\widehat{y}_{clamp}
+= \min(\max(\widehat{y}, Q_{0.01}), Q_{0.99})
+$$
 
-```text
-y_hat = w * y_hat_RF + (1 - w) * y_hat_XGB
-```
+Sau đó:
 
-Trong so hien tai:
+$$
+\widehat{price} = \exp(\widehat{y}_{clamp}) - 1
+$$
 
-| Phan khuc | Best model | weight_rf | weight_xgb |
-|---|---|---:|---:|
-| Ban | Tuned RF/XGBoost Ensemble | 0.45 | 0.55 |
-| Cho thue | Tuned RF/XGBoost Ensemble | 0.55 | 0.45 |
+Cơ chế này đặc biệt cần thiết với bất động sản vì:
 
-### 5.8 Gioi han du doan bang quantile log-price
+- Một số tin có giá rất cao, có thể kéo mô hình dự đoán lệch.
+- Người dùng nhập diện tích/phòng/khu vực ngoài miền dữ liệu phổ biến.
+- Mô hình cây không ngoại suy mượt như mô hình tuyến tính.
 
-De tranh model tra ket qua qua xa mien train, prediction log duoc clamp trong khoang quantile 1% va 99% cua `log_price` tren train:
+### 5.3 Thuật toán học không giám sát: K-Means Clustering
 
-| Phan khuc | Bound log_price |
-|---|---|
-| Ban | 20.229 den 26.393 |
-| Cho thue | 14.116 den 19.799 |
-
-Khi dua ve VND, app dung `expm1(pred_log)`.
-
-### 5.9 Feature importance
-
-Random Forest importance duoc luu vao:
-
-- `models/do_quan_trong_bien_ban.csv`
-- `models/do_quan_trong_bien_thue.csv`
-
-Top bien quan trong nhat theo `IncNodePurity` cho phan khuc ban:
-
-| Hang | Bien | IncNodePurity |
-|---:|---|---:|
-| 1 | `district_category_price_encoded` | 3812.35 |
-| 2 | `log_area` | 3763.30 |
-| 3 | `area` | 3452.16 |
-| 4 | `district_name` | 1687.07 |
-| 5 | `ward_price_encoded` | 1408.23 |
-| 6 | `inferred_rooms` | 915.55 |
-| 7 | `distance_to_center` | 850.55 |
-| 8 | `rooms` | 829.51 |
-| 9 | `district_price_encoded` | 767.01 |
-| 10 | `source_category_price_encoded` | 749.04 |
-
-Top bien quan trong nhat cho phan khuc cho thue:
-
-| Hang | Bien | IncNodePurity |
-|---:|---|---:|
-| 1 | `area` | 2526.89 |
-| 2 | `log_area` | 2482.24 |
-| 3 | `district_category_price_encoded` | 924.10 |
-| 4 | `category_name` | 409.07 |
-| 5 | `district_name` | 403.94 |
-| 6 | `source_category_price_encoded` | 383.15 |
-| 7 | `category_price_encoded` | 326.14 |
-| 8 | `ward_price_encoded` | 290.79 |
-| 9 | `distance_to_center` | 235.02 |
-| 10 | `inferred_rooms` | 192.07 |
-
-Nhan xet: dien tich, mat bang gia theo khu vuc/loai BDS va khoang cach den trung tam la cac nhom bien rat quan trong. Dieu nay phu hop voi logic thi truong bat dong san.
-
-### 5.10 K-Means clustering
-
-Ngoai du doan gia, script model tao phan cum K-Means de nhom cac "o thi truong" theo:
-
-- `median_price_per_m2`
-- `median_area`
-- `listing_count`
-
-Du lieu phan cum duoc group theo:
+Ngoài dự đoán giá từng tin, dự án còn phân cụm các “ô thị trường” để nhìn thị trường ở cấp vĩ mô hơn. Một ô thị trường được định nghĩa bởi:
 
 ```text
 transaction_type + district_name + category_name
 ```
 
-Dieu kien loc:
+Ví dụ:
 
-- Phan khuc cho thue: moi nhom can toi thieu 2 tin.
-- Phan khuc ban: moi nhom can toi thieu 5 tin.
+- `Bán + Quận 7 + Căn hộ`
+- `Cho thuê + Thành phố Thủ Đức + Nhà phố`
+- `Bán + Huyện Bình Chánh + Đất`
 
-So cum:
+Mỗi ô thị trường được mô tả bằng ba biến:
+
+| Biến | Ý nghĩa |
+|---|---|
+| `median_price_per_m2` | Mặt bằng giá/m² trung vị |
+| `median_area` | Diện tích trung vị |
+| `listing_count` | Số lượng tin trong ô thị trường |
+
+Trước khi chạy K-Means, các biến được scale để tránh biến có đơn vị lớn áp đảo:
+
+$$
+z_j = \frac{x_j - \mu_j}{\sigma_j}
+$$
+
+Hàm mục tiêu K-Means:
+
+$$
+\min_{C_1,\ldots,C_K}
+\sum_{k=1}^{K}
+\sum_{x_i \in C_k}
+\|x_i - \mu_k\|^2
+$$
+
+Trong đó:
+
+- \(K\) là số cụm.
+- \(C_k\) là cụm thứ \(k\).
+- \(\mu_k\) là tâm cụm thứ \(k\).
+- \(x_i\) là vector đặc trưng của một ô thị trường.
+
+Trong code:
 
 ```r
-k = min(4, nrow(tx_df))
+k <- min(4, nrow(tx_df))
 kmeans(cluster_input, centers = k, nstart = 25)
 ```
 
-Ket qua hien tai:
+Điều kiện lọc trước khi phân cụm:
 
-| Giao dich | Cluster 1 | Cluster 2 | Cluster 3 | Cluster 4 | Tong nhom |
+| Phân khúc | Điều kiện giữ nhóm |
+|---|---|
+| Bán | `listing_count >= 5` |
+| Cho thuê | `listing_count >= 2` |
+
+Kết quả hiện tại trong `models/cum_gia_quan_huyen.csv`:
+
+| Giao dịch | Cluster 1 | Cluster 2 | Cluster 3 | Cluster 4 | Tổng nhóm |
 |---|---:|---:|---:|---:|---:|
-| Ban | 17 | 6 | 107 | 24 | 154 |
-| Cho thue | 7 | 138 | 5 | 1 | 151 |
-| **Tong** | **24** | **144** | **112** | **25** | **305** |
+| Bán | 17 | 6 | 107 | 24 | 154 |
+| Cho thuê | 7 | 138 | 5 | 1 | 151 |
+| **Tổng** | **24** | **144** | **112** | **25** | **305** |
 
-### 5.11 Tro ly BDS local nhu mot module NLP ung dung
+Ý nghĩa phân cụm:
 
-Tro ly khong phai mo hinh ngon ngu lon, ma la engine NLP local bang R. Cac buoc xu ly:
+- Cụm giá/m² cao, diện tích nhỏ thường tương ứng với căn hộ hoặc nhà nhỏ ở khu trung tâm.
+- Cụm diện tích lớn, giá/m² thấp hơn thường xuất hiện ở đất nền hoặc nhà vùng ven.
+- Cụm có `listing_count` lớn phản ánh phân khúc có thanh khoản/nguồn cung dữ liệu dày hơn.
 
-1. Chuan hoa cau hoi bang `assistant_text_key()`: bo dau, lowercase, loai ky tu dac biet.
-2. Trich thuc the:
-   - Ngan sach: `4 ty`, `duoi 15 trieu`, `tu 3 den 5 ty`.
-   - Dien tich: `60m2`, `50-70m2`.
-   - So phong: `2PN`, `3 phong ngu`.
-   - Giao dich: mua/ban/cho thue.
-   - Khu vuc: so khop danh sach district trong data.
-   - Loai BDS: so khop category va alias.
-3. Nhan dien y dinh:
-   - `help`
-   - `explain`
-   - `predict`
-   - `compare`
-   - `undervalued`
-   - `scout`
-   - `recommend`
-   - `stats`
-4. Gop voi context cau hoi truoc neu la follow-up.
-5. Goi "tool" local: loc data, tinh thong ke, xep hang listing, tim deal, so sanh khu vuc hoac goi model du doan.
-6. Sinh HTML de hien thi trong Shiny.
+```mermaid
+flowchart TD
+    A["Dữ liệu tin đăng"] --> B["Group theo<br/>giao dịch + khu vực + loại BĐS"]
+    B --> C["Tính median_price_per_m2<br/>median_area, listing_count"]
+    C --> D["Scale biến số"]
+    D --> E["K-Means K = 3-4 cụm"]
+    E --> F["Bubble chart trong tab<br/>Phân cụm khu vực"]
+```
 
-Vi du:
+### 5.4 Trợ lý ảo NLP Local
 
-- "4 ty mua can ho tam 60m2 o khu nao on?" -> intent `scout`.
-- "So sanh Thu Duc voi Quan 7 cho can ho ban" -> intent `compare`.
-- "Tim tin gia tot hon mat bang o Binh Tan duoi 4 ty" -> intent `undervalued`.
-- "Du doan can ho 70m2 2PN o Thu Duc" -> intent `predict`.
-- "Con Quan 7 thi sao?" -> follow-up giu ngan sach/loai giao dich truoc va them Quan 7.
+Trợ lý BDS trong ứng dụng không phải mô hình LLM gọi API bên ngoài. Đây là một mô-đun NLP local viết bằng R, hoạt động theo kiến trúc luật, nhận diện ý định và trích xuất thực thể từ câu hỏi tiếng Việt.
+
+#### 5.4.1 Kiến trúc tổng quát
+
+```mermaid
+flowchart TD
+    A["Câu hỏi tiếng Việt của người dùng"] --> B["Chuẩn hóa văn bản<br/>lowercase, bỏ dấu, làm sạch ký tự"]
+    B --> C["Trích xuất thực thể"]
+    C --> C1["Ngân sách<br/>4 tỷ, dưới 15 triệu"]
+    C --> C2["Diện tích<br/>60m², 50-70m²"]
+    C --> C3["Số phòng<br/>2PN, 3 phòng ngủ"]
+    C --> C4["Khu vực<br/>Thủ Đức, Quận 7"]
+    C --> C5["Loại BĐS<br/>căn hộ, nhà phố, đất"]
+    B --> D["Nhận diện ý định"]
+    D --> E["Gộp context hội thoại"]
+    E --> F["Gọi tool local<br/>lọc dữ liệu, so sánh, dự đoán, tìm deal"]
+    F --> G["Sinh HTML trả lời trong Shiny"]
+```
+
+#### 5.4.2 Các nhóm ý định chính
+
+| Intent | Ví dụ câu hỏi | Hành động của trợ lý |
+|---|---|---|
+| `predict` | “Dự đoán căn hộ 70m² 2PN ở Thủ Đức” | Tạo input row, gọi model bán/thuê, trả giá dự đoán |
+| `compare` | “So sánh Thủ Đức với Quận 7” | Tính KPI và bảng so sánh hai khu vực |
+| `undervalued` | “Tìm tin giá tốt ở Bình Tân dưới 4 tỷ” | Lọc tin dưới ngân sách và thấp hơn mặt bằng |
+| `scout` | “4 tỷ mua căn hộ tầm 60m² ở đâu ổn?” | Gợi ý khu vực phù hợp theo ngân sách/diện tích |
+| `recommend` | “Nên xem khu nào để thuê căn hộ?” | Xếp hạng khu vực theo tiêu chí |
+| `stats` | “Giá/m² Quận 7 thế nào?” | Trả thống kê mô tả, median, IQR, số tin |
+| `explain` | “Model dự đoán dựa vào gì?” | Giải thích feature/model/metric |
+| `help` | “Bạn làm được gì?” | Liệt kê khả năng trợ lý |
+
+#### 5.4.3 Cơ chế context hội thoại
+
+Trợ lý giữ một phần ngữ cảnh để hiểu câu hỏi tiếp theo. Ví dụ:
+
+| Lượt | Người dùng hỏi | Context suy ra |
+|---:|---|---|
+| 1 | “4 tỷ mua căn hộ 60m² ở Thủ Đức ổn không?” | ngân sách = 4 tỷ, loại = căn hộ, diện tích = 60m², khu vực = Thủ Đức |
+| 2 | “Còn Quận 7 thì sao?” | giữ ngân sách/loại/diện tích, đổi khu vực sang Quận 7 |
+
+Cách tiếp cận này không cần mô hình ngôn ngữ lớn nhưng vẫn đủ tốt cho các luồng hỏi đáp phân tích dữ liệu trong phạm vi dashboard.
 
 ---
 
-## 6. THUC NGHIEM, KET QUA VA THAO LUAN
+## 6. THỰC NGHIỆM, KẾT QUẢ VÀ THẢO LUẬN (EXPERIMENTS & RESULTS)
 
-### 6.1 Thiet lap thuc nghiem
+### 6.1 Thiết lập thực nghiệm
 
-Du lieu dau vao: `data/main/du_lieu_chinh.csv`, 30,250 dong, 56 cot.
+#### 6.1.1 Dữ liệu và cấu hình chạy
 
-Tach phan khuc:
+Thực nghiệm sử dụng file:
 
-| Phan khuc | So dong |
+```text
+data/main/du_lieu_chinh.csv
+```
+
+Quy mô dữ liệu:
+
+| Chỉ tiêu | Giá trị |
 |---|---:|
-| Ban | 14,891 |
-| Cho thue | 15,359 |
+| Tổng số dòng | 30.250 |
+| Tổng số cột | 56 |
+| Tin bán | 14.891 |
+| Tin cho thuê | 15.359 |
+| Seed huấn luyện | `set.seed(42)` |
+| Tỉ lệ Train/Test | 80/20 |
+| Kiểu split | `stratified_random_by_source` |
 
-Chia validate:
+Artifact kết quả:
 
-- 80% train, 20% test.
-- Phan tang theo `source`.
-- Seed co dinh `set.seed(42)`.
+| Artifact | Vai trò |
+|---|---|
+| `models/chi_so_mo_hinh.csv` | Bảng metric của 5 mô hình cho Bán và Cho thuê |
+| `models/dang_ky_mo_hinh.csv` | Registry chọn mô hình tốt nhất theo từng phân khúc |
+| `models/mo_hinh_gia_ban.rds` | Bundle model cuối cho dự đoán giá bán |
+| `models/mo_hinh_gia_thue.rds` | Bundle model cuối cho dự đoán giá thuê |
+| `models/do_quan_trong_bien_ban.csv` | Feature Importance Random Forest phân khúc Bán |
+| `models/do_quan_trong_bien_thue.csv` | Feature Importance Random Forest phân khúc Cho thuê |
+| `models/cum_gia_quan_huyen.csv` | Kết quả K-Means cho các ô thị trường |
 
-Model so sanh:
+#### 6.1.2 Các mô hình so sánh
 
-1. Linear Regression.
-2. Random Forest.
-3. XGBoost.
-4. RF + XGBoost Ensemble.
-5. Tuned RF/XGBoost Ensemble.
+| STT | Mô hình | Nhóm thuật toán | Vai trò trong thực nghiệm |
+|---:|---|---|---|
+| 1 | Linear Regression | Baseline OLS | Mốc so sánh đơn giản, dễ giải thích |
+| 2 | Random Forest | Bagging | Mô hình cây phi tuyến mạnh, 500 cây |
+| 3 | XGBoost | Boosting | Mô hình cây tăng cường, dùng sparse matrix |
+| 4 | RF + XGBoost Ensemble | Ensemble trung bình | Kết hợp RF và XGBoost theo trọng số 0.5/0.5 |
+| 5 | Tuned RF/XGBoost Ensemble | Ensemble tối ưu trọng số | Quét trọng số để tối ưu MAPE |
 
-### 6.2 Chi so danh gia
+### 6.2 Chỉ số đánh giá
 
-#### RMSE
+Vì bài toán dự đoán giá bất động sản có biên độ giá rất lớn, dự án không chỉ dùng một metric duy nhất mà dùng bốn metric bổ sung cho nhau: RMSE, MAE, MAPE và \(R^2\).
 
-```text
-RMSE = sqrt(mean((actual - predicted)^2))
+#### 6.2.1 RMSE
+
+$$
+RMSE =
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^{n}
+(y_i - \widehat{y}_i)^2
+}
+$$
+
+RMSE phạt nặng các sai số lớn. Trong bất động sản, RMSE giúp phát hiện mô hình có bị lệch mạnh ở các tin cao cấp hay không. Tuy nhiên, RMSE có đơn vị VND và dễ bị chi phối bởi các tin siêu cao cấp.
+
+#### 6.2.2 MAE
+
+$$
+MAE =
+\frac{1}{n}
+\sum_{i=1}^{n}
+|y_i - \widehat{y}_i|
+$$
+
+MAE là sai số tuyệt đối trung bình. Metric này dễ giải thích với người dùng hơn RMSE vì có thể nói trực tiếp: “trung bình mô hình lệch khoảng bao nhiêu VND”.
+
+#### 6.2.3 MAPE
+
+$$
+MAPE =
+\frac{1}{n}
+\sum_{i=1}^{n}
+\left|
+\frac{y_i - \widehat{y}_i}{y_i}
+\right|
+$$
+
+MAPE là metric chính trong dự án vì:
+
+- Dễ trình bày với người không chuyên dưới dạng phần trăm.
+- So sánh được giữa phân khúc bán và thuê dù đơn vị giá khác nhau.
+- Phù hợp với sản phẩm dashboard vì người dùng thường muốn biết mô hình “lệch khoảng bao nhiêu phần trăm”.
+
+Tuy nhiên, MAPE cũng có hạn chế: nếu giá thực tế quá nhỏ, mẫu số nhỏ làm phần trăm sai số bị phóng đại. Dự án giảm rủi ro này bằng cách lọc giá quá thấp từ bước tiền xử lý.
+
+#### 6.2.4 Hệ số xác định R²
+
+$$
+R^2 =
+1 -
+\frac{
+\sum_{i=1}^{n}(y_i - \widehat{y}_i)^2
+}{
+\sum_{i=1}^{n}(y_i - \bar{y})^2
+}
+$$
+
+\(R^2\) đo tỉ lệ phương sai của giá được mô hình giải thích. Giá trị càng gần 1 càng tốt. Với dữ liệu bất động sản rao bán/rao thuê, \(R^2\) thường không quá cao vì giá chịu ảnh hưởng bởi nhiều biến ẩn không có trong dữ liệu.
+
+#### 6.2.5 Cách chọn mô hình tốt nhất
+
+Script chọn mô hình theo thứ tự:
+
+1. Sắp xếp tăng dần theo MAPE.
+2. Nếu MAPE bằng nhau, xét tiếp RMSE.
+
+```r
+best_model <- metrics %>%
+  arrange(mape, rmse_vnd) %>%
+  slice(1)
 ```
 
-RMSE phat nang sai so lon, phu hop de xem model bi anh huong boi cac tin sieu cao cap/ngoai lai ra sao.
+Lý do: sản phẩm cuối là app dự đoán giá cho người dùng, nên sai số phần trăm dễ hiểu hơn sai số tuyệt đối bằng VND.
 
-#### MAE
+### 6.3 Kết quả dự đoán
 
-```text
-MAE = mean(abs(actual - predicted))
-```
+#### 6.3.1 Kết quả phân khúc Bán
 
-MAE de giai thich hon RMSE vi la sai so tuyet doi trung binh theo VND.
+Theo `models/chi_so_mo_hinh.csv` hiện tại:
 
-#### MAPE
-
-```text
-MAPE = mean(abs((actual - predicted) / actual))
-```
-
-MAPE do sai so theo ty le phan tram, de trinh bay voi nguoi dung. Script chon best model bang MAPE truoc, neu bang nhau moi xet RMSE.
-
-#### R2
-
-```text
-R2 = 1 - SSE/SST
-```
-
-R2 cho biet ty le bien thien cua gia duoc model giai thich.
-
-### 6.3 Ket qua phan khuc ban
-
-| Model | Train | Test | RMSE | MAE | MAPE | R2 |
+| Mô hình | Train | Test | RMSE | MAE | MAPE | R² |
 |---|---:|---:|---:|---:|---:|---:|
-| Linear Regression | 11,911 | 2,978 | 26.50 ty | 8.20 ty | 50.00% | 0.616 |
-| Random Forest | 11,911 | 2,978 | 24.72 ty | 7.04 ty | 38.22% | 0.666 |
-| XGBoost | 11,911 | 2,978 | 23.63 ty | 6.81 ty | 38.84% | 0.695 |
-| RF + XGBoost Ensemble | 11,911 | 2,978 | 24.05 ty | 6.85 ty | 37.87% | 0.684 |
-| Tuned RF/XGBoost Ensemble | 11,911 | 2,978 | 24.20 ty | 6.89 ty | 37.78% | 0.680 |
+| Linear Regression | 11.911 | 2.978 | 26,46 tỷ | 8,20 tỷ | 50,00% | 0,616 |
+| Random Forest | 11.911 | 2.978 | 24,65 tỷ | 7,04 tỷ | 38,17% | 0,666 |
+| XGBoost | 11.911 | 2.978 | 23,57 tỷ | 6,81 tỷ | 38,82% | 0,695 |
+| RF + XGBoost Ensemble | 11.911 | 2.978 | 23,98 tỷ | 6,85 tỷ | 37,89% | 0,684 |
+| Tuned RF/XGBoost Ensemble | 11.911 | 2.978 | 24,16 tỷ | 6,89 tỷ | **37,84%** | 0,680 |
 
-Nhan xet:
+Nhận xét:
 
-- Linear Regression kem nhat ve MAPE do khong nam bat tot quan he phi tuyen.
-- XGBoost co RMSE va R2 tot nhat trong cac model don le.
-- Tuned Ensemble duoc registry chon vi MAPE thap nhat va RMSE canh tranh.
-- MAPE 37.78% cho thay bai toan du doan gia ban con kho, dac biet do cac tin nha pho/trung tam/biet thu co gia rat cao.
+- Linear Regression là baseline yếu nhất theo MAPE, chứng tỏ quan hệ giá bất động sản không thuần tuyến tính.
+- XGBoost có RMSE thấp nhất và \(R^2\) cao nhất ở phân khúc bán, cho thấy boosting xử lý tốt các sai số lớn.
+- Tuned Ensemble đạt MAPE thấp nhất, tức là tối ưu hơn nếu nhìn theo sai số phần trăm trung bình.
+- MAPE 37,84% vẫn còn cao, phản ánh bản chất khó của bài toán giá bán: nhiều outlier, nhà phố trung tâm, biệt thự, mặt bằng kinh doanh và tin có giá thương lượng.
 
-### 6.4 Ket qua phan khuc cho thue
+#### 6.3.2 Kết quả phân khúc Cho thuê
 
-| Model | Train | Test | RMSE | MAE | MAPE | R2 |
+Theo `models/chi_so_mo_hinh.csv` hiện tại:
+
+| Mô hình | Train | Test | RMSE | MAE | MAPE | R² |
 |---|---:|---:|---:|---:|---:|---:|
-| Linear Regression | 12,285 | 3,074 | 90.42 trieu | 30.88 trieu | 57.77% | 0.505 |
-| Random Forest | 12,285 | 3,074 | 85.21 trieu | 27.10 trieu | 41.59% | 0.561 |
-| XGBoost | 12,285 | 3,074 | 84.82 trieu | 27.36 trieu | 43.06% | 0.564 |
-| RF + XGBoost Ensemble | 12,285 | 3,074 | 84.65 trieu | 26.92 trieu | 41.42% | 0.566 |
-| Tuned RF/XGBoost Ensemble | 12,285 | 3,074 | 84.79 trieu | 26.87 trieu | 41.23% | 0.564 |
+| Linear Regression | 12.285 | 3.074 | 90,45 triệu | 30,92 triệu | 57,82% | 0,505 |
+| Random Forest | 12.285 | 3.074 | 85,16 triệu | 27,11 triệu | 41,60% | 0,561 |
+| XGBoost | 12.285 | 3.074 | 84,81 triệu | 27,37 triệu | 43,09% | 0,564 |
+| RF + XGBoost Ensemble | 12.285 | 3.074 | 84,68 triệu | 26,94 triệu | 41,35% | **0,566** |
+| Tuned RF/XGBoost Ensemble | 12.285 | 3.074 | 84,81 triệu | 26,94 triệu | **41,21%** | 0,564 |
 
-Nhan xet:
+Nhận xét:
 
-- Cho thue co them nhieu dong Mogi crawl, nen validation hien tai danh gia tren tap lon va da dang hon truoc.
-- RF + XGBoost Ensemble co RMSE/R2 tot nhat nhe, nhung Tuned Ensemble co MAPE nho nhat va duoc registry chon.
-- Gia thue phu thuoc manh vao tinh trang noi that, thoi han hop dong, dich vu, tien ich, dieu ma du lieu hien tai chua co cau truc day du.
+- Linear Regression kém rõ rệt, tương tự phân khúc bán.
+- RF + XGBoost Ensemble có RMSE và \(R^2\) nhỉnh hơn nhẹ.
+- Tuned RF/XGBoost Ensemble có MAPE thấp nhất nên được registry chọn làm mô hình tốt nhất.
+- Sai số thuê còn chịu ảnh hưởng mạnh bởi các biến chưa có cấu trúc như nội thất, dịch vụ, tình trạng căn hộ, tầng, view, phí quản lý và thời hạn hợp đồng.
 
-### 6.5 Ket qua EDA noi bat
+#### 6.3.3 Bảng tổng hợp mô hình tốt nhất
 
-Theo du lieu main:
+| Phân khúc | Best model | MAPE | RMSE | MAE | R² | Train | Test |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Bán | Tuned RF/XGBoost Ensemble | **37,84%** | 24,16 tỷ | 6,89 tỷ | 0,680 | 11.911 | 2.978 |
+| Cho thuê | Tuned RF/XGBoost Ensemble | **41,21%** | 84,81 triệu | 26,94 triệu | 0,564 | 12.285 | 3.074 |
 
-- Khu vuc nhieu tin nhat la **Thanh pho Thu Duc** voi 4,602 tin.
-- Tiep theo la **Quan 7** voi 3,125 tin va **Quan Binh Thanh** voi 2,505 tin.
-- Loai BDS nhieu nhat la **Nha pho** voi 6,478 tin, tiep theo la **Phong/Cho thue** voi 5,882 tin.
-- Phan khuc ban chiem 49.2%, cho thue chiem 50.8%.
-- Gia ban trung vi la 6.30 ty VND; gia thue trung vi la 25 trieu VND/thang.
-- 48.9% dong co toa do goc hop le; phan con lai duoc canh bao/uoc luong khi len ban do.
-
-### 6.6 Ket qua suy luan thong ke trong dashboard
-
-Dashboard khong luu ket qua t-test/bootstrap co dinh vi nguoi dung co the chon giao dich, loai BDS, khu vuc A/B, co mau va so lan lap. Tuy nhien, logic thong ke nhu sau:
-
-#### Xac suat thuc nghiem
-
-```text
-P(A) = so dong thoa A / tong so dong
+```mermaid
+flowchart LR
+    A["Linear Regression<br/>dễ giải thích nhưng underfit"] --> E["So sánh MAPE/RMSE"]
+    B["Random Forest<br/>bagging 500 cây"] --> E
+    C["XGBoost<br/>boosting + sparse matrix"] --> E
+    D["Ensemble RF/XGB<br/>trung bình hoặc tuned weight"] --> E
+    E --> F["Best hiện tại:<br/>Tuned RF/XGBoost Ensemble"]
 ```
 
-Vi du cac bang trong app tinh:
+### 6.4 Giải thích mô hình: Feature Importance
 
-- `P(khu vực = district A)`
-- `P(loại BDS = category)`
-- `P(giá/m2 >= Q3)`
-- `P(category | district)`
-- `P(tọa độ gốc từ nguồn)`
+Feature Importance được lấy từ Random Forest vì mô hình này hỗ trợ `importance = TRUE`. Hai chỉ số quan trọng:
 
-#### ECDF
+| Chỉ số | Ý nghĩa |
+|---|---|
+| `%IncMSE` | Nếu hoán vị biến đó làm MSE tăng nhiều, biến đó quan trọng |
+| `IncNodePurity` | Tổng mức giảm impurity do biến đó tạo ra trong các cây |
 
-```text
-F_n(x) = (1/n) * sum(I(X_i <= x))
-```
+#### 6.4.1 Top đặc trưng quan trọng cho phân khúc Bán
 
-ECDF giup doc percentile truc tiep. Neu duong ECDF cua Quan 1 nam lech phai hon Quan Binh Tan, dieu do cho thay gia/m2 tai Quan 1 cao hon tren hau het cac percentile.
+| Hạng | Biến | %IncMSE | IncNodePurity | Diễn giải |
+|---:|---|---:|---:|---|
+| 1 | `district_category_price_encoded` | 52,74 | 3663,56 | Mặt bằng giá theo cặp khu vực - loại BĐS |
+| 2 | `log_area` | 45,21 | 3618,79 | Diện tích sau log-transform |
+| 3 | `area` | 44,16 | 3505,69 | Diện tích gốc |
+| 4 | `district_name` | 48,05 | 1625,54 | Nhãn khu vực |
+| 5 | `ward_price_encoded` | 60,64 | 1399,54 | Mặt bằng giá theo phường |
+| 6 | `district_price_encoded` | 30,61 | 903,56 | Mặt bằng giá theo quận/huyện |
+| 7 | `rooms` | 38,36 | 882,58 | Số phòng từ nguồn |
+| 8 | `inferred_rooms` | 38,59 | 867,10 | Số phòng suy luận từ tiêu đề |
+| 9 | `distance_to_center` | 48,71 | 851,85 | Khoảng cách đến trung tâm |
+| 10 | `source_category_price_encoded` | 21,49 | 791,24 | Tương tác nguồn và loại BĐS |
 
-#### CLT simulation
+Diễn giải:
 
-Ung dung lay mau co hoan lai nhieu lan tu `price_per_m2`, moi lan tinh trung binh mau. Khi co mau tang, phan phoi trung binh mau co xu huong tien gan dang chuan:
+- Giá bán phụ thuộc rất mạnh vào **khu vực + loại BĐS**. Ví dụ cùng là 80m² nhưng căn hộ Quận 7, nhà phố Bình Tân và đất Bình Chánh có mặt bằng giá hoàn toàn khác nhau.
+- `area` và `log_area` cùng quan trọng vì giá tổng chịu ảnh hưởng trực tiếp từ diện tích, nhưng quan hệ không tuyến tính tuyệt đối.
+- `distance_to_center` có vai trò đáng kể, phù hợp với trực giác thị trường TP.HCM.
 
-```text
-Xbar_n approx Normal(mu, sigma^2/n)
-```
+#### 6.4.2 Top đặc trưng quan trọng cho phân khúc Cho thuê
 
-#### Bootstrap CI cho trung vi
+| Hạng | Biến | %IncMSE | IncNodePurity | Diễn giải |
+|---:|---|---:|---:|---|
+| 1 | `area` | 42,55 | 9398,95 | Diện tích là yếu tố chi phối giá thuê |
+| 2 | `log_area` | 41,72 | 8879,67 | Quan hệ diện tích - giá thuê sau log |
+| 3 | `district_category_price_encoded` | 41,26 | 1814,97 | Mặt bằng thuê theo khu vực - loại BĐS |
+| 4 | `district_name` | 83,38 | 1492,26 | Khu vực tác động mạnh tới giá thuê |
+| 5 | `inferred_rooms` | 37,21 | 707,62 | Số phòng suy luận |
+| 6 | `district_price_encoded` | 31,70 | 619,91 | Mặt bằng thuê theo khu vực |
+| 7 | `rooms` | 38,09 | 585,99 | Số phòng từ nguồn |
+| 8 | `category_name` | 38,34 | 579,81 | Loại BĐS |
+| 9 | `title_has_frontage` | 63,12 | 566,32 | Mặt tiền/mặt phố tác động đến giá thuê |
+| 10 | `title_token_count` | 59,88 | 539,73 | Độ dài tiêu đề chứa tín hiệu mô tả |
 
-Quy trinh:
+Diễn giải:
 
-1. Lay mau co hoan lai kich thuoc n tu mau goc.
-2. Tinh trung vi mau bootstrap.
-3. Lap B lan, mac dinh trong UI la 600 va co the thay doi.
-4. Lay quantile theo muc tin cay 90%, 95% hoac 99%.
+- Với giá thuê, diện tích là biến thống trị rõ hơn so với giá bán.
+- Nhóm `district_name` và `district_category_price_encoded` vẫn rất quan trọng vì giá thuê phụ thuộc mạnh vào vị trí.
+- Các từ khóa trong tiêu đề như “mặt tiền” có tác động lớn, đặc biệt với mặt bằng kinh doanh hoặc nhà phố cho thuê.
 
-Bootstrap phu hop vi trung vi ben vung hon trung binh voi gia BDS, nhung khong co cong thuc sai so chuan don gian nhu mean.
+### 6.5 Phân tích phần dư và hạn chế
 
-#### Welch's t-test
+#### 6.5.1 Định nghĩa phần dư
 
-Gia thuyet:
+Phần dư trên thang giá gốc:
 
-```text
-H0: mean(log(gia/m2)) cua hai khu vuc bang nhau
-H1: mean(log(gia/m2)) cua hai khu vuc khac nhau
-```
+$$
+e_i = price_i - \widehat{price}_i
+$$
 
-Thong ke:
+Phần dư trên thang log:
 
-```text
-t = (mean_A - mean_B) / sqrt(s_A^2/n_A + s_B^2/n_B)
-```
+$$
+e_i^{log} = \log(1 + price_i) - \widehat{\log(1 + price_i)}
+$$
 
-Neu p-value < 0.05, dashboard ket luan bac bo H0.
+Dashboard dùng các biểu đồ:
 
-#### Wilcoxon Rank-Sum
+- Actual vs Predicted.
+- Residual distribution.
+- Sai số theo khu vực.
+- Bảng so sánh metric.
 
-Wilcoxon khong doi hoi phan phoi chuan, phu hop khi du lieu lech va co outlier. Dashboard chay song song voi t-test de co ket qua ben hon.
+Mục tiêu không chỉ là xem mô hình “đúng hay sai”, mà còn xem mô hình sai ở đâu và vì sao sai.
 
-### 6.7 Thao luan sai so va han che
+#### 6.5.2 Vì sao sai số phình to ở phân khúc siêu cao cấp?
 
-Cac ly do khien sai so du doan con cao:
+Ở phân khúc siêu cao cấp, giá không còn phụ thuộc đơn giản vào diện tích và khu vực. Các biến ẩn có thể làm giá chênh rất mạnh:
 
-1. **Gia dang tin khac gia giao dich**: nguoi ban co the dang cao hon gia chot de de thuong luong.
-2. **Thieu dac trung vi mo**: huong nha, mat tien duong bao nhieu met, hem xe tai hay xe may, phap ly chi tiet, nam xay, chat luong noi that, view, tang, tien ich.
-3. **Nhan loai BDS chua hoan toan dong nhat**: `Can ho`, `Can ho/Chung cu`, `Can ho chung cu` co the can gom thanh taxonomy chuan hon.
-4. **Outlier gia rat lon**: cac tin nha pho Quan 1, biet thu, mat bang kinh doanh co gia cuc cao lam RMSE lon.
-5. **Bias nguon du lieu**: Mogi chiem 63.1% va Cho Tot chiem 26.8% so dong, co the anh huong phan phoi chung.
-6. **Toa do thieu/uoc luong**: 15,449 dong khong co toa do goc hop le, nen app uoc luong theo tam khu vuc.
-7. **Data leakage da duoc giam nhung can tiep tuc kiem soat**: target encoding trong training da fit tren train, nhung cac bien tong hop trong featured CSV van can duoc ra soat neu mo rong pipeline.
+| Nhóm biến ẩn | Ví dụ | Tác động đến sai số |
+|---|---|---|
+| Phong thủy | hướng nhà, số nhà, thế đất, nở hậu/tóp hậu | Có thể làm giá tăng/giảm nhưng dữ liệu hiện tại không có cột cấu trúc |
+| Nội thất | full nội thất cao cấp, bếp, thiết bị, vật liệu hoàn thiện | Đặc biệt quan trọng với căn hộ và nhà thuê |
+| Pháp lý | sổ hồng riêng, đồng sở hữu, quy hoạch, hoàn công | Có thể tạo chênh lệch giá rất lớn |
+| Vị trí vi mô | hẻm xe hơi thật/ảo, độ rộng đường, góc hai mặt tiền | Tiêu đề có regex nhưng chưa đủ chi tiết |
+| Tiện ích | gần metro, trường quốc tế, bệnh viện, sông/công viên | Chưa có biến khoảng cách tới POI |
+| Chất lượng tin | giá ảo, giá thương lượng, tin môi giới trùng | Làm nhiễu nhãn mục tiêu |
 
-### 6.8 Diem manh cua cach tiep can
+Vì vậy, một căn nhà cùng quận, cùng diện tích có thể có giá khác rất xa nếu khác pháp lý, mặt tiền đường lớn, nội thất hoặc tiềm năng khai thác dòng tiền.
 
-- Du an co pipeline end-to-end, khong chi la notebook phan tich tinh.
-- Co tach raw/interim/main, giup truy vet du lieu.
-- Co app Shiny de nguoi dung thao tac truc tiep.
-- Co model registry va metrics CSV de tai su dung trong UI.
-- Co check script cho app/model va tro ly.
-- Co chatbot local, khong phu thuoc API ngoai.
-- Co data quality cards, khong che dau loi du lieu.
+#### 6.5.3 Các dạng sai số thường gặp
+
+| Dạng sai số | Biểu hiện trên biểu đồ | Nguyên nhân có thể |
+|---|---|---|
+| Under-prediction ở giá rất cao | Điểm nằm dưới đường \(y=x\) khi actual lớn | Mô hình bị kéo về mặt bằng chung, thiếu biến cao cấp |
+| Over-prediction ở tin rẻ bất thường | Điểm nằm trên đường \(y=x\) khi actual thấp | Tin cần bán gấp, pháp lý yếu, vị trí xấu, dữ liệu thiếu |
+| Sai số theo khu vực | Một số quận/huyện có MAPE cao hơn | Ít mẫu, nhiều loại BĐS pha trộn, tọa độ ước lượng |
+| Sai số theo loại BĐS | Đất, biệt thự, mặt bằng có sai số lớn | Nhóm ít mẫu hoặc giá chịu nhiều yếu tố ngoài diện tích |
+
+#### 6.5.4 Hạn chế còn tồn tại
+
+1. **Dữ liệu là giá rao, không phải giá giao dịch thực**: giá rao thường cao hơn giá chốt và có chiến lược thương lượng.
+2. **Thiếu biến mô tả sâu**: hướng nhà, pháp lý chi tiết, nội thất, tầng, view, tiện ích, độ rộng đường/hem.
+3. **Một số nhãn loại BĐS chưa gom taxonomy tuyệt đối**: ví dụ `Căn hộ`, `Căn hộ/Chung cư`, `Căn hộ chung cư`.
+4. **Nguồn dữ liệu mất cân bằng**: Mogi và Chợ Tốt chiếm phần lớn dữ liệu, các nguồn nhỏ ít hơn.
+5. **Tọa độ gốc chưa đầy đủ**: nhiều dòng phải ước lượng theo tâm khu vực, phù hợp hiển thị bản đồ nhưng chưa đủ cho mô hình không gian chi tiết.
+6. **Outlier tự nhiên của thị trường**: nhà phố trung tâm, biệt thự, mặt bằng kinh doanh có phân phối giá rất dài đuôi.
+7. **Chưa có cross-validation theo thời gian**: hiện đánh giá bằng split 80/20 phân tầng theo nguồn; khi có dữ liệu lịch sử dài hơn nên bổ sung time-based validation.
+
+### 6.6 Kết quả phân cụm K-Means
+
+K-Means không dự đoán giá từng tin mà phân nhóm thị trường theo đặc trưng vĩ mô. Kết quả 305 ô thị trường được chia thành tối đa 4 cụm cho từng loại giao dịch.
+
+| Giao dịch | Số ô thị trường | Số cụm | Biến dùng phân cụm |
+|---|---:|---:|---|
+| Bán | 154 | 4 | median price/m², median area, listing count |
+| Cho thuê | 151 | 4 | median price/m², median area, listing count |
+| **Tổng** | **305** |  |  |
+
+Ý nghĩa khi đọc bubble chart:
+
+- Trục x càng lớn: diện tích trung vị càng cao.
+- Trục y càng lớn: giá/m² trung vị càng cao.
+- Bubble càng lớn: số tin trong nhóm càng nhiều.
+- Màu khác nhau: các cụm thị trường có đặc trưng khác nhau.
+
+Kết quả phân cụm hỗ trợ trả lời các câu hỏi kiểu:
+
+- Khu vực nào có mặt bằng giá/m² cao nhưng diện tích nhỏ?
+- Nhóm nào có nguồn cung nhiều nhất?
+- Phân khúc nào có diện tích lớn nhưng giá/m² thấp, phù hợp đầu tư vùng ven?
+
+### 6.7 Thảo luận tổng hợp
+
+#### 6.7.1 Điểm mạnh của kết quả
+
+- Pipeline đi từ raw data đến app, model và dashboard là end-to-end.
+- Train/test đã phân tầng theo nguồn, giảm lệch phân phối nguồn.
+- Target Encoding được fit trong train, tránh rò rỉ dữ liệu từ test.
+- So sánh đủ baseline, bagging, boosting và ensemble.
+- Có cả mô hình có giám sát và không giám sát.
+- Có giải thích mô hình bằng Feature Importance.
+- Có phần Residual Analysis và data quality trong dashboard, không che giấu hạn chế.
+
+#### 6.7.2 Ý nghĩa thực tiễn
+
+Mô hình hiện tại không nên được hiểu là “định giá tuyệt đối” thay cho thẩm định viên. Cách dùng hợp lý hơn:
+
+- Ước lượng nhanh mặt bằng giá tham khảo.
+- So sánh tin đang xem với dữ liệu cùng khu vực/loại BĐS.
+- Phát hiện tin có giá thấp/cao bất thường.
+- Hỗ trợ sinh báo cáo thị trường theo quận/huyện.
+- Làm nền cho một hệ thống phân tích BĐS có thể mở rộng.
+
+#### 6.7.3 Hướng cải thiện mô hình
+
+| Hướng cải thiện | Tác động kỳ vọng |
+|---|---|
+| Chuẩn hóa taxonomy loại BĐS | Giảm nhiễu do nhiều nhãn cùng nghĩa |
+| Thêm description dài | Trích được pháp lý, nội thất, tiện ích, tình trạng nhà |
+| Thêm POI/geospatial features | Bắt tốt hơn hiệu ứng gần metro, trường học, bệnh viện, sông, công viên |
+| Dùng geohash/spatial encoding | Thay thế khoảng cách đơn giản đến Quận 1 |
+| Time-based validation | Đánh giá khả năng tổng quát theo thời gian |
+| Quantile regression hoặc prediction interval | Trả khoảng giá thay vì một điểm dự đoán |
+| CatBoost/LightGBM nếu môi trường cho phép | Tối ưu hơn với biến phân loại và dữ liệu tabular |
+
+Tóm lại, Tuned RF/XGBoost Ensemble hiện là lựa chọn tốt nhất theo MAPE trong artifact hiện tại, nhưng sai số còn đáng kể vì dữ liệu BĐS có nhiều yếu tố phi cấu trúc. Đây là kết quả hợp lý đối với dữ liệu listing price đa nguồn, đồng thời chỉ ra rõ các hướng mở rộng để cải thiện chất lượng dự đoán.
 
 ---
 

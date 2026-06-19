@@ -257,7 +257,47 @@ server <- function(input, output, session) {
   })
 
   map_displayed <- reactive({
-    cap_render_rows(map_filtered(), map_marker_limit)
+    cap_render_rows(map_filtered(), map_marker_limit) %>%
+      mutate(.map_layer_id = as.character(row_number()))
+  })
+
+  map_listing_popups <- function(df) {
+    source_links <- listing_url(df$ad_url, df$source)
+    has_source_link <- !is.na(source_links) & source_links != ""
+    source_link_html <- ifelse(
+      has_source_link,
+      paste0(
+        "<a href='", htmltools::htmlEscape(source_links), "' target='_blank' rel='noopener noreferrer' ",
+        "style='display:inline-flex;align-items:center;justify-content:center;margin-top:10px;",
+        "padding:7px 10px;border-radius:6px;background:#0072bc;color:#ffffff;",
+        "font-weight:700;text-decoration:none'>Xem tin gốc</a>"
+      ),
+      "<div style='margin-top:10px;color:#94a3b8;font-size:12px'>Tin này chưa có link gốc</div>"
+    )
+    paste0(
+      "<div style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;font-size:12px;min-width:220px'>",
+      "<div style='font-weight:700;color:#0072bc;margin-bottom:4px'>", htmltools::htmlEscape(df$title), "</div>",
+      "<div style='color:#64748b'>", htmltools::htmlEscape(df$district_name), " · ", htmltools::htmlEscape(df$ward), "</div>",
+      "<div style='margin-top:7px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px'>",
+      "<span style='color:#64748b'>Giá</span><b>", format_vnd_full(df$price), "</b>",
+      "<span style='color:#64748b'>Diện tích</span><b>", round(df$area, 1), " m²</b>",
+      "<span style='color:#64748b'>Giá/m²</span><b>", format_vnd_full(df$price_per_m2), "/m²</b>",
+      "<span style='color:#64748b'>Loại</span><b>", htmltools::htmlEscape(df$category_name), "</b>",
+      "<span style='color:#64748b'>Tọa độ</span><b>", htmltools::htmlEscape(df$coord_status), "</b>",
+      "</div>",
+      source_link_html,
+      "</div>"
+    )
+  }
+
+  map_price_cuts <- reactive({
+    df <- map_filtered()
+    price_cuts <- quantile(df$price, probs = c(1 / 3, 2 / 3), na.rm = TRUE)
+    if (any(is.na(price_cuts)) || price_cuts[[1]] == price_cuts[[2]]) {
+      c(3e9, 8e9)
+    } else {
+      price_cuts
+    }
   })
 
   data_filtered <- reactive({
@@ -749,52 +789,103 @@ server <- function(input, output, session) {
   })
 
   output$listing_map <- renderLeaflet({
-    all_df <- map_filtered()
     df <- map_displayed()
     validate(need(nrow(df) > 0, "Không có điểm dữ liệu phù hợp bộ lọc."))
-    price_cuts <- quantile(all_df$price, probs = c(1 / 3, 2 / 3), na.rm = TRUE)
-    if (any(is.na(price_cuts)) || price_cuts[[1]] == price_cuts[[2]]) {
-      price_cuts <- c(3e9, 8e9)
-    }
+    price_cuts <- map_price_cuts()
 
-    source_links <- listing_url(df$ad_url, df$source)
-    source_link_html <- ifelse(
-      !is.na(source_links) & source_links != "",
-      paste0(
-        "<a href='", htmltools::htmlEscape(source_links), "' target='_blank' rel='noopener noreferrer' ",
-        "style='display:inline-flex;align-items:center;justify-content:center;margin-top:10px;",
-        "padding:7px 10px;border-radius:6px;background:#0072bc;color:#ffffff;",
-        "font-weight:700;text-decoration:none'>Xem tin gốc</a>"
-      ),
-      "<div style='margin-top:10px;color:#94a3b8;font-size:12px'>Tin này chưa có link gốc</div>"
+    marker_df <- df %>%
+      mutate(popup_html = map_listing_popups(df)) %>%
+      transmute(
+        map_lon,
+        map_lat,
+        price,
+        coord_status,
+        .map_layer_id,
+        popup_html
+      )
+
+    cluster_icon <- htmlwidgets::JS(
+      "function(cluster) {
+        var count = cluster.getChildCount();
+        var children = cluster.getAllChildMarkers();
+        var tones = { low: 0, mid: 0, high: 0 };
+        children.forEach(function(marker) {
+          var color = String((marker.options && marker.options.fillColor) || '').toLowerCase();
+          if (color === '#059669') tones.low += 1;
+          else if (color === '#d97706') tones.mid += 1;
+          else if (color === '#ed1c24') tones.high += 1;
+        });
+        var maxTone = 'low';
+        if (tones.mid > tones[maxTone]) maxTone = 'mid';
+        if (tones.high > tones[maxTone]) maxTone = 'high';
+        var dominantShare = count > 0 ? tones[maxTone] / count : 0;
+        var tone = dominantShare >= 0.58 ? maxTone : 'mixed';
+        var lowEnd = Math.round((tones.low / count) * 360);
+        var midEnd = lowEnd + Math.round((tones.mid / count) * 360);
+        var size = count < 25 ? 'small' : (count < 120 ? 'medium' : 'large');
+        var label = count >= 1000 ? (Math.round(count / 100) / 10) + 'k' : count;
+        var pixelSize = count < 25 ? 42 : (count < 120 ? 50 : 58);
+        var style = tone === 'mixed' ? \" style='--low-end:\" + lowEnd + \"deg;--mid-end:\" + midEnd + \"deg;'\" : '';
+        return L.divIcon({
+          html: '<div' + style + '><span>' + label + '</span></div>',
+          className: 'bds-marker-cluster bds-marker-cluster-' + size + ' bds-marker-cluster-' + tone,
+          iconSize: L.point(pixelSize, pixelSize)
+        });
+      }"
+    )
+    cluster_radius <- htmlwidgets::JS(
+      "function(zoom) {
+        if (zoom <= 11) return 96;
+        if (zoom <= 13) return 78;
+        if (zoom <= 15) return 58;
+        return 42;
+      }"
     )
 
-    popup <- paste0(
-      "<div style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;font-size:12px;min-width:220px'>",
-      "<div style='font-weight:700;color:#0072bc;margin-bottom:4px'>", htmltools::htmlEscape(df$title), "</div>",
-      "<div style='color:#64748b'>", htmltools::htmlEscape(df$district_name), " · ", htmltools::htmlEscape(df$ward), "</div>",
-      "<div style='margin-top:7px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px'>",
-      "<span style='color:#64748b'>Giá</span><b>", format_vnd_full(df$price), "</b>",
-      "<span style='color:#64748b'>Diện tích</span><b>", round(df$area, 1), " m²</b>",
-      "<span style='color:#64748b'>Giá/m²</span><b>", format_vnd_full(df$price_per_m2), "/m²</b>",
-      "<span style='color:#64748b'>Loại</span><b>", htmltools::htmlEscape(df$category_name), "</b>",
-      "<span style='color:#64748b'>Tọa độ</span><b>", htmltools::htmlEscape(df$coord_status), "</b>",
-      "</div>",
-      source_link_html,
-      "</div>"
-    )
-
-    leaflet(df, options = leafletOptions(preferCanvas = TRUE)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
+    leaflet(
+      marker_df,
+      options = leafletOptions(
+        preferCanvas = TRUE,
+        zoomSnap = 1,
+        zoomDelta = 1,
+        wheelPxPerZoomLevel = 160,
+        wheelDebounceTime = 80,
+        zoomAnimation = TRUE,
+        zoomAnimationThreshold = 2,
+        markerZoomAnimation = FALSE,
+        fadeAnimation = FALSE
+      )
+    ) %>%
+      addProviderTiles(
+        providers$CartoDB.Positron,
+        options = providerTileOptions(updateWhenIdle = TRUE, keepBuffer = 1)
+      ) %>%
       setView(lng = 106.70, lat = 10.78, zoom = 11) %>%
       addCircleMarkers(
         lng = ~map_lon, lat = ~map_lat,
+        layerId = ~.map_layer_id,
         radius = ~ifelse(coord_status == "Tọa độ gốc từ nguồn", 5, 4),
         stroke = TRUE, weight = 1, color = "#ffffff",
         fillColor = ~price_color(price, price_cuts[[1]], price_cuts[[2]]),
         fillOpacity = ~ifelse(coord_status == "Tọa độ gốc từ nguồn", 0.82, 0.55),
-        popup = popup,
-        popupOptions = popupOptions(maxWidth = 340, closeButton = TRUE)
+        popup = ~popup_html,
+        popupOptions = popupOptions(maxWidth = 340, closeButton = TRUE),
+        clusterOptions = markerClusterOptions(
+          showCoverageOnHover = FALSE,
+          zoomToBoundsOnClick = TRUE,
+          spiderfyOnMaxZoom = TRUE,
+          spiderfyDistanceMultiplier = 1.6,
+          removeOutsideVisibleBounds = TRUE,
+          spiderLegPolylineOptions = list(weight = 1.2, color = "#64748b", opacity = 0.42),
+          maxClusterRadius = cluster_radius,
+          disableClusteringAtZoom = 18,
+          animate = FALSE,
+          animateAddingMarkers = FALSE,
+          chunkedLoading = TRUE,
+          chunkInterval = 80,
+          chunkDelay = 25,
+          iconCreateFunction = cluster_icon
+        )
       )
   })
 
