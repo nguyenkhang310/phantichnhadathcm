@@ -1302,31 +1302,51 @@ server <- function(input, output, session) {
 
   # EDA/xac suat: ECDF gia/m2 de doc percentile va so sanh phan phoi khu vuc.
   output$price_ecdf_plot <- renderPlotly({
-    tx <- chart_transaction("ecdf_tx")
-    m2_info <- price_m2_display_info(tx)
-    df <- analysis_chart_data("ecdf_tx") %>%
-      filter(finite_positive(price_per_m2)) %>%
-      filter_price_m2_chart_outliers() %>%
-      mutate(display_m2 = price_per_m2 / m2_info$scale)
-    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "để vẽ ECDF.")))
-
-    top_districts <- known_rows_or_all(df, "district_name") %>%
-      count(district_name, sort = TRUE) %>%
-      slice_head(n = 5) %>%
-      pull(district_name)
-    plot_df <- df %>%
-      filter(district_name %in% top_districts) %>%
-      mutate(tooltip = paste0("Khu vực: ", district_name, "<br>Giá/m²: ", format_number_vi(display_m2, m2_info$digits), " ", m2_info$unit))
-
-    color_values <- setNames(chart_colors(n_distinct(plot_df$district_name)), sort(unique(plot_df$district_name)))
-    p <- plot_df %>%
-      ggplot(aes(x = display_m2, color = district_name, text = tooltip)) +
-      stat_ecdf(linewidth = 0.9) +
-      scale_color_manual(values = color_values) +
-      labs(x = paste0("Giá/m² (", m2_info$unit, ")"), y = "Xác suất tích lũy", color = "Khu vực") +
-      chart_theme()
-    interactive_chart(p, tooltip = "text")
-  })
+  tx <- chart_transaction("ecdf_tx")
+  m2_info <- price_m2_display_info(tx)
+  
+  # 1. Lấy dữ liệu cơ bản
+  df_base <- analysis_chart_data("ecdf_tx") %>%
+    filter(finite_positive(price_per_m2)) %>%
+    mutate(display_m2 = price_per_m2 / m2_info$scale)
+    
+  validate(need(nrow(df_base) > 0, paste("Không có dữ liệu", tx, "để vẽ ECDF.")))
+  
+  # 2. Xác định các quận sẽ vẽ
+  top_districts <- df_base %>%
+    count(district_name, sort = TRUE) %>%
+    head(4) %>%
+    pull(district_name)
+    
+  target_districts <- unique(c(top_districts, "Quận 1", "Quận Bình Tân"))
+  
+  # 3. Lọc theo quận và CẮT BỎ OUTLIER
+  cutoff_price <- quantile(df_base$display_m2, 0.95, na.rm = TRUE)
+  
+  df_plot <- df_base %>%
+    filter(district_name %in% target_districts) %>%
+    filter(display_m2 <= cutoff_price) 
+  
+  # 4. TÍNH TOÁN TRỰC TIẾP ECDF BẰNG TOÁN HỌC (ĐỂ SỬA LỖI PLOTLY)
+  df_plot <- df_plot %>%
+    arrange(district_name, display_m2) %>%           # Sắp xếp giá từ thấp đến cao theo từng quận
+    group_by(district_name) %>%                      # Gom nhóm theo quận
+    mutate(ecdf_prob = row_number() / n()) %>%       # Tự tính xác suất tích lũy (từ 0 đến 1)
+    ungroup()
+  
+  # 5. Vẽ biểu đồ bằng geom_step (thay vì stat_ecdf)
+  p <- ggplot(df_plot, aes(x = display_m2, y = ecdf_prob, color = district_name)) +
+    geom_step(linewidth = 1) +
+    labs(x = m2_info$axis, y = "Xác suất tích lũy", color = "Khu vực") +
+    chart_theme()
+  
+  # 6. Chuyển sang Plotly tương tác
+  interactive_chart(p) %>% 
+    layout(
+      legend = list(orientation = "h", x = 0, y = 1.1),
+      margin = list(l = 60, r = 20, t = 40, b = 60)
+    )
+})
 
   # ============================================================
   # OUTPUTS - SUY LUAN THONG KE
