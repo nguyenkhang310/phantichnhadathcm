@@ -108,6 +108,20 @@ Cap nhat data nhanh, khong retrain:
 Rscript scripts/pipeline/cap_nhat_du_lieu.R
 ```
 
+Keo data den moc muc tieu, van dung pipeline cap nhat chinh:
+
+```bash
+UPDATE_TO_TARGET=1 TARGET_ROWS=30000 DRY_RUN=1 Rscript scripts/pipeline/cap_nhat_du_lieu.R
+UPDATE_TO_TARGET=1 TARGET_ROWS=30000 Rscript scripts/pipeline/cap_nhat_du_lieu.R
+```
+
+Crawler Mogi moi duoc tich hop vao pipeline, uu tien bo sung tin cho thue:
+
+```bash
+MOGI_START_PAGE=121 MOGI_UPDATE_PAGES=140 MOGI_APPEND_EXISTING=1 \
+  INCLUDE_MOGI_SCRAPE=1 Rscript scripts/pipeline/cap_nhat_du_lieu.R
+```
+
 Cap nhat data va retrain co dieu kien:
 
 ```bash

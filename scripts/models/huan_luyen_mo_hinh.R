@@ -53,6 +53,7 @@ raw_df <- read_csv(DATA_PATH, show_col_types = FALSE)
 if (!"price_per_m2" %in% names(raw_df)) raw_df$price_per_m2 <- NA_real_
 if (!"posted_hour" %in% names(raw_df)) raw_df$posted_hour <- NA_integer_
 if (!"posted_wday" %in% names(raw_df)) raw_df$posted_wday <- NA_character_
+if (!"scraped_at" %in% names(raw_df)) raw_df$scraped_at <- NA_character_
 if (!"is_rent" %in% names(raw_df)) raw_df$is_rent <- NA
 if (!"log_price" %in% names(raw_df)) raw_df$log_price <- NA_real_
 if (!"log_area" %in% names(raw_df)) raw_df$log_area <- NA_real_
@@ -60,6 +61,8 @@ if (!"distance_to_center" %in% names(raw_df)) raw_df$distance_to_center <- NA_re
 if (!"ward_price_encoded" %in% names(raw_df)) raw_df$ward_price_encoded <- NA_real_
 if (!"source" %in% names(raw_df)) raw_df$source <- "unknown"
 if (!"transaction_type" %in% names(raw_df)) raw_df$transaction_type <- NA_character_
+
+now_ref <- lubridate::now(tzone = "Asia/Ho_Chi_Minh")
 
 df <- raw_df %>%
   mutate(
@@ -70,9 +73,18 @@ df <- raw_df %>%
     ward = as.factor(if_else(is.na(ward) | ward == "" | tolower(as.character(ward)) == "unknown", "Không rõ", as.character(ward))),
     rooms = if_else(is.na(rooms), 0, as.numeric(rooms)),
     area = if_else(is.na(area), median(area, na.rm = TRUE), as.numeric(area)),
-    posted_at = suppressWarnings(as_datetime(posted_at)),
-    posted_hour = if_else(is.na(as.integer(posted_hour)), hour(posted_at), as.integer(posted_hour)),
-    posted_wday = if_else(is.na(as.character(posted_wday)), as.character(wday(posted_at, label = TRUE)), as.character(posted_wday)),
+    posted_at = coalesce(
+      suppressWarnings(as_datetime(posted_at, tz = "Asia/Ho_Chi_Minh")),
+      suppressWarnings(as_datetime(scraped_at, tz = "Asia/Ho_Chi_Minh")),
+      now_ref
+    ),
+    posted_hour = coalesce(as.integer(posted_hour), hour(posted_at), 0L),
+    posted_wday = as.character(posted_wday),
+    posted_wday = if_else(
+      is.na(posted_wday) | posted_wday == "",
+      as.character(wday(posted_at, label = TRUE)),
+      posted_wday
+    ),
     posted_wday = as.factor(posted_wday),
     is_rent = if_else(is.na(as.logical(is_rent)), category_id %in% c("1030", "1050"), as.logical(is_rent)),
     transaction_type = as.factor(if_else(is_rent, "Cho thuê", "Bán")),

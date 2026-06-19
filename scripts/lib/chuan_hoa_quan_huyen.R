@@ -73,11 +73,16 @@ district_name_patterns <- c(
 
 new_ward_old_district_patterns <- c(
   "phuong\\s+(sai\\s+gon|ben\\s+thanh|tan\\s+dinh|cau\\s+ong\\s+lanh)" = "Quận 1",
+  "phuong\\s+(khanh\\s+hoi|xom\\s+chieu)" = "Quận 4",
   "phuong\\s+(cho\\s+lon|cho\\s+quan|an\\s+dong)" = "Quận 5",
-  "phuong\\s+(binh\\s+tay|binh\\s+phu|phu\\s+lam)" = "Quận 6",
+  "phuong\\s+(binh\\s+tay|binh\\s+phu|phu\\s+lam|binh\\s+tien)" = "Quận 6",
+  "phuong\\s+(binh\\s+dong|phu\\s+dinh)" = "Quận 8",
+  "phuong\\s+dien\\s+hong" = "Quận 10",
+  "phuong\\s+phu\\s+tho" = "Quận 11",
   "phuong\\s+(tay\\s+thanh|tan\\s+son\\s+nhi|phu\\s+tho\\s+hoa|phu\\s+thanh)" = "Quận Tân Phú",
   "phuong\\s+(bay\\s+hien|tan\\s+son\\s+hoa|tan\\s+hoa)" = "Quận Tân Bình",
   "phuong\\s+(hanh\\s+thong|an\\s+hoi|thong\\s+tay\\s+hoi|an\\s+nhon)" = "Quận Gò Vấp",
+  "(xa|phuong)\\s+tan\\s+vinh\\s+loc" = "Huyện Bình Chánh",
   "phuong\\s+(an\\s+khanh|thu\\s+thiem|thao\\s+dien|cat\\s+lai|binh\\s+trung|hiep\\s+binh|linh\\s+xuan|long\\s+binh|long\\s+phuoc|phuoc\\s+long|tam\\s+hiep|truong\\s+thanh|thu\\s+duc)" = "Thành phố Thủ Đức",
   "phuong\\s+(thoi\\s+hoa|ben\\s+cat|my\\s+phuoc)" = "TP Bến Cát cũ",
   "phuong\\s+(vung\\s+tau|tam\\s+thang|rach\\s+dua|phuoc\\s+thang)" = "TP Vũng Tàu cũ",
@@ -127,7 +132,7 @@ canonical_hcmc_district <- function(current, address = "", title = "", url = "")
 
   res <- current
 
-  needs_normalization <- !is_canonical
+  needs_normalization <- !is_canonical | current == "Không rõ"
   if (any(needs_normalization)) {
     len <- length(current)
     address <- rep_len(address, len)
@@ -145,4 +150,3 @@ canonical_hcmc_district <- function(current, address = "", title = "", url = "")
   }
   res
 }
-

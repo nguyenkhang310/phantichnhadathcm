@@ -35,6 +35,7 @@ PATHS <- list(
   mogi_source_csv = "data/raw/mogi/mogi_sach_goc.csv",
   mogi_raw_2_csv = "data/raw/mogi/mogi_tho_bo_sung.csv",
   mogi_source_csv_2 = "data/raw/mogi/mogi_sach_bo_sung.csv",
+  mogi_scraped_csv = "data/raw/mogi/mogi_sach_crawl.csv",
   mogi_raw_csv = "data/raw/mogi/mogi_schema_chuan.csv",
 
   homedy_source_csv = "data/raw/homedy/homedy_sach_goc.csv",
@@ -63,6 +64,7 @@ PATHS <- list(
   alonhadat_scraper_script = "scripts/scrapers/thu_thap_alonhadat.R",
   luachon_scraper_script = "scripts/scrapers/thu_thap_luachonnhadat.R",
   muaban_scraper_script = "scripts/scrapers/thu_thap_muaban.R",
+  mogi_scraper_script = "scripts/scrapers/thu_thap_mogi.R",
   import_alonhadat_local_script = "scripts/importers/nhap_alonhadat_local.R",
   import_mogi_script = "scripts/importers/nhap_mogi.R",
   import_homedy_script = "scripts/importers/nhap_homedy.R",

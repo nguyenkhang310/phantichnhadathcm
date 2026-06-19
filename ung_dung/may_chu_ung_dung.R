@@ -4,6 +4,8 @@
 # ============================================================
 
 server <- function(input, output, session) {
+  map_marker_limit <- performance_limit("BDS_MAP_MAX_MARKERS", 35000)
+
   nav_tabs <- c(
     "overview", "map", "analysis", "statistics", "predict",
     "diagnostics", "clusters", "data", "assistant"
@@ -254,6 +256,10 @@ server <- function(input, output, session) {
       )
   })
 
+  map_displayed <- reactive({
+    cap_render_rows(map_filtered(), map_marker_limit)
+  })
+
   data_filtered <- reactive({
     df <- listings()
     if (is_selected_filter(input$data_sources)) {
@@ -314,7 +320,7 @@ server <- function(input, output, session) {
 
   # ------------------------------------------------------------
   # PHAM VI DU LIEU SERVER - SUY LUAN THONG KE
-  # stat_base_data() la mau thong ke sau khi loc giao dich/loai BDS.
+  # stat_base_data() la mau thong ke sau khi loc nguon/giao dich/loai BDS.
   # Cac output xac suat, CLT, bootstrap va kiem dinh deu dung scope nay
   # de tranh moi bieu do tinh tren mot tap du lieu khac nhau.
   # ------------------------------------------------------------
@@ -323,6 +329,9 @@ server <- function(input, output, session) {
     df <- listings() %>%
       filter(transaction_type == tx, finite_positive(price_per_m2), finite_positive(price))
 
+    if (is_selected_filter(input$stat_sources)) {
+      df <- df %>% filter(source %in% input$stat_sources)
+    }
     if (is_selected_filter(input$stat_category)) {
       df <- df %>% filter(category_name %in% input$stat_category)
     }
@@ -392,7 +401,7 @@ server <- function(input, output, session) {
     div(
       class = "kpi-grid",
       kpi_card("Tin đăng đã thu thập", format(nrow(df), big.mark = ","), "sau làm sạch", "database", "default"),
-      kpi_card("Giá trung vị", format_vnd(median(df$price, na.rm = TRUE)), "toàn TP.HCM", "coins", "warning"),
+      kpi_card("Giá trung vị", median_price_stack(df), "tách riêng bán và cho thuê", "coins", "warning", value_class = "median-split"),
       kpi_card("Khu vực cũ có dữ liệu", paste0(n_distinct(df$district_name[!is_missing_label(df$district_name)]), " khu vực"), "độ phủ địa lý", "location-dot", "success"),
       kpi_card("Mô hình tốt nhất", best_model_name_only(m), "chọn theo MAPE/RMSE", "bullseye", "success", delta = best_model_mape_only(m), value_class = "text-mode")
     )
@@ -442,12 +451,11 @@ server <- function(input, output, session) {
       ),
       div(
         class = "report-stat",
-        title = paste0("Giá trung vị ", tolower(focus$transaction_type[[1]]), " tại ", profile$district),
+        title = paste0("Giá trung vị bán và cho thuê tại ", profile$district),
         icon("coins"),
         div(
-          class = "report-stat-content",
-          span(class = "report-stat-value", format_vnd(focus$median_price[[1]])),
-          span(class = "report-stat-label", paste0("trung vị ", tolower(focus$transaction_type[[1]])))
+          class = "report-stat-content report-median-content",
+          div(class = "report-stat-value report-median-value", median_price_tiles(profile$scoped))
         )
       )
     )
@@ -529,8 +537,11 @@ server <- function(input, output, session) {
 
   output$stat_category_filter <- renderUI({
     tx <- input$stat_transaction %||% "Bán"
-    choices <- listings() %>%
-      filter(transaction_type == tx) %>%
+    df <- listings() %>% filter(transaction_type == tx)
+    if (is_selected_filter(input$stat_sources)) {
+      df <- df %>% filter(source %in% input$stat_sources)
+    }
+    choices <- df %>%
       pull(category_name) %>%
       choice_values()
     selectInput(
@@ -540,6 +551,10 @@ server <- function(input, output, session) {
       selected = "__all__",
       selectize = FALSE
     )
+  })
+
+  output$stat_source_filter <- renderUI({
+    filter_source_select("stat_sources", source_choices(), "Tất cả nguồn")
   })
 
   output$stat_district_a_filter <- renderUI({
@@ -554,6 +569,26 @@ server <- function(input, output, session) {
     selectInput("stat_district_b", NULL, choices = choices, selected = selected, selectize = FALSE)
   })
 
+  output$stat_filter_summary <- renderUI({
+    df <- stat_base_data()
+    tx <- input$stat_transaction %||% "Bán"
+    div(
+      class = "filter-summary full stat-filter-summary",
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Mẫu thống kê"),
+          div(class = "filter-chip-value", format_count_vi(nrow(df)))),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Nguồn"),
+          div(class = "filter-chip-value", active_source_or_all(input$stat_sources))),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Giao dịch"),
+          div(class = "filter-chip-value", tx)),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Nguồn tọa độ"),
+          div(class = "filter-chip-value", coordinate_source_label(df)))
+    )
+  })
+
   output$filter_summary <- renderUI({
     df <- filtered()
     div(
@@ -563,22 +598,21 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", format(nrow(df), big.mark = ","))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Giá trung vị"),
-          div(class = "filter-chip-value", format_vnd(median(df$price, na.rm = TRUE))))
+          div(class = "filter-chip-value median-chip-value", median_price_stack(df)))
     )
   })
 
   output$map_filter_summary <- renderUI({
     df <- map_filtered()
-    exact_count <- sum(df$coord_status == "Tọa độ gốc từ nguồn", na.rm = TRUE)
-    estimated_count <- sum(df$coord_status != "Tọa độ gốc từ nguồn", na.rm = TRUE)
+    display_df <- map_displayed()
     div(
       class = "filter-summary full",
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Marker hiển thị"),
-          div(class = "filter-chip-value", format(nrow(df), big.mark = ","))),
+          div(class = "filter-chip-value", format_rendered_total(nrow(display_df), nrow(df)))),
       div(class = "filter-chip",
-          div(class = "filter-chip-label", "Độ chính xác vị trí"),
-          div(class = "filter-chip-value", paste0(format_count_vi(exact_count), " gốc / ", format_count_vi(estimated_count), " ước lượng"))),
+          div(class = "filter-chip-label", "Nguồn tọa độ"),
+          div(class = "filter-chip-value", coordinate_source_label(df))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Nguồn"),
           div(class = "filter-chip-value", active_source_or_all(input$map_sources))),
@@ -600,7 +634,7 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", active_source_or_all(input$data_sources))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Giá trung vị"),
-          div(class = "filter-chip-value", format_vnd(median(df$price, na.rm = TRUE))))
+          div(class = "filter-chip-value median-chip-value", median_price_stack(df)))
     )
   })
 
@@ -715,9 +749,10 @@ server <- function(input, output, session) {
   })
 
   output$listing_map <- renderLeaflet({
-    df <- map_filtered()
+    all_df <- map_filtered()
+    df <- map_displayed()
     validate(need(nrow(df) > 0, "Không có điểm dữ liệu phù hợp bộ lọc."))
-    price_cuts <- quantile(df$price, probs = c(1 / 3, 2 / 3), na.rm = TRUE)
+    price_cuts <- quantile(all_df$price, probs = c(1 / 3, 2 / 3), na.rm = TRUE)
     if (any(is.na(price_cuts)) || price_cuts[[1]] == price_cuts[[2]]) {
       price_cuts <- c(3e9, 8e9)
     }
@@ -749,7 +784,7 @@ server <- function(input, output, session) {
       "</div>"
     )
 
-    leaflet(df) %>%
+    leaflet(df, options = leafletOptions(preferCanvas = TRUE)) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       setView(lng = 106.70, lat = 10.78, zoom = 11) %>%
       addCircleMarkers(
@@ -759,7 +794,7 @@ server <- function(input, output, session) {
         fillColor = ~price_color(price, price_cuts[[1]], price_cuts[[2]]),
         fillOpacity = ~ifelse(coord_status == "Tọa độ gốc từ nguồn", 0.82, 0.55),
         popup = popup,
-        clusterOptions = markerClusterOptions()
+        popupOptions = popupOptions(maxWidth = 340, closeButton = TRUE)
       )
   })
 
@@ -770,7 +805,7 @@ server <- function(input, output, session) {
   # - ranking gia/m2 theo khu vuc
   # - khoang gia theo loai BDS
   # - histogram/log price distribution
-  # - heatmap, sunburst, xu huong thoi gian, tuong quan va ECDF
+  # - heatmap, radar nguon, xu huong thoi gian, tuong quan va ECDF
   # ============================================================
 
   # EDA: quan he dien tich va gia, dung de nhin pattern phi tuyen/outlier.
@@ -992,46 +1027,124 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: sunburst de thay co cau nguon -> giao dich -> loai BDS.
+  # EDA nang cao: radar de thay co cau nguon theo giao dich, de doc hon sunburst nhieu lat.
   output$source_sunburst_plot <- renderPlotly({
-    tx <- chart_transaction("source_sunburst_tx")
-    df <- overview_chart_data("source_sunburst_tx") %>%
-      filter(!is_missing_label(source), !is_missing_label(category_name))
-    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "để vẽ sunburst.")))
+    df <- filtered() %>%
+      filter(transaction_type %in% c("Bán", "Cho thuê"), !is_missing_label(source))
+    validate(need(nrow(df) > 0, "Không có dữ liệu phù hợp bộ lọc để vẽ radar nguồn."))
 
-    source_df <- df %>% count(source, sort = TRUE)
-    category_df <- df %>%
-      semi_join(source_df, by = "source") %>%
-      count(source, category_name, sort = TRUE)
+    top_sources <- df %>%
+      count(source, sort = TRUE) %>%
+      slice_head(n = 6) %>%
+      pull(source)
 
-    root_id <- paste0("tx_", assistant_text_key(tx))
-    source_ids <- paste0("source_", assistant_text_key(source_df$source))
-    category_ids <- paste0("category_", assistant_text_key(category_df$source), "_", seq_len(nrow(category_df)))
+    has_other <- any(!df$source %in% top_sources)
+    source_levels <- c(top_sources, if (has_other) "other_source")
+    source_labels <- ifelse(source_levels == "other_source", "Khác", source_label_vi(source_levels))
 
-    plot_df <- tibble::tibble(
-      ids = c(root_id, source_ids, category_ids),
-      labels = c(tx, source_label_vi(source_df$source), category_df$category_name),
-      parents = c("", rep(root_id, nrow(source_df)), paste0("source_", assistant_text_key(category_df$source))),
-      values = c(nrow(df), source_df$n, category_df$n)
+    df <- df %>%
+      mutate(source_group = if_else(source %in% top_sources, as.character(source), "other_source"))
+
+    tx_levels <- c("Bán", "Cho thuê")
+    tx_levels <- tx_levels[tx_levels %in% unique(df$transaction_type)]
+    radar_grid <- expand.grid(
+      transaction_type = tx_levels,
+      source_group = source_levels,
+      stringsAsFactors = FALSE
     )
 
-    plot_ly(
-      plot_df,
-      type = "sunburst",
-      ids = ~ids,
-      labels = ~labels,
-      parents = ~parents,
-      values = ~values,
-      branchvalues = "total",
-      maxdepth = 3,
-      insidetextorientation = "radial",
-      hovertemplate = "%{label}<br>Số tin: %{value}<extra></extra>"
-    ) %>%
-      layout(
-        margin = list(l = 0, r = 0, t = 10, b = 10),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937")
-      ) %>%
+    source_counts <- df %>%
+      count(transaction_type, source_group, name = "listings")
+    tx_totals <- df %>%
+      count(transaction_type, name = "total_listings")
+
+    plot_df <- radar_grid %>%
+      left_join(source_counts, by = c("transaction_type", "source_group")) %>%
+      left_join(tx_totals, by = "transaction_type") %>%
+      mutate(
+        listings = coalesce(listings, 0L),
+        share = if_else(total_listings > 0, listings / total_listings * 100, 0),
+        source_label = source_labels[match(source_group, source_levels)]
+      )
+
+    axis_max <- max(5, ceiling(max(plot_df$share, na.rm = TRUE) / 5) * 5)
+    color_values <- c("Bán" = "#0072bc", "Cho thuê" = "#10b981")
+    fill_values <- c("Bán" = "rgba(0, 114, 188, 0.18)", "Cho thuê" = "rgba(16, 185, 129, 0.18)")
+    domains <- if (length(tx_levels) == 1) list(c(0.08, 0.92)) else list(c(0.00, 0.47), c(0.53, 1.00))
+    fig <- plot_ly()
+    for (i in seq_along(tx_levels)) {
+      tx <- tx_levels[[i]]
+      trace_df <- plot_df %>%
+        filter(transaction_type == tx) %>%
+        arrange(match(source_group, source_levels))
+      trace_df <- bind_rows(trace_df, trace_df[1, , drop = FALSE])
+      fig <- fig %>%
+        add_trace(
+          data = trace_df,
+          type = "scatterpolar",
+          subplot = if (i == 1) "polar" else paste0("polar", i),
+          mode = "lines+markers",
+          r = ~share,
+          theta = ~source_label,
+          name = tx,
+          fill = "toself",
+          opacity = 0.62,
+          customdata = ~listings,
+          line = list(color = color_values[[tx]], width = 3),
+          marker = list(color = color_values[[tx]], size = 7),
+          fillcolor = fill_values[[tx]],
+          hovertemplate = paste0(
+            "Giao dịch: ", tx,
+            "<br>Nguồn: %{theta}",
+            "<br>Tỷ trọng: %{r:.1f}%",
+            "<br>Số tin: %{customdata}",
+            "<extra></extra>"
+          )
+        )
+    }
+
+    polar_base <- list(
+      bgcolor = "rgba(0,0,0,0)",
+      domain = list(x = domains[[1]], y = c(0, 1)),
+      radialaxis = list(
+        visible = TRUE,
+        range = c(0, axis_max),
+        ticksuffix = "%",
+        gridcolor = "#e5e7eb",
+        linecolor = "#cbd5e1",
+        tickfont = list(size = 10, color = "#64748b")
+      ),
+      angularaxis = list(
+        gridcolor = "#e5e7eb",
+        linecolor = "#cbd5e1",
+        tickfont = list(size = 10, color = "#334155")
+      )
+    )
+    layout_args <- list(
+      margin = list(l = 24, r = 24, t = 40, b = 20),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+      hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
+      showlegend = FALSE,
+      polar = polar_base,
+      annotations = lapply(seq_along(tx_levels), function(i) {
+        list(
+          x = mean(domains[[i]]),
+          y = 1.08,
+          xref = "paper",
+          yref = "paper",
+          text = paste0("<b>", tx_levels[[i]], "</b>"),
+          showarrow = FALSE,
+          font = list(size = 13, color = color_values[[tx_levels[[i]]]])
+        )
+      })
+    )
+    if (length(tx_levels) >= 2) {
+      layout_args$polar2 <- modifyList(polar_base, list(domain = list(x = domains[[2]], y = c(0, 1))))
+    }
+
+    do.call(plotly::layout, c(list(p = fig), layout_args)) %>%
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
@@ -1163,16 +1276,35 @@ server <- function(input, output, session) {
   output$stat_kpi_cards <- renderUI({
     df <- stat_base_data()
     tx <- input$stat_transaction %||% "Bán"
+    total_valid <- listings() %>%
+      filter(finite_positive(price_per_m2), finite_positive(price)) %>%
+      nrow()
     m2_info <- price_m2_display_info(tx)
     values <- df$price_per_m2[finite_positive(df$price_per_m2)]
     q75 <- safe_quantile(values, 0.75)
-    se_log <- stats::sd(log1p(values), na.rm = TRUE) / sqrt(length(values))
+    se_log <- if (length(values) >= 2) stats::sd(log1p(values), na.rm = TRUE) / sqrt(length(values)) else NA_real_
+    median_label <- if (length(values) > 0) {
+      paste0(format_number_vi(median(values / m2_info$scale, na.rm = TRUE), m2_info$digits), " ", m2_info$unit)
+    } else {
+      "Chưa có dữ liệu"
+    }
+    high_prob_label <- if (length(values) > 0 && is.finite(q75[[1]])) {
+      paste0(round(mean(values >= q75[[1]], na.rm = TRUE) * 100, 1), "%")
+    } else {
+      "Chưa có dữ liệu"
+    }
     div(
       class = "kpi-grid",
-      kpi_card("Cỡ mẫu thống kê", format_count_vi(nrow(df)), "sau lọc giao dịch/loại BĐS", "database", "default"),
-      kpi_card("Trung vị giá/m²", paste0(format_number_vi(median(values / m2_info$scale, na.rm = TRUE), m2_info$digits), " ", m2_info$unit), "sample statistic", "chart-line", "warning"),
+      kpi_card(
+        paste0("Cỡ mẫu ", tx),
+        format_count_vi(nrow(df)),
+        paste0("trong tổng ", format_count_vi(total_valid), " dòng hợp lệ"),
+        "database",
+        "default"
+      ),
+      kpi_card("Trung vị giá/m²", median_label, "sample statistic", "chart-line", "warning"),
       kpi_card("Standard error", format_number_vi(se_log, 4), "trên log(giá/m²)", "ruler", "success"),
-      kpi_card("P(giá cao)", paste0(round(mean(values >= q75[[1]], na.rm = TRUE) * 100, 1), "%"), "ngưỡng Q3 của nhóm lọc", "percent", "danger")
+      kpi_card("P(giá cao)", high_prob_label, "ngưỡng Q3 của nhóm lọc", "percent", "danger")
     )
   })
 
@@ -1413,6 +1545,35 @@ server <- function(input, output, session) {
       input$predict_transaction,
       input$predict_area
     )
+    error_band <- prediction_error_band(
+      listings(),
+      input$pred_district,
+      input$pred_category,
+      input$predict_transaction,
+      input$predict_area,
+      pred
+    )
+    error_band_chips <- if (is.null(error_band)) {
+      NULL
+    } else if (is.finite(error_band$lower) && is.finite(error_band$upper)) {
+      list(
+        div(class = "filter-chip",
+            div(class = "filter-chip-label", "Khoảng dự đoán"),
+            div(class = "filter-chip-value", paste(format_vnd(error_band$lower), "-", format_vnd(error_band$upper)))),
+        div(class = "filter-chip",
+            div(class = "filter-chip-label", "Mẫu sai số model"),
+            div(class = "filter-chip-value", paste0(format_count_vi(error_band$n), " dòng · ", error_band$confidence)))
+      )
+    } else {
+      list(
+        div(class = "filter-chip",
+            div(class = "filter-chip-label", "Khoảng dự đoán"),
+            div(class = "filter-chip-value", "Cần thêm mẫu")),
+        div(class = "filter-chip",
+            div(class = "filter-chip-label", "Mẫu sai số model"),
+            div(class = "filter-chip-value", paste0(format_count_vi(error_band$n), " dòng · ", error_band$confidence)))
+      )
+    }
     div(
       class = "filter-summary full",
       div(class = "filter-chip",
@@ -1426,7 +1587,8 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", format_vnd(band$median))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Q3 thị trường"),
-          div(class = "filter-chip-value", format_vnd(band$upper)))
+          div(class = "filter-chip-value", format_vnd(band$upper))),
+      error_band_chips
     )
   })
 
@@ -1730,10 +1892,12 @@ server <- function(input, output, session) {
         filter = "none",
         escape = 1:9,
         options = list(
+          deferRender = TRUE,
           pageLength = 15,
+          searchDelay = 350,
           scrollX = TRUE,
           language = list(search = "Tìm kiếm:", lengthMenu = "Hiển thị _MENU_ dòng")
         )
       )
-  })
+  }, server = TRUE)
 }

@@ -395,6 +395,38 @@ plot_sample <- function(df, max_n = 1600) {
   if (nrow(df) > max_n) dplyr::slice_sample(df, n = max_n) else df
 }
 
+performance_limit <- function(env_var, default) {
+  value <- suppressWarnings(as.integer(Sys.getenv(env_var, unset = as.character(default))))
+  if (is.na(value) || value <= 0) default else value
+}
+
+row_sample_rank <- function(id) {
+  id <- as.character(id)
+  vapply(id, function(value) {
+    if (is.na(value) || value == "") value <- "unknown"
+    ints <- utf8ToInt(value)
+    sum(ints * seq_along(ints)) %% 1000003L
+  }, numeric(1))
+}
+
+cap_render_rows <- function(df, max_n) {
+  if (nrow(df) <= max_n) return(df)
+  id <- if ("source_id" %in% names(df)) df$source_id else seq_len(nrow(df))
+  df %>%
+    mutate(.render_rank = row_sample_rank(id)) %>%
+    arrange(.render_rank) %>%
+    slice_head(n = max_n) %>%
+    select(-.render_rank)
+}
+
+format_rendered_total <- function(rendered_n, total_n) {
+  if (rendered_n >= total_n) {
+    format_count_vi(total_n)
+  } else {
+    paste0(format_count_vi(rendered_n), " / ", format_count_vi(total_n))
+  }
+}
+
 best_model_label <- function(metrics) {
   if (nrow(metrics) == 0 || !"mape" %in% names(metrics)) return("Chưa có")
   best <- metrics %>% filter(segment == "sale") %>% arrange(mape) %>% slice(1)
@@ -2173,6 +2205,94 @@ build_district_report_pdf <- function(file, df, district) {
   invisible(file)
 }
 
+median_price_summary <- function(df) {
+  if (nrow(df) == 0 || !"transaction_type" %in% names(df) || !"price" %in% names(df)) {
+    return(tibble::tibble(transaction_type = character(), listings = integer(), median_price = numeric()))
+  }
+
+  df %>%
+    filter(transaction_type %in% c("Bán", "Cho thuê"), finite_positive(price)) %>%
+    group_by(transaction_type) %>%
+    summarise(
+      listings = n(),
+      median_price = median(price, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(.order = match(transaction_type, c("Bán", "Cho thuê"))) %>%
+    arrange(.order) %>%
+    select(-.order)
+}
+
+median_price_stack <- function(df, include_counts = FALSE, empty = "Chưa có dữ liệu") {
+  summary <- median_price_summary(df)
+  if (nrow(summary) == 0) {
+    return(span(class = "median-stack-empty", empty))
+  }
+
+  tagList(lapply(seq_len(nrow(summary)), function(i) {
+    row <- summary[i, , drop = FALSE]
+    div(
+      class = "median-price-line",
+      span(class = "median-price-label", row$transaction_type[[1]]),
+      span(class = "median-price-value", format_vnd(row$median_price[[1]])),
+      if (isTRUE(include_counts)) {
+        span(class = "median-price-count", paste0(format_count_vi(row$listings[[1]]), " tin"))
+      }
+    )
+  }))
+}
+
+median_price_tiles <- function(df, empty = "Chưa có dữ liệu") {
+  summary <- median_price_summary(df)
+  if (nrow(summary) == 0) {
+    return(span(class = "median-stack-empty", empty))
+  }
+
+  div(
+    class = "report-median-tiles",
+    lapply(seq_len(nrow(summary)), function(i) {
+      row <- summary[i, , drop = FALSE]
+      div(
+        class = "report-median-tile",
+        span(class = "report-median-tile-label", row$transaction_type[[1]]),
+        span(class = "report-median-tile-value", format_vnd(row$median_price[[1]]))
+      )
+    })
+  )
+}
+
+coordinate_source_summary <- function(df) {
+  if (nrow(df) == 0 || !"coord_status" %in% names(df)) {
+    return(list(total = 0L, exact = 0L, estimated = 0L, exact_pct = NA_real_))
+  }
+
+  exact <- sum(df$coord_status == "Tọa độ gốc từ nguồn", na.rm = TRUE)
+  total <- nrow(df)
+  list(
+    total = total,
+    exact = exact,
+    estimated = max(total - exact, 0L),
+    exact_pct = if (total > 0) exact / total * 100 else NA_real_
+  )
+}
+
+coordinate_source_label <- function(df) {
+  summary <- coordinate_source_summary(df)
+  if (summary$total == 0) return("Chưa có dữ liệu")
+
+  pct <- if (is.finite(summary$exact_pct)) {
+    paste0(" · ", format_number_vi(summary$exact_pct, 1), "% gốc")
+  } else {
+    ""
+  }
+
+  paste0(
+    format_count_vi(summary$exact), " gốc / ",
+    format_count_vi(summary$estimated), " ước lượng",
+    pct
+  )
+}
+
 kpi_card <- function(label, value, hint = NULL, icon = "chart-line", tone = "default", delta = NULL, value_class = "") {
   div(
     class = paste("kpi-card", paste0("tone-", tone)),
@@ -2390,6 +2510,16 @@ build_data_quality_summary <- function(df) {
     sep = "|"
   )
 
+  issue_counts <- c(
+    sum(!is.na(date_values) & date_values > today),
+    sum(is_missing_label(df$district_name) | is_missing_label(df$category_name)),
+    sum(!finite_positive(df$price_per_m2)),
+    sum(df$coord_status != "Tọa độ gốc từ nguồn", na.rm = TRUE),
+    sum(duplicated(duplicate_key), na.rm = TRUE),
+    sum(is.finite(df$price) & df$price >= price_hi[[1]], na.rm = TRUE),
+    sum(is.finite(df$area) & df$area >= area_hi[[1]], na.rm = TRUE)
+  )
+
   tibble::tibble(
     nhom = c(
       "Ngày đăng tương lai",
@@ -2400,19 +2530,9 @@ build_data_quality_summary <- function(df) {
       "Giá thuộc 0,5% cao nhất",
       "Diện tích thuộc 0,5% cao nhất"
     ),
-    so_dong = c(
-      sum(!is.na(date_values) & date_values > today),
-      sum(is_missing_label(df$district_name) | is_missing_label(df$category_name)),
-      sum(!finite_positive(df$price_per_m2)),
-      sum(df$coord_status != "Tọa độ gốc từ nguồn", na.rm = TRUE),
-      sum(duplicated(duplicate_key), na.rm = TRUE),
-      sum(is.finite(df$price) & df$price >= price_hi[[1]], na.rm = TRUE),
-      sum(is.finite(df$area) & df$area >= area_hi[[1]], na.rm = TRUE)
-    ),
+    so_dong = issue_counts,
     muc_do = c(
-      "Cần rà",
-      "Cần rà",
-      "Cần rà",
+      ifelse(issue_counts[1:3] == 0, "Đạt", "Cần rà"),
       "Theo dõi",
       "Theo dõi",
       "Theo dõi",
@@ -2456,6 +2576,56 @@ prediction_market_band <- function(df, district, category, transaction_type, are
     median = q[[2]],
     upper = q[[3]],
     n = length(prices)
+  )
+}
+
+prediction_error_band <- function(df, district, category, transaction_type, area,
+                                  predicted_price, min_residual_rows = 20) {
+  predicted_price <- suppressWarnings(as.numeric(predicted_price))
+  if (!is.finite(predicted_price) || predicted_price <= 0) return(NULL)
+
+  market_band <- prediction_market_band(df, district, category, transaction_type, area)
+  scoped <- market_band$data
+  if (nrow(scoped) == 0) return(NULL)
+
+  model_path <- if (identical(transaction_type, "Cho thuê")) RENT_MODEL_PATH else SALE_MODEL_PATH
+  bundle <- load_model_cached(model_path)
+  if (is.null(bundle)) return(NULL)
+
+  predicted_existing <- predict_prices_for_rows(scoped, bundle)
+  keep <- finite_positive(scoped$price) & finite_positive(predicted_existing)
+  residual_log <- log1p(scoped$price[keep]) - log1p(predicted_existing[keep])
+  residual_log <- residual_log[is.finite(residual_log)]
+  residual_n <- length(residual_log)
+
+  if (residual_n < min_residual_rows) {
+    return(list(
+      lower = NA_real_,
+      upper = NA_real_,
+      n = residual_n,
+      confidence = assistant_confidence_label(residual_n)
+    ))
+  }
+
+  residual_quantiles <- quantile(residual_log, probs = c(0.10, 0.90), na.rm = TRUE, names = FALSE)
+  predicted_log <- log1p(predicted_price)
+  lower <- expm1(predicted_log + residual_quantiles[[1]])
+  upper <- expm1(predicted_log + residual_quantiles[[2]])
+
+  if (!is.finite(lower) || !is.finite(upper)) {
+    return(list(lower = NA_real_, upper = NA_real_, n = residual_n, confidence = assistant_confidence_label(residual_n)))
+  }
+  if (lower > upper) {
+    tmp <- lower
+    lower <- upper
+    upper <- tmp
+  }
+
+  list(
+    lower = max(0, lower),
+    upper = upper,
+    n = residual_n,
+    confidence = assistant_confidence_label(residual_n)
   )
 }
 

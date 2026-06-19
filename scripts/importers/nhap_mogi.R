@@ -5,6 +5,7 @@
 # Input:
 #   data/raw/mogi/mogi_sach_goc.csv
 #   data/raw/mogi/mogi_sach_bo_sung.csv
+#   data/raw/mogi/mogi_sach_crawl.csv (neu co)
 # Output:
 #   data/raw/mogi/mogi_schema_chuan.csv
 # ============================================================
@@ -170,8 +171,8 @@ run_import_mogi <- function() {
 
   dir.create(dirname(PATHS$mogi_raw_csv), recursive = TRUE, showWarnings = FALSE)
   source_files <- tibble(
-    path = c(PATHS$mogi_source_csv, PATHS$mogi_source_csv_2),
-    priority = c(1L, 2L)
+    path = c(PATHS$mogi_source_csv, PATHS$mogi_source_csv_2, PATHS$mogi_scraped_csv),
+    priority = c(1L, 2L, 3L)
   ) %>%
     filter(file.exists(path))
 

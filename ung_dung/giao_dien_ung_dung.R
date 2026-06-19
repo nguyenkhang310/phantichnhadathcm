@@ -22,7 +22,7 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css?v=report-toolbar-20260614-5"),
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=mogi-30k-map-filter-20260619"),
     tags$script(src = "tuong_tac.js")
   ),
   div(
@@ -173,7 +173,7 @@ ui <- fluidPage(
               ),
               fluidRow(
                 column(6, app_panel("Heatmap khu vực x loại BĐS", "Màu thể hiện giá/m² trung vị", chart_mode_control("district_category_heatmap_tx"), plotlyOutput("district_category_heatmap", height = 390))),
-                column(6, app_panel("Cơ cấu nguồn dữ liệu", "Sunburst nguồn - giao dịch - loại BĐS", chart_mode_control("source_sunburst_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
+                column(6, app_panel("Radar nguồn dữ liệu", "So sánh tỷ trọng nguồn giữa bán và cho thuê", plotlyOutput("source_sunburst_plot", height = 390)))
               ),
               fluidRow(
                 column(6, app_panel("Xu hướng theo thời gian", "Loại các ngày đăng trong tương lai để tránh nhiễu", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
@@ -203,6 +203,7 @@ ui <- fluidPage(
                 NULL,
                 div(
                   class = "filter-toolbar stat-toolbar",
+                  filter_field("Nguồn", uiOutput("stat_source_filter"), icon_name = "database"),
                   filter_field("Giao dịch", selectInput("stat_transaction", NULL, choices = c("Bán", "Cho thuê"), selected = "Bán", selectize = FALSE), icon_name = "tags"),
                   filter_field("Loại BĐS", uiOutput("stat_category_filter"), icon_name = "building"),
                   filter_field("Khu vực A", uiOutput("stat_district_a_filter"), icon_name = "location-dot"),
@@ -214,6 +215,7 @@ ui <- fluidPage(
                   class = "filter-toolbar stat-toolbar compact",
                   filter_field("Mức tin cậy", selectInput("stat_confidence", NULL, choices = c("90%" = 0.90, "95%" = 0.95, "99%" = 0.99), selected = 0.95, selectize = FALSE), icon_name = "shield-halved")
                 ),
+                uiOutput("stat_filter_summary"),
                 class = "filter-card"
               ),
               uiOutput("stat_kpi_cards"),

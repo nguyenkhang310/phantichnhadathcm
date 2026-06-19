@@ -130,6 +130,9 @@ build_features <- function(df) {
     stop("Data thieu cot: ", paste(missing_cols, collapse = ", "))
   }
 
+  now_ref <- lubridate::now(tzone = "Asia/Ho_Chi_Minh")
+  max_posted_at <- lubridate::as_datetime(as.Date(now_ref) + 1, tz = "Asia/Ho_Chi_Minh")
+
   if (!"source" %in% names(df)) df$source <- "unknown"
   if (!"source_id" %in% names(df)) {
     df$source_id <- if ("ad_id" %in% names(df)) as.character(df$ad_id) else seq_len(nrow(df))
@@ -172,9 +175,20 @@ build_features <- function(df) {
       title_has_legal = has_text_pattern(text_key, "so hong|phap ly|giay to|hop le"),
       title_has_income_info = has_text_pattern(text_key, "\\bhd\\b|hop dong|dong tien|cho thue"),
       title_token_count = str_count(text_key, "\\S+"),
-      posted_at = suppressWarnings(as_datetime(posted_at)),
-      scraped_at = if ("scraped_at" %in% names(.)) suppressWarnings(as_datetime(scraped_at)) else as_datetime(NA),
+      posted_at = suppressWarnings(as_datetime(posted_at, tz = "Asia/Ho_Chi_Minh")),
+      scraped_at = if ("scraped_at" %in% names(.)) {
+        suppressWarnings(as_datetime(scraped_at, tz = "Asia/Ho_Chi_Minh"))
+      } else {
+        as_datetime(NA, tz = "Asia/Ho_Chi_Minh")
+      },
       posted_at = coalesce(posted_at, scraped_at),
+      posted_at = if_else(
+        !is.na(posted_at) & posted_at > max_posted_at & !is.na(scraped_at) & scraped_at <= max_posted_at,
+        scraped_at,
+        posted_at
+      ),
+      posted_at = if_else(!is.na(posted_at) & posted_at > max_posted_at, as_datetime(NA_real_), posted_at),
+      posted_at = coalesce(posted_at, scraped_at, now_ref),
       lat = if_else(in_hcmc_bbox(lat, lon), lat, NA_real_),
       lon = if_else(in_hcmc_bbox(lat, lon), lon, NA_real_),
       has_area = !is.na(area) & area > 0,
@@ -239,8 +253,9 @@ build_features <- function(df) {
       ward_price_encoded = log1p(ward_median_price),
       listing_age_days = as.numeric(difftime(Sys.time(), posted_at, units = "days")),
       listing_age_days = if_else(is.na(listing_age_days) | listing_age_days < 0, 0, listing_age_days),
-      posted_hour = hour(posted_at),
-      posted_wday = wday(posted_at, label = TRUE),
+      posted_hour = coalesce(hour(posted_at), 0L),
+      posted_wday = as.character(wday(posted_at, label = TRUE)),
+      posted_wday = if_else(is.na(posted_wday) | posted_wday == "", as.character(wday(now_ref, label = TRUE)), posted_wday),
       is_weekend_post = wday(posted_at) %in% c(1, 7),
       price_segment = ntile(price, 4),
       price_segment = factor(price_segment, labels = c("Re", "Trung binh", "Cao", "Cao cap")),
