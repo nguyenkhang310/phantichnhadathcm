@@ -1027,11 +1027,12 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: radar de thay co cau nguon theo giao dich, de doc hon sunburst nhieu lat.
+  # EDA nang cao: radar de thay co cau nguon theo nhom giao dich dang chon.
   output$source_sunburst_plot <- renderPlotly({
-    df <- filtered() %>%
-      filter(transaction_type %in% c("Bán", "Cho thuê"), !is_missing_label(source))
-    validate(need(nrow(df) > 0, "Không có dữ liệu phù hợp bộ lọc để vẽ radar nguồn."))
+    tx <- chart_transaction("source_radar_tx")
+    df <- analysis_chart_data("source_radar_tx") %>%
+      filter(!is_missing_label(source))
+    validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "phù hợp bộ lọc để vẽ radar nguồn.")))
 
     top_sources <- df %>%
       count(source, sort = TRUE) %>%
@@ -1045,67 +1046,38 @@ server <- function(input, output, session) {
     df <- df %>%
       mutate(source_group = if_else(source %in% top_sources, as.character(source), "other_source"))
 
-    tx_levels <- c("Bán", "Cho thuê")
-    tx_levels <- tx_levels[tx_levels %in% unique(df$transaction_type)]
     radar_grid <- expand.grid(
-      transaction_type = tx_levels,
       source_group = source_levels,
       stringsAsFactors = FALSE
     )
 
     source_counts <- df %>%
-      count(transaction_type, source_group, name = "listings")
-    tx_totals <- df %>%
-      count(transaction_type, name = "total_listings")
+      count(source_group, name = "listings")
+    total_listings <- sum(source_counts$listings, na.rm = TRUE)
 
     plot_df <- radar_grid %>%
-      left_join(source_counts, by = c("transaction_type", "source_group")) %>%
-      left_join(tx_totals, by = "transaction_type") %>%
+      left_join(source_counts, by = "source_group") %>%
       mutate(
         listings = coalesce(listings, 0L),
-        share = if_else(total_listings > 0, listings / total_listings * 100, 0),
-        source_label = source_labels[match(source_group, source_levels)]
-      )
+        share = if (total_listings > 0) listings / total_listings * 100 else 0,
+        source_label = source_labels[match(source_group, source_levels)],
+        tooltip = paste0(
+          "Giao dịch: ", tx,
+          "<br>Nguồn: ", source_label,
+          "<br>Tỷ trọng: ", format_number_vi(share, 1), "%",
+          "<br>Số tin: ", format_count_vi(listings)
+        )
+      ) %>%
+      arrange(match(source_group, source_levels))
+    plot_df <- bind_rows(plot_df, plot_df[1, , drop = FALSE])
 
     axis_max <- max(5, ceiling(max(plot_df$share, na.rm = TRUE) / 5) * 5)
     color_values <- c("Bán" = "#0072bc", "Cho thuê" = "#10b981")
     fill_values <- c("Bán" = "rgba(0, 114, 188, 0.18)", "Cho thuê" = "rgba(16, 185, 129, 0.18)")
-    domains <- if (length(tx_levels) == 1) list(c(0.08, 0.92)) else list(c(0.00, 0.47), c(0.53, 1.00))
-    fig <- plot_ly()
-    for (i in seq_along(tx_levels)) {
-      tx <- tx_levels[[i]]
-      trace_df <- plot_df %>%
-        filter(transaction_type == tx) %>%
-        arrange(match(source_group, source_levels))
-      trace_df <- bind_rows(trace_df, trace_df[1, , drop = FALSE])
-      fig <- fig %>%
-        add_trace(
-          data = trace_df,
-          type = "scatterpolar",
-          subplot = if (i == 1) "polar" else paste0("polar", i),
-          mode = "lines+markers",
-          r = ~share,
-          theta = ~source_label,
-          name = tx,
-          fill = "toself",
-          opacity = 0.62,
-          customdata = ~listings,
-          line = list(color = color_values[[tx]], width = 3),
-          marker = list(color = color_values[[tx]], size = 7),
-          fillcolor = fill_values[[tx]],
-          hovertemplate = paste0(
-            "Giao dịch: ", tx,
-            "<br>Nguồn: %{theta}",
-            "<br>Tỷ trọng: %{r:.1f}%",
-            "<br>Số tin: %{customdata}",
-            "<extra></extra>"
-          )
-        )
-    }
 
     polar_base <- list(
       bgcolor = "rgba(0,0,0,0)",
-      domain = list(x = domains[[1]], y = c(0, 1)),
+      domain = list(x = c(0.08, 0.92), y = c(0, 1)),
       radialaxis = list(
         visible = TRUE,
         range = c(0, axis_max),
@@ -1120,31 +1092,32 @@ server <- function(input, output, session) {
         tickfont = list(size = 10, color = "#334155")
       )
     )
-    layout_args <- list(
-      margin = list(l = 24, r = 24, t = 40, b = 20),
-      paper_bgcolor = "rgba(0,0,0,0)",
-      plot_bgcolor = "rgba(0,0,0,0)",
-      font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
-      hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
-      showlegend = FALSE,
-      polar = polar_base,
-      annotations = lapply(seq_along(tx_levels), function(i) {
-        list(
-          x = mean(domains[[i]]),
-          y = 1.08,
-          xref = "paper",
-          yref = "paper",
-          text = paste0("<b>", tx_levels[[i]], "</b>"),
-          showarrow = FALSE,
-          font = list(size = 13, color = color_values[[tx_levels[[i]]]])
-        )
-      })
-    )
-    if (length(tx_levels) >= 2) {
-      layout_args$polar2 <- modifyList(polar_base, list(domain = list(x = domains[[2]], y = c(0, 1))))
-    }
 
-    do.call(plotly::layout, c(list(p = fig), layout_args)) %>%
+    plot_ly() %>%
+      add_trace(
+        data = plot_df,
+        type = "scatterpolar",
+        mode = "lines+markers",
+        r = ~share,
+        theta = ~source_label,
+        text = ~tooltip,
+        hovertemplate = "%{text}<extra></extra>",
+        fill = "toself",
+        opacity = 0.68,
+        line = list(color = color_values[[tx]], width = 3),
+        marker = list(color = color_values[[tx]], size = 7),
+        fillcolor = fill_values[[tx]],
+        showlegend = FALSE
+      ) %>%
+      layout(
+        margin = list(l = 72, r = 72, t = 8, b = 20),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
+        showlegend = FALSE,
+        polar = polar_base
+      ) %>%
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
@@ -1242,6 +1215,7 @@ server <- function(input, output, session) {
     m2_info <- price_m2_display_info(tx)
     df <- analysis_chart_data("ecdf_tx") %>%
       filter(finite_positive(price_per_m2)) %>%
+      filter_price_m2_chart_outliers() %>%
       mutate(display_m2 = price_per_m2 / m2_info$scale)
     validate(need(nrow(df) > 0, paste("Không có dữ liệu", tx, "để vẽ ECDF.")))
 
@@ -1354,6 +1328,7 @@ server <- function(input, output, session) {
     districts <- unique(c(stat_selected_district_a(), stat_selected_district_b()))
     df <- stat_base_data() %>%
       filter(district_name %in% districts, finite_positive(price_per_m2)) %>%
+      filter_price_m2_chart_outliers() %>%
       mutate(display_m2 = price_per_m2 / m2_info$scale)
     validate(need(nrow(df) > 0, "Chưa có dữ liệu cho hai khu vực đã chọn."))
 
@@ -1371,16 +1346,25 @@ server <- function(input, output, session) {
   output$clt_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
-    values <- stat_base_data()$price_per_m2
-    means <- bootstrap_mean_distribution(values / m2_info$scale, input$stat_sample_size, input$stat_reps)
+    values <- price_m2_chart_values(stat_base_data()$price_per_m2)
+    sample_size <- max(10, min(300, as.integer(input$stat_sample_size %||% 50)))
+    reps <- max(200, min(1500, as.integer(input$stat_reps %||% 600)))
+    simulation_seed <- 2026 + sample_size * 31 + reps * 17
+    means <- bootstrap_mean_distribution(values / m2_info$scale, sample_size, reps, seed = simulation_seed)
     validate(need(length(means) > 0, "Cần ít nhất vài dòng giá/m² hợp lệ để mô phỏng CLT."))
     observed_mean <- mean(values / m2_info$scale, na.rm = TRUE)
 
     plot_ly(x = means, type = "histogram", nbinsx = 34, marker = list(color = "#0072bc", line = list(color = "#ffffff", width = 0.5))) %>%
       layout(
+        title = list(
+          text = paste0("Cỡ mẫu = ", sample_size, " | Số lần lặp = ", reps),
+          x = 0,
+          xanchor = "left",
+          font = list(size = 13)
+        ),
         shapes = list(list(type = "line", x0 = observed_mean, x1 = observed_mean, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))),
         annotations = list(list(x = observed_mean, y = 1, yref = "paper", text = "Mean mẫu gốc", showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444"))),
-        margin = list(l = 62, r = 20, t = 12, b = 62),
+        margin = list(l = 62, r = 20, t = 46, b = 62),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         bargap = 0.04,
@@ -1398,7 +1382,8 @@ server <- function(input, output, session) {
     district <- stat_selected_district_a()
     values <- stat_base_data() %>%
       filter(district_name == district, finite_positive(price_per_m2)) %>%
-      pull(price_per_m2) / m2_info$scale
+      pull(price_per_m2)
+    values <- price_m2_chart_values(values) / m2_info$scale
     boot <- bootstrap_median_ci(values, input$stat_reps, confidence_level_value(input$stat_confidence))
     validate(need(length(boot$distribution) > 0, "Cần tối thiểu 5 dòng cho bootstrap."))
 

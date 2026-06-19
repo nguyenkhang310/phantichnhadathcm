@@ -22,7 +22,7 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css?v=mogi-30k-map-filter-20260619"),
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=simulation-toolbar-center-20260619"),
     tags$script(src = "tuong_tac.js")
   ),
   div(
@@ -173,7 +173,7 @@ ui <- fluidPage(
               ),
               fluidRow(
                 column(6, app_panel("Heatmap khu vực x loại BĐS", "Màu thể hiện giá/m² trung vị", chart_mode_control("district_category_heatmap_tx"), plotlyOutput("district_category_heatmap", height = 390))),
-                column(6, app_panel("Radar nguồn dữ liệu", "So sánh tỷ trọng nguồn giữa bán và cho thuê", plotlyOutput("source_sunburst_plot", height = 390)))
+                column(6, app_panel("Radar nguồn dữ liệu", "Tỷ trọng nguồn trong nhóm giao dịch đang chọn", chart_mode_control("source_radar_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
               ),
               fluidRow(
                 column(6, app_panel("Xu hướng theo thời gian", "Loại các ngày đăng trong tương lai để tránh nhiễu", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
@@ -198,6 +198,7 @@ ui <- fluidPage(
               class = "page-wrap",
               h1(class = "page-title", "Suy luận thống kê"),
               div(class = "page-subtitle", "Áp dụng xác suất, phân phối mẫu, kiểm định giả thuyết, CLT và bootstrap trực tiếp trên dữ liệu BĐS TP.HCM."),
+              uiOutput("stat_kpi_cards"),
               app_panel(
                 "Thiết lập phân tích",
                 NULL,
@@ -207,9 +208,7 @@ ui <- fluidPage(
                   filter_field("Giao dịch", selectInput("stat_transaction", NULL, choices = c("Bán", "Cho thuê"), selected = "Bán", selectize = FALSE), icon_name = "tags"),
                   filter_field("Loại BĐS", uiOutput("stat_category_filter"), icon_name = "building"),
                   filter_field("Khu vực A", uiOutput("stat_district_a_filter"), icon_name = "location-dot"),
-                  filter_field("Khu vực B", uiOutput("stat_district_b_filter"), icon_name = "code-compare"),
-                  filter_field("Cỡ mẫu CLT", sliderInput("stat_sample_size", NULL, min = 10, max = 300, value = 50, step = 10, ticks = FALSE), icon_name = "dice"),
-                  filter_field("Số lần lặp", sliderInput("stat_reps", NULL, min = 200, max = 1500, value = 600, step = 100, ticks = FALSE), icon_name = "rotate")
+                  filter_field("Khu vực B", uiOutput("stat_district_b_filter"), icon_name = "code-compare")
                 ),
                 div(
                   class = "filter-toolbar stat-toolbar compact",
@@ -218,13 +217,26 @@ ui <- fluidPage(
                 uiOutput("stat_filter_summary"),
                 class = "filter-card"
               ),
-              uiOutput("stat_kpi_cards"),
               fluidRow(
                 column(6, app_panel("Xác suất có điều kiện", "P(loại BĐS | khu vực) theo số tin", plotlyOutput("probability_heatmap", height = 390))),
                 column(6, app_panel("Phân phối giá/m²", "ECDF giữa hai khu vực được chọn", plotlyOutput("stat_distribution_plot", height = 390)))
               ),
+              app_panel(
+                "Thiết lập mô phỏng",
+                "Cỡ mẫu dùng cho CLT; số lần lặp dùng chung cho CLT và Bootstrap CI bên dưới",
+                div(
+                  class = "filter-toolbar stat-toolbar simulation-toolbar",
+                  filter_field("Cỡ mẫu CLT", sliderInput("stat_sample_size", NULL, min = 10, max = 300, value = 50, step = 10, ticks = FALSE), icon_name = "dice"),
+                  filter_field("Số lần lặp", sliderInput("stat_reps", NULL, min = 200, max = 1500, value = 600, step = 100, ticks = FALSE), icon_name = "rotate")
+                ),
+                class = "filter-card"
+              ),
               fluidRow(
-                column(6, app_panel("CLT simulation", "Phân phối trung bình mẫu khi lấy mẫu có hoàn lại", plotlyOutput("clt_plot", height = 360))),
+                column(6, app_panel(
+                  "CLT simulation",
+                  "Phân phối trung bình mẫu khi lấy mẫu có hoàn lại",
+                  plotlyOutput("clt_plot", height = 360)
+                )),
                 column(6, app_panel("Bootstrap CI", "Khoảng tin cậy bootstrap cho trung vị giá/m² khu vực A", plotlyOutput("bootstrap_plot", height = 360)))
               ),
               fluidRow(

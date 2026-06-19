@@ -2436,9 +2436,37 @@ safe_quantile <- function(x, probs, default = NA_real_) {
   as.numeric(stats::quantile(x, probs = probs, na.rm = TRUE, names = FALSE))
 }
 
+price_m2_chart_upper <- function(x, prob = 0.98, min_n = 30) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[finite_positive(x)]
+  if (length(x) < min_n) return(Inf)
+
+  upper <- safe_quantile(x, prob)
+  center <- stats::median(x, na.rm = TRUE)
+  if (!is.finite(upper[[1]]) || !is.finite(center) || center <= 0) return(Inf)
+
+  max(upper[[1]], center * 3)
+}
+
+filter_price_m2_chart_outliers <- function(df, column = "price_per_m2", prob = 0.98, min_n = 30) {
+  if (!column %in% names(df) || nrow(df) == 0) return(df)
+  upper <- price_m2_chart_upper(df[[column]], prob = prob, min_n = min_n)
+  if (!is.finite(upper)) return(df)
+  df[finite_positive(df[[column]]) & df[[column]] <= upper, , drop = FALSE]
+}
+
+price_m2_chart_values <- function(x, prob = 0.98, min_n = 30) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[finite_positive(x)]
+  upper <- price_m2_chart_upper(x, prob = prob, min_n = min_n)
+  if (is.finite(upper)) x <- x[x <= upper]
+  x
+}
+
 confidence_level_value <- function(x) {
-  value <- suppressWarnings(as.numeric(x))
-  if (!is.finite(value) || !(value %in% c(0.90, 0.95, 0.99))) 0.95 else value
+  if (is.null(x) || length(x) == 0) return(0.95)
+  value <- suppressWarnings(as.numeric(x[[1]]))
+  if (is.na(value) || !is.finite(value) || !(value %in% c(0.90, 0.95, 0.99))) 0.95 else value
 }
 
 bootstrap_median_ci <- function(x, reps = 600, confidence = 0.95, seed = 2026) {

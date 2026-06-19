@@ -91,15 +91,15 @@ html, body, .container-fluid { min-height: 100%; }
 .topbar-title-wrap { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .topbar-title { color: var(--fg); font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; }
 .topbar-subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 500; }
-.topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-width: 0; }
+.topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-width: 0; flex: 0 1 760px; }
 
 /* ===== Report Toolbar — thanh cong cu topbar ===== */
 .report-toolbar {
   display: flex;
   align-items: center;
   gap: 0;
-  min-width: 0;
-  max-width: 700px;
+  min-width: 360px;
+  max-width: 760px;
   padding: 4px;
   border-radius: 14px;
   background: rgba(248, 250, 252, 0.85);
@@ -110,7 +110,7 @@ html, body, .container-fluid { min-height: 100%; }
 }
 
 /* --- Chon khu vuc --- */
-.report-search { position: relative; flex: 1 1 200px; min-width: 0; }
+.report-search { position: relative; flex: 1 1 260px; min-width: 240px; }
 .report-search-icon {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
   z-index: 5; color: var(--primary); font-size: 13px; pointer-events: none;
@@ -139,7 +139,19 @@ html, body, .container-fluid { min-height: 100%; }
   box-shadow: 0 0 0 3px rgba(0, 114, 188, 0.12) !important;
 }
 .report-search .selectize-input > div {
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: block !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 2px) !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.report-search .selectize-input.has-items input {
+  width: 1px !important;
+  min-width: 1px !important;
+  max-width: 1px !important;
+  flex: 0 0 1px !important;
+  opacity: 0;
 }
 .report-search .selectize-input input { font-size: 13px !important; min-width: 60px !important; }
 .report-search .selectize-control.single .selectize-input:after { right: 12px; }
@@ -362,6 +374,17 @@ html, body, .container-fluid { min-height: 100%; }
 .filter-toolbar { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(150px, 1.15fr) minmax(160px, 1.15fr) minmax(170px, .95fr) minmax(170px, .95fr) auto; gap: 20px; align-items: end; }
 .filter-toolbar.stat-toolbar { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
 .filter-toolbar.stat-toolbar.compact { grid-template-columns: minmax(180px, 260px); }
+.filter-toolbar.simulation-toolbar {
+  grid-template-columns: repeat(2, minmax(260px, 400px));
+  gap: 20px;
+  justify-content: center;
+}
+.filter-toolbar.clt-toolbar {
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+  align-items: end;
+}
 .stat-toolbar .chart-mode { margin: 0; }
 .filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .filter-field { min-width: 0; }
@@ -571,6 +594,7 @@ html, body, .container-fluid { min-height: 100%; }
   .app-topbar { height: auto; min-height: 68px; padding: 10px 16px; gap: 10px; flex-wrap: wrap; }
   .topbar-actions { width: 100%; gap: 8px; flex-shrink: 0; }
   .report-toolbar { width: 100%; max-width: none; flex-wrap: nowrap; }
+  .report-search { flex-basis: 260px; }
   .report-stats { display: none; }
   .report-divider { display: none; }
 }
@@ -603,6 +627,8 @@ html, body, .container-fluid { min-height: 100%; }
   .topbar-title { font-size: 17px; line-height: 1.22; }
   .topbar-title-wrap { flex: 1; }
   .topbar-actions { width: 100%; gap: 8px; flex-shrink: 0; }
+  .report-toolbar { min-width: 0; }
+  .report-search { min-width: 0; }
   .report-search .selectize-input { min-height: 38px; }
   .report-download-button { width: 36px; min-width: 36px; padding: 0; }
   .report-download-button span { display: none; }
