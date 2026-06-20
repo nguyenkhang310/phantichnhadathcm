@@ -165,6 +165,57 @@ PATHS$sale_model_rds   = "models/mo_hinh_gia_ban.rds"
 PATHS$rent_model_rds   = "models/mo_hinh_gia_thue.rds"
 ```
 
+So do duoi day tom tat cach du lieu va cau hinh chay duoc lien ket trong he thong:
+
+```mermaid
+flowchart LR
+  subgraph Config["Cau hinh chay"]
+    ENV["Bien moi truong<br/>BDS_APP_HOST<br/>BDS_APP_PORT"]
+    APP_ENTRY["app.R"]
+    PATH_CONFIG["scripts/config/duong_dan_du_an.R<br/>PATHS"]
+    LOCAL_LIB[".local/thu_vien_r<br/>use_local_r_libs()"]
+  end
+
+  subgraph RawData["Du lieu dau vao"]
+    RAW_CHOTOT["PATHS$chotot_raw_csv<br/>data/raw/chotot/chotot_schema_chuan.csv"]
+    RAW_SOURCES["PATHS$source_raw_csvs<br/>Alonhadat, Luachonnhadat,<br/>Muaban, Mogi, Homedy"]
+    CACHE["PATHS$chotot_sqlite<br/>data/cache/cache_chotot.sqlite"]
+  end
+
+  subgraph Processing["Xu ly du lieu"]
+    MERGE["PATHS$merge_sources_script<br/>gop_nguon_du_lieu.R"]
+    COMBINED["PATHS$combined_raw_csv<br/>data/interim/du_lieu_gop_nguon.csv"]
+    FEATURE["PATHS$feature_engineering_script<br/>tao_dac_trung.R"]
+    MAIN["PATHS$featured_csv<br/>data/main/du_lieu_chinh.csv"]
+  end
+
+  subgraph Runtime["Model va ung dung"]
+    TRAIN["PATHS$train_models_script<br/>huan_luyen_mo_hinh.R"]
+    MODEL_FILES["models/*.rds<br/>chi_so_mo_hinh.csv<br/>dang_ky_mo_hinh.csv"]
+    SHINY["Shiny dashboard<br/>ui + server + helpers"]
+  end
+
+  ENV --> APP_ENTRY
+  APP_ENTRY --> PATH_CONFIG
+  APP_ENTRY --> LOCAL_LIB
+  PATH_CONFIG --> RAW_CHOTOT
+  PATH_CONFIG --> RAW_SOURCES
+  PATH_CONFIG --> CACHE
+  RAW_CHOTOT --> MERGE
+  RAW_SOURCES --> MERGE
+  MERGE --> COMBINED
+  COMBINED --> FEATURE
+  CACHE -. fallback toa do/cache .-> FEATURE
+  FEATURE --> MAIN
+  MAIN --> TRAIN
+  TRAIN --> MODEL_FILES
+  MAIN --> SHINY
+  MODEL_FILES --> SHINY
+  PATH_CONFIG --> SHINY
+```
+
+So do nguon cung duoc luu tai `docs/diagrams/du_lieu_va_cau_hinh_chay.mmd` de tai su dung khi render bao cao.
+
 ### 3.3 Schema du lieu chuan sau gop nguon
 
 Script `gop_nguon_du_lieu.R` dinh nghia 27 cot chuan trong `STANDARD_COLS`:
@@ -1724,6 +1775,7 @@ Script kiem tra:
 |---|---|
 | `kien_truc_he_thong.mmd` | Kien truc nguon du lieu -> storage -> analytics -> outputs. |
 | `luong_du_lieu.mmd` | Luong scrape/import -> schema -> merge -> feature engineering -> main CSV. |
+| `du_lieu_va_cau_hinh_chay.mmd` | Lien ket giua `app.R`, `PATHS`, du lieu raw/interim/main, model va bien moi truong chay app. |
 | `schema_du_lieu.mmd` | ERD LISTINGS va FEATURED_LISTINGS. |
 | `quy_trinh_mo_hinh_ml.mmd` | Train/test, Linear, RF, XGBoost, Ensemble, metrics, model artifacts. |
 | `dieu_huong_ung_dung.mmd` | Dieu huong ung dung Shiny. |
