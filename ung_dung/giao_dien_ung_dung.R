@@ -22,8 +22,8 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css?v=map-native-popup-clean-20260620"),
-    tags$script(src = "tuong_tac.js")
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=fit-screen-20260624e"),
+    tags$script(src = "tuong_tac.js?v=fit-screen-20260624e")
   ),
   div(
     class = "app-shell",
