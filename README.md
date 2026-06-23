@@ -1,3 +1,9 @@
+---
+title: Phan Tich Nha Dat TP.HCM
+sdk: docker
+app_port: 3838
+---
+
 # Phan Tich Nha Dat TP.HCM
 
 Du an R/Shiny phan tich, truc quan hoa va du doan gia bat dong san TP.HCM tu nhieu nguon du lieu: Cho Tot, Alonhadat, Luachonnhadat, Muaban, Mogi va Homedy.
@@ -76,7 +82,7 @@ Rscript app.R
 
 ## Deploy Len Internet
 
-Du an da co san cau hinh Docker va Render:
+Du an da co san cau hinh Docker, Render va Hugging Face Spaces:
 
 ```text
 Dockerfile
@@ -130,6 +136,35 @@ BDS_APP_PORT > PORT > 3838
 ```
 
 Khi deploy tren Render, nen de Render tu cap bien `PORT`. Khi chay local co the dung `BDS_APP_PORT=3838`.
+
+### Deploy bang Hugging Face Spaces
+
+1. Vao https://huggingface.co/spaces
+2. Chon Create new Space.
+3. Dat Space name la `phantichnhadathcm`.
+4. Chon SDK la `Docker`.
+5. Chon visibility `Public`.
+6. Tao Space.
+7. Them remote Hugging Face vao repo local:
+
+```bash
+git remote add hf https://huggingface.co/spaces/<username>/phantichnhadathcm
+```
+
+8. Push code va file LFS len Space:
+
+```bash
+git push hf main
+git lfs push --all hf main
+```
+
+Sau khi build xong, app se co URL dang:
+
+```text
+https://huggingface.co/spaces/<username>/phantichnhadathcm
+```
+
+File `README.md` co metadata `sdk: docker` va `app_port: 3838` de Hugging Face biet build bang Dockerfile va mo dung cong Shiny.
 
 ## Dashboard
 
