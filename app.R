@@ -33,8 +33,15 @@ nap_goi_ung_dung()
 source(PATHS$district_normalization_script)
 source(PATHS$display_labels_script)
 
-DIA_CHI_UNG_DUNG <- Sys.getenv("BDS_APP_HOST", unset = "127.0.0.1")
-CONG_UNG_DUNG <- suppressWarnings(as.integer(Sys.getenv("BDS_APP_PORT", unset = "3838")))
+lay_bien_moi_truong <- function(ten, mac_dinh = "") {
+  gia_tri <- Sys.getenv(ten, unset = "")
+  if (nzchar(gia_tri)) gia_tri else mac_dinh
+}
+
+DIA_CHI_UNG_DUNG <- lay_bien_moi_truong("BDS_APP_HOST", "127.0.0.1")
+CONG_UNG_DUNG <- suppressWarnings(as.integer(
+  lay_bien_moi_truong("BDS_APP_PORT", lay_bien_moi_truong("PORT", "3838"))
+))
 
 if (is.na(CONG_UNG_DUNG) || CONG_UNG_DUNG <= 0) {
   stop("BDS_APP_PORT phải là một số nguyên dương.")

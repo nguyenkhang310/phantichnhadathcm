@@ -1,0 +1,14 @@
+.git
+.RData
+.Rhistory
+.Rproj.user
+.DS_Store
+Thumbs.db
+
+.local/
+data/cache/
+data/logs/*.log
+docs/
+plots/*.png
+*.Rproj
+*.docx~

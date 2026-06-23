@@ -74,6 +74,63 @@ Chay app:
 Rscript app.R
 ```
 
+## Deploy Len Internet
+
+Du an da co san cau hinh Docker va Render:
+
+```text
+Dockerfile
+.dockerignore
+render.yaml
+```
+
+### Chay thu bang Docker tren may
+
+Build image:
+
+```bash
+docker build -t phantichnhadathcm .
+```
+
+Chay app:
+
+```bash
+docker run --rm -p 3838:3838 -e BDS_APP_PORT=3838 phantichnhadathcm
+```
+
+Mo trinh duyet tai:
+
+```text
+http://localhost:3838
+```
+
+### Deploy bang Render
+
+Project dung Git LFS cho cac file model `.rds` lon. Truoc khi push len GitHub, kiem tra Git LFS:
+
+```bash
+git lfs install
+git lfs ls-files
+```
+
+1. Push toan bo project len GitHub.
+2. Vao Render Dashboard.
+3. Chon New > Blueprint.
+4. Chon repo GitHub cua project.
+5. Render se doc file `render.yaml` va tao web service `phantichnhadathcm`.
+6. Bam Apply/Deploy.
+7. Sau khi build xong, app se co URL dang `https://phantichnhadathcm.onrender.com`.
+
+File `render.yaml` dang dung goi `free` de deploy thu mien phi. Vi project co model `.rds` lon, app co the cham, bi sleep khi khong co truy cap, hoac loi thieu RAM. Neu can chay on dinh hon, doi `plan: free` thanh `plan: starter`.
+
+App doc cong chay theo thu tu uu tien:
+
+```text
+BDS_APP_PORT > PORT > 3838
+```
+
+Khi deploy tren Render, nen de Render tu cap bien `PORT`. Khi chay local co the dung `BDS_APP_PORT=3838`.
+
 ## Dashboard
 
 App Shiny hien co cac nhom chuc nang chinh:
