@@ -37,7 +37,7 @@ DISPLAY_FEATURE_LABELS_VI <- c(
 
 DISPLAY_MODEL_LABELS_VI <- c(
   "Linear Regression" = "Hồi quy tuyến tính",
-  "Random Forest" = "Rừng ngẫu nhiên",
+  "Random Forest" = "Random Forest",
   "XGBoost" = "XGBoost",
   "RF + XGBoost Ensemble" = "Tổ hợp RF + XGBoost",
   "Tuned RF/XGBoost Ensemble" = "Tổ hợp RF/XGBoost tối ưu"
