@@ -31,6 +31,7 @@ nap_goi_ung_dung <- function(goi = GOI_CAN_THIET) {
 
 nap_goi_ung_dung()
 source(PATHS$district_normalization_script)
+source(PATHS$display_labels_script)
 
 DIA_CHI_UNG_DUNG <- Sys.getenv("BDS_APP_HOST", unset = "127.0.0.1")
 CONG_UNG_DUNG <- suppressWarnings(as.integer(Sys.getenv("BDS_APP_PORT", unset = "3838")))

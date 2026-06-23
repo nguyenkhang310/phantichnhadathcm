@@ -89,7 +89,7 @@ html, body, .container-fluid { min-height: 100%; }
   border-bottom: 1px solid rgba(226, 232, 240, 0.6); box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
 }
 .topbar-title-wrap { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-.topbar-title { color: var(--fg); font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; }
+.topbar-title { color: var(--fg); font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: 0; }
 .topbar-subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 500; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-width: 0; flex: 0 1 760px; }
 
@@ -181,8 +181,8 @@ html, body, .container-fluid { min-height: 100%; }
 .report-stat-content { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
 .report-stat-value {
   font-size: 13px; font-weight: 800; color: var(--fg);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  line-height: 1.2; letter-spacing: -0.01em;
+  white-space: normal; overflow: visible; text-overflow: clip;
+  overflow-wrap: anywhere; line-height: 1.2; letter-spacing: 0;
 }
 .report-stat-label {
   font-size: 10px; font-weight: 600; color: #94a3b8;
@@ -224,9 +224,10 @@ html, body, .container-fluid { min-height: 100%; }
   font-size: 12px;
   font-weight: 800;
   line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 
 /* --- Download button --- */
@@ -257,7 +258,7 @@ html, body, .container-fluid { min-height: 100%; }
 .app-content .tab-content { border: 0; padding: 0; }
 .app-content .tab-pane { padding: 0; }
 .page-wrap { padding: 32px 40px 48px; max-width: 1600px; margin: 0 auto; }
-.page-title { font-size: 28px; font-weight: 800; color: var(--fg); margin: 0; letter-spacing: -0.02em; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--fg); margin: 0; letter-spacing: 0; }
 .page-subtitle { color: var(--muted); font-size: 15px; margin: 8px 0 24px; line-height: 1.5; max-width: 800px; }
 
 /* The KPI */
@@ -279,7 +280,7 @@ html, body, .container-fluid { min-height: 100%; }
 .tone-success .kpi-icon { background: rgba(16, 185, 129, 0.1); color: var(--success); }
 .tone-warning .kpi-icon { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
 .tone-danger .kpi-icon { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-.kpi-value { margin-top: auto; padding-top: 16px; font-size: 34px; line-height: 1.1; font-weight: 800; color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; word-break: break-word; }
+.kpi-value { margin-top: auto; padding-top: 16px; font-size: 34px; line-height: 1.1; font-weight: 800; color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: 0; word-break: break-word; }
 .kpi-value.text-mode { font-size: 22px; line-height: 1.3; }
 .median-price-line {
   display: flex;
@@ -301,9 +302,10 @@ html, body, .container-fluid { min-height: 100%; }
   min-width: 0;
   color: var(--fg);
   font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 .median-price-count {
   flex: 0 0 auto;
@@ -326,7 +328,7 @@ html, body, .container-fluid { min-height: 100%; }
 }
 .kpi-value.median-split .median-price-line:last-child { border-bottom: 0; }
 .kpi-value.median-split .median-price-label { font-size: 12px; }
-.kpi-value.median-split .median-price-value { font-size: 25px; letter-spacing: -0.01em; }
+.kpi-value.median-split .median-price-value { font-size: 25px; letter-spacing: 0; }
 .kpi-foot { margin-top: 16px; padding-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 20px; font-size: 13px; color: var(--muted); border-top: 1px dashed rgba(226, 232, 240, 0.8); }
 .kpi-delta { color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; white-space: nowrap; }
 
@@ -350,7 +352,7 @@ html, body, .container-fluid { min-height: 100%; }
   padding: 20px 24px; border-bottom: 1px solid rgba(226, 232, 240, 0.6); display: flex; justify-content: space-between; gap: 16px; background: rgba(248, 250, 252, 0.5);
   border-top-left-radius: var(--radius); border-top-right-radius: var(--radius);
 }
-.panel-title { font-size: 16px; font-weight: 800; color: var(--fg); letter-spacing: -0.01em; }
+.panel-title { font-size: 16px; font-weight: 800; color: var(--fg); letter-spacing: 0; }
 .panel-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 500; }
 .panel-body { padding: 24px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
@@ -416,7 +418,17 @@ html, body, .container-fluid { min-height: 100%; }
 }
 .filter-chip { min-width: 0; padding: 12px; border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 10px; background: #ffffff; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02); }
 .filter-chip-label { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.filter-chip-value { margin-top: 6px; color: var(--fg); font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.filter-chip-value {
+  margin-top: 6px;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 800;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
 .filter-chip-value.median-chip-value {
   display: grid;
   gap: 5px;
@@ -758,7 +770,7 @@ html, body, .container-fluid { min-height: 100%; }
   margin-bottom: 8px;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   line-height: 1.25;
   animation: geminiGradientFlow 8s linear infinite;
 }
@@ -778,7 +790,7 @@ html, body, .container-fluid { min-height: 100%; }
   color: #c4c7c5;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin-bottom: 12px;
   line-height: 1.25;
 }
@@ -1006,7 +1018,7 @@ html, body, .container-fluid { min-height: 100%; }
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 4px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 .gemini-text .assistant-answer-grid span {
   display: block;
@@ -1165,7 +1177,7 @@ html, body, .container-fluid { min-height: 100%; }
   line-height: 1.15;
   font-weight: 800;
   text-align: center;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 /* Bang so sanh */

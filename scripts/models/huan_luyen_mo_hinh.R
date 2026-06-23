@@ -8,6 +8,7 @@
 
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
+source(PATHS$display_labels_script)
 
 required_packages <- c("readr", "dplyr", "lubridate", "randomForest", "xgboost", "Matrix", "ggplot2", "tibble")
 missing_packages <- required_packages[
@@ -513,12 +514,15 @@ train_regression_set <- function(data, segment_name) {
   write_csv(rf_importance, importance_path)
   segment_file_label <- if (identical(segment_name, "sale")) "ban" else "thue"
 
+  segment_label <- if (identical(segment_name, "sale")) "bán" else "cho thuê"
+
   p_importance <- rf_importance %>%
     slice_head(n = 12) %>%
-    ggplot(aes(x = reorder(feature, IncNodePurity), y = IncNodePurity)) +
+    mutate(feature_label = feature_label_vi(feature)) %>%
+    ggplot(aes(x = reorder(feature_label, IncNodePurity), y = IncNodePurity)) +
     geom_col(fill = "#2E75B6") +
     coord_flip() +
-    labs(title = paste("Random Forest importance -", segment_name), x = NULL, y = "IncNodePurity") +
+    labs(title = paste("Mức ảnh hưởng biến - nhóm", segment_label), x = NULL, y = "Mức ảnh hưởng") +
     theme_minimal(base_size = 12)
   ggsave(file.path(PLOT_DIR, paste0("do_quan_trong_bien_", segment_file_label, ".png")),
          p_importance, width = 9, height = 6, dpi = 160)
@@ -527,8 +531,8 @@ train_regression_set <- function(data, segment_name) {
     ggplot(aes(x = actual / 1e6, y = predicted / 1e6)) +
     geom_point(alpha = 0.45, color = "#2E75B6") +
     geom_abline(slope = 1, intercept = 0, color = "#C0504D") +
-    labs(title = paste("Actual vs Predicted -", segment_name),
-         x = "Actual (trieu VND)", y = "Predicted (trieu VND)") +
+    labs(title = paste("Giá thực tế và giá dự đoán - nhóm", segment_label),
+         x = "Giá thực tế (triệu VND)", y = "Giá dự đoán (triệu VND)") +
     theme_minimal(base_size = 12)
   ggsave(file.path(PLOT_DIR, paste0("du_doan_so_voi_thuc_te_", segment_file_label, ".png")),
          pred_plot, width = 8, height = 6, dpi = 160)
@@ -638,11 +642,11 @@ saveRDS(
   METADATA_PATH
 )
 
-cat("\nDa train xong model.\n")
-cat("Metrics luu tai: ", PATHS$metrics_csv, "\n", sep = "")
+cat("\nĐã huấn luyện xong mô hình.\n")
+cat("Chỉ số lưu tại: ", PATHS$metrics_csv, "\n", sep = "")
 print(all_metrics)
 
 if (exists("cluster_result")) {
-  cat("\nK-means clusters luu tai: ", PATHS$clusters_csv, "\n", sep = "")
+  cat("\nCụm K-means lưu tại: ", PATHS$clusters_csv, "\n", sep = "")
   print(cluster_result)
 }

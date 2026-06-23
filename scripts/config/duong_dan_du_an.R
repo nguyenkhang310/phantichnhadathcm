@@ -60,6 +60,7 @@ PATHS <- list(
   eda_summary_csv = "plots/tom_tat_eda_hcm.csv",
 
   district_normalization_script = "scripts/lib/chuan_hoa_quan_huyen.R",
+  display_labels_script = "scripts/lib/nhan_hien_thi.R",
   chotot_scraper_script = "scripts/scrapers/thu_thap_chotot.R",
   alonhadat_scraper_script = "scripts/scrapers/thu_thap_alonhadat.R",
   luachon_scraper_script = "scripts/scrapers/thu_thap_luachonnhadat.R",

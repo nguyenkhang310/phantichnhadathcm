@@ -46,7 +46,7 @@ ui <- fluidPage(
         nav_link("analysis", "Phân tích giá", "chart-column"),
         nav_link("statistics", "Suy luận thống kê", "square-root-variable"),
         nav_link("predict", "Dự đoán giá", "calculator"),
-        nav_link("diagnostics", "Đánh giá model", "clipboard-check"),
+        nav_link("diagnostics", "Đánh giá mô hình", "clipboard-check"),
         nav_link("clusters", "Phân cụm khu vực", "layer-group"),
         nav_link("data", "Dữ liệu", "table"),
         nav_link("assistant", "Trợ lý BĐS", "comments")
@@ -97,7 +97,7 @@ ui <- fluidPage(
             div(
               class = "page-wrap",
               h1(class = "page-title", "Tổng quan thị trường"),
-              div(class = "page-subtitle", "Snapshot dữ liệu thu thập từ nhiều nguồn cho TP.HCM, cập nhật theo pipeline R."),
+              div(class = "page-subtitle", "Tổng quan dữ liệu thu thập từ nhiều nguồn cho TP.HCM, cập nhật theo quy trình R."),
               uiOutput("kpi_cards"),
               fluidRow(
                 column(8, app_panel("Số tin theo khu vực cũ", "Top khu vực có nhiều tin đăng nhất", chart_mode_control("district_plot_tx"), plotlyOutput("district_plot", height = 330))),
@@ -105,7 +105,7 @@ ui <- fluidPage(
               ),
               app_panel(
                 "Hiệu năng mô hình",
-                "Train/Test là tập validate 80/20; model cuối đã refit trên toàn bộ dữ liệu sạch.",
+                "Tập huấn luyện/kiểm định chia 80/20; mô hình cuối được huấn luyện lại trên toàn bộ dữ liệu sạch.",
                 tableOutput("metrics_table")
               )
             )
@@ -138,7 +138,7 @@ ui <- fluidPage(
                     span(class = "dot dot-low"), "Thấp ",
                     span(class = "dot dot-mid", style = "margin-left:8px;"), "Trung bình ",
                     span(class = "dot dot-high", style = "margin-left:8px;"), "Cao",
-                    div(style = "margin-top:8px;color:#64748b;font-size:12px;", "Marker mờ: app tự ước lượng vị trí theo khu vực"))
+                    div(style = "margin-top:8px;color:#64748b;font-size:12px;", "Điểm mờ: ứng dụng tự ước lượng vị trí theo khu vực"))
               )
             )
           ),
@@ -169,19 +169,19 @@ ui <- fluidPage(
               fluidRow(
                 column(4, app_panel("Top khu vực cũ theo giá/m²", "Đơn vị tự đổi theo bán hoặc cho thuê", chart_mode_control("price_m2_tx"), plotlyOutput("price_m2_plot", height = 310))),
                 column(4, app_panel("Khoảng giá theo loại BĐS", "Điểm là giá trung vị, thanh ngang là vùng giá phổ biến", chart_mode_control("price_category_tx"), plotlyOutput("price_category_plot", height = 310))),
-                column(4, app_panel("Phân phối giá", "Giá được chuẩn hóa để biểu đồ dễ quan sát hơn", chart_mode_control("log_price_tx"), plotlyOutput("log_price_plot", height = 310)))
+                column(4, app_panel("Phân phối giá", "Giá được chuyển sang thang log để biểu đồ dễ quan sát hơn", chart_mode_control("log_price_tx"), plotlyOutput("log_price_plot", height = 310)))
               ),
               fluidRow(
-                column(6, app_panel("Heatmap khu vực x loại BĐS", "Màu thể hiện giá/m² trung vị", chart_mode_control("district_category_heatmap_tx"), plotlyOutput("district_category_heatmap", height = 390))),
-                column(6, app_panel("Radar nguồn dữ liệu", "Tỷ trọng nguồn trong nhóm giao dịch đang chọn", chart_mode_control("source_radar_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
+                column(6, app_panel("Bản đồ nhiệt khu vực x loại BĐS", "Màu thể hiện giá/m² trung vị", chart_mode_control("district_category_heatmap_tx"), plotlyOutput("district_category_heatmap", height = 390))),
+                column(6, app_panel("Tỷ trọng nguồn dữ liệu", "Tỷ trọng nguồn trong nhóm giao dịch đang chọn", chart_mode_control("source_radar_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
               ),
               fluidRow(
                 column(6, app_panel("Xu hướng theo thời gian", "Loại các ngày đăng trong tương lai để tránh nhiễu", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
-                column(6, app_panel("Tương quan biến số", "Correlation trên các biến số chính", chart_mode_control("correlation_tx"), plotlyOutput("correlation_plot", height = 340)))
+                column(6, app_panel("Tương quan biến số", "Hệ số tương quan trên các biến số chính", chart_mode_control("correlation_tx"), plotlyOutput("correlation_plot", height = 340)))
               ),
               app_panel(
-                "ECDF giá/m²",
-                "So đường phân phối tích lũy để nhìn percentile và độ lệch giữa nhóm",
+                "Phân phối tích lũy giá/m²",
+                "So đường phân phối tích lũy để nhìn phân vị và độ lệch giữa nhóm",
                 chart_mode_control("ecdf_tx"),
                 plotlyOutput("price_ecdf_plot", height = 340)
               )
@@ -197,7 +197,7 @@ ui <- fluidPage(
             div(
               class = "page-wrap",
               h1(class = "page-title", "Suy luận thống kê"),
-              div(class = "page-subtitle", "Áp dụng xác suất, phân phối mẫu, kiểm định giả thuyết, CLT và bootstrap trực tiếp trên dữ liệu BĐS TP.HCM."),
+              div(class = "page-subtitle", "Áp dụng xác suất, phân phối mẫu, kiểm định giả thuyết, định lý giới hạn trung tâm và bootstrap trực tiếp trên dữ liệu BĐS TP.HCM."),
               uiOutput("stat_kpi_cards"),
               app_panel(
                 "Thiết lập phân tích",
@@ -219,28 +219,28 @@ ui <- fluidPage(
               ),
               fluidRow(
                 column(6, app_panel("Xác suất có điều kiện", "P(loại BĐS | khu vực) theo số tin", plotlyOutput("probability_heatmap", height = 390))),
-                column(6, app_panel("Phân phối giá/m²", "ECDF giữa hai khu vực được chọn", plotlyOutput("stat_distribution_plot", height = 390)))
+                column(6, app_panel("Phân phối giá/m²", "Đường phân phối tích lũy giữa hai khu vực được chọn", plotlyOutput("stat_distribution_plot", height = 390)))
               ),
               app_panel(
                 "Thiết lập mô phỏng",
-                "Cỡ mẫu dùng cho CLT; số lần lặp dùng chung cho CLT và Bootstrap CI bên dưới",
+                "Cỡ mẫu dùng cho định lý giới hạn trung tâm; số lần lặp dùng chung cho mô phỏng và khoảng tin cậy bootstrap bên dưới",
                 div(
                   class = "filter-toolbar stat-toolbar simulation-toolbar",
-                  filter_field("Cỡ mẫu CLT", sliderInput("stat_sample_size", NULL, min = 10, max = 300, value = 50, step = 10, ticks = FALSE), icon_name = "dice"),
+                  filter_field("Cỡ mẫu mô phỏng", sliderInput("stat_sample_size", NULL, min = 10, max = 300, value = 50, step = 10, ticks = FALSE), icon_name = "dice"),
                   filter_field("Số lần lặp", sliderInput("stat_reps", NULL, min = 200, max = 1500, value = 600, step = 100, ticks = FALSE), icon_name = "rotate")
                 ),
                 class = "filter-card"
               ),
               fluidRow(
                 column(6, app_panel(
-                  "CLT simulation",
+                  "Mô phỏng trung bình mẫu",
                   "Phân phối trung bình mẫu khi lấy mẫu có hoàn lại",
                   plotlyOutput("clt_plot", height = 360)
                 )),
-                column(6, app_panel("Bootstrap CI", "Khoảng tin cậy bootstrap cho trung vị giá/m² khu vực A", plotlyOutput("bootstrap_plot", height = 360)))
+                column(6, app_panel("Khoảng tin cậy bootstrap", "Khoảng tin cậy bootstrap cho trung vị giá/m² khu vực A", plotlyOutput("bootstrap_plot", height = 360)))
               ),
               fluidRow(
-                column(7, app_panel("Kiểm định giả thuyết", "H0: giá/m² trung bình log-scale của hai khu vực bằng nhau", tableOutput("hypothesis_table"))),
+                column(7, app_panel("Kiểm định giả thuyết", "H0: trung bình log(giá/m²) của hai khu vực bằng nhau", tableOutput("hypothesis_table"))),
                 column(5, app_panel("Bảng xác suất thực nghiệm", "Các xác suất nổi bật trong dữ liệu đã lọc", tableOutput("empirical_probability_table")))
               )
             )
@@ -250,7 +250,7 @@ ui <- fluidPage(
             div(
               class = "page-wrap",
               h1(class = "page-title", "Dự đoán giá bất động sản"),
-              div(class = "page-subtitle", "Form demo sử dụng model tốt nhất theo từng nhóm giao dịch."),
+              div(class = "page-subtitle", "Form demo sử dụng mô hình tốt nhất theo từng nhóm giao dịch."),
               fluidRow(
                 column(4, app_panel("Thông tin bất động sản", "Nhập đặc trưng để mô hình dự đoán",
                   div(class = "predict-form",
@@ -269,7 +269,7 @@ ui <- fluidPage(
                   br(),
                   uiOutput("prediction_market_band"),
                   br(),
-                  app_panel("Các yếu tố ảnh hưởng chính", "Feature importance từ Random Forest", plotlyOutput("importance_plot", height = 260), class = "nested-panel")))
+                  app_panel("Các yếu tố ảnh hưởng chính", "Mức ảnh hưởng biến từ mô hình rừng ngẫu nhiên", plotlyOutput("importance_plot", height = 260), class = "nested-panel")))
               )
             )
           ),
@@ -277,10 +277,10 @@ ui <- fluidPage(
             title = "diagnostics", value = "diagnostics",
             div(
               class = "page-wrap",
-              h1(class = "page-title", "Đánh giá model"),
-              div(class = "page-subtitle", "Đọc model như một hệ thống dự báo: chỉ số tổng quan, sai số, residual và các nhóm dễ dự đoán sai."),
+              h1(class = "page-title", "Đánh giá mô hình"),
+              div(class = "page-subtitle", "Đọc mô hình như một hệ thống dự báo: chỉ số tổng quan, sai số và các nhóm dễ dự đoán sai."),
               app_panel(
-                "Bộ lọc model",
+                "Bộ lọc mô hình",
                 NULL,
                 div(class = "filter-toolbar stat-toolbar compact",
                   filter_field("Giao dịch", chart_mode_control("diagnostic_tx"), icon_name = "tags")
@@ -289,22 +289,22 @@ ui <- fluidPage(
               ),
               uiOutput("model_card_ui"),
               fluidRow(
-                column(6, app_panel("Actual vs Predicted", "Đường chéo là dự đoán hoàn hảo; hover để xem loại BĐS", plotlyOutput("diagnostic_scatter_plot", height = 460))),
-                column(6, app_panel("Residual distribution", "Sai số log(actual) - log(predicted)", plotlyOutput("diagnostic_residual_plot", height = 460)))
+                column(6, app_panel("Giá thực tế và giá dự đoán", "Đường chéo là dự đoán hoàn hảo; rê chuột để xem loại BĐS", plotlyOutput("diagnostic_scatter_plot", height = 460))),
+                column(6, app_panel("Phân phối sai số", "Sai số log(giá thực tế) - log(giá dự đoán)", plotlyOutput("diagnostic_residual_plot", height = 460)))
               ),
               fluidRow(
-                column(6, app_panel("Sai số theo khu vực", "Top nhóm có MAPE cao trong mẫu chẩn đoán", plotlyOutput("diagnostic_error_group_plot", height = 430))),
-                column(6, app_panel("So sánh chỉ số model", "RMSE, MAE, MAPE và R² theo từng thuật toán", plotlyOutput("metrics_compare_plot", height = 430)))
+                column(6, app_panel("Sai số theo khu vực", "Nhóm có MAPE cao trong mẫu kiểm tra", plotlyOutput("diagnostic_error_group_plot", height = 430))),
+                column(6, app_panel("So sánh chỉ số mô hình", "RMSE, MAE, MAPE và R² theo từng thuật toán", plotlyOutput("metrics_compare_plot", height = 430)))
               )
             )
           ),
           tabPanel(title = "clusters", value = "clusters", div(class = "page-wrap",
             h1(class = "page-title", "Phân cụm khu vực"),
-            div(class = "page-subtitle", "K-Means theo giá/m², diện tích trung vị và số tin, tách riêng bán và cho thuê."),
-            app_panel("K-Means clusters", "Bubble size thể hiện số tin, màu là cụm", chart_mode_control("cluster_tx"), plotlyOutput("cluster_plot", height = 500)))),
+            div(class = "page-subtitle", "Phân cụm khu vực theo giá/m², diện tích trung vị và số tin, tách riêng bán và cho thuê."),
+            app_panel("Phân cụm khu vực", "Cỡ điểm thể hiện số tin, màu thể hiện cụm", chart_mode_control("cluster_tx"), plotlyOutput("cluster_plot", height = 500)))),
           tabPanel(title = "data", value = "data", div(class = "page-wrap",
             h1(class = "page-title", "Dữ liệu đã thu thập"),
-            div(class = "page-subtitle", "Bảng dữ liệu sạch dùng cho EDA, ML và dashboard."),
+            div(class = "page-subtitle", "Bảng dữ liệu sạch dùng cho phân tích khám phá, mô hình máy học và bảng điều khiển."),
             app_panel(
               "Bộ lọc dữ liệu",
               uiOutput("data_filter_summary"),
@@ -358,7 +358,7 @@ ui <- fluidPage(
                     # Nhan che do xu ly local
                     div(
                       class = "gemini-model-badge",
-                      span("R-Tools"),
+                      span("Dữ liệu R"),
                       icon("chevron-down")
                     ),
                     # Nut micro
@@ -376,7 +376,7 @@ ui <- fluidPage(
               # Ghi chu nho va nut xoa hoi thoai
               div(
                 class = "gemini-footer-note",
-                span("BDS dùng tool dữ liệu local, model dự đoán và memory hội thoại. Không dùng API ngoài."),
+                span("BDS dùng công cụ dữ liệu nội bộ, mô hình dự đoán và bộ nhớ hội thoại. Không dùng API ngoài."),
                 actionLink("assistant_clear", label = tagList(icon("trash-can"), "Xóa hội thoại"), class = "gemini-clear-link")
               )
             )

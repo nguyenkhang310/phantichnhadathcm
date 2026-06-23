@@ -1,24 +1,25 @@
 #!/usr/bin/env Rscript
 
-# Kiem tra nhanh dashboard va artifact model.
-# Script nay khong crawl web, chi kiem tra data/model da tao co doc va du doan duoc.
+# Kiểm tra nhanh dashboard, dữ liệu và artifact mô hình.
+# Script này không crawl web, chỉ kiểm tra dữ liệu/mô hình đã tạo.
 
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
+source(PATHS$display_labels_script)
 
 required_packages <- c("readr", "dplyr")
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
 ]
 if (length(missing_packages) > 0) {
-  stop("Thieu package: ", paste(missing_packages, collapse = ", "))
+  stop("Thiếu package: ", paste(missing_packages, collapse = ", "))
 }
 
 library(readr)
 library(dplyr)
 
 must_exist <- function(path) {
-  if (!file.exists(path)) stop("Thieu file bat buoc: ", path)
+  if (!file.exists(path)) stop("Thiếu file bắt buộc: ", path)
 }
 
 FEATURED_PATH <- PATHS$featured_csv
@@ -35,16 +36,16 @@ app_env <- new.env(parent = globalenv())
 sys.source("app.R", envir = app_env)
 
 df <- app_env$load_data()
-if (nrow(df) < 100) stop("Data qua it dong de demo: ", nrow(df))
+if (nrow(df) < 100) stop("Dữ liệu quá ít dòng để demo: ", nrow(df))
 
 metrics <- app_env$load_metrics()
 registry <- app_env$load_registry()
-if (nrow(metrics) == 0) stop(METRICS_PATH, " rong")
-if (nrow(registry) == 0) stop(REGISTRY_PATH, " rong")
+if (nrow(metrics) == 0) stop(METRICS_PATH, " rỗng")
+if (nrow(registry) == 0) stop(REGISTRY_PATH, " rỗng")
 
 make_segment_prediction <- function(transaction_type) {
   segment_df <- df %>% filter(transaction_type == !!transaction_type)
-  if (nrow(segment_df) == 0) stop("Khong co du lieu segment: ", transaction_type)
+  if (nrow(segment_df) == 0) stop("Không có dữ liệu phân khúc: ", transaction_type)
   sample_row <- segment_df %>% slice(1)
   input_row <- app_env$build_prediction_row(
     df = df,
@@ -57,7 +58,7 @@ make_segment_prediction <- function(transaction_type) {
   )
   pred <- app_env$predict_price(input_row, identical(transaction_type, "Cho thuê"))
   if (is.na(pred) || !is.finite(pred) || pred <= 0) {
-    stop("Du doan khong hop le cho segment: ", transaction_type)
+    stop("Dự đoán không hợp lệ cho phân khúc: ", transaction_type)
   }
   pred
 }
@@ -65,9 +66,9 @@ make_segment_prediction <- function(transaction_type) {
 sale_pred <- make_segment_prediction("Bán")
 rent_pred <- make_segment_prediction("Cho thuê")
 
-cat("Validation OK\n")
-cat("Rows:", nrow(df), "\n")
-cat("Best sale model:", registry %>% filter(segment == "sale") %>% pull(best_model), "\n")
-cat("Best rent model:", registry %>% filter(segment == "rent") %>% pull(best_model), "\n")
-cat("Sample sale prediction:", round(sale_pred), "\n")
-cat("Sample rent prediction:", round(rent_pred), "\n")
+cat("Kiểm tra OK\n")
+cat("Số dòng:", nrow(df), "\n")
+cat("Mô hình bán tốt nhất:", registry %>% filter(segment == "sale") %>% pull(best_model) %>% model_label_vi(), "\n")
+cat("Mô hình cho thuê tốt nhất:", registry %>% filter(segment == "rent") %>% pull(best_model) %>% model_label_vi(), "\n")
+cat("Dự đoán mẫu giá bán:", round(sale_pred), "\n")
+cat("Dự đoán mẫu giá thuê:", round(rent_pred), "\n")

@@ -248,14 +248,25 @@ format_vnd <- function(x) {
   vapply(x, function(value) {
     if (is.na(value) || !is.finite(value)) return("Chưa có dữ liệu")
     if (value >= 1e9) {
-      paste0(format(round(value / 1e9, 2), big.mark = ","), " tỷ")
+      paste0(format(round(value / 1e9, 2), big.mark = ".", decimal.mark = ",", trim = TRUE), " tỷ")
     } else {
-      paste0(format(round(value / 1e6, 1), big.mark = ","), " triệu")
+      paste0(format(round(value / 1e6, 1), big.mark = ".", decimal.mark = ",", trim = TRUE), " triệu")
     }
   }, character(1))
 }
 
 format_vnd_full <- function(x) paste0(format_vnd(x), " VND")
+
+format_vnd_short <- function(x) {
+  vapply(x, function(value) {
+    if (is.na(value) || !is.finite(value)) return("Chưa có")
+    if (value >= 1e9) {
+      paste0(format(round(value / 1e9, 1), big.mark = ".", decimal.mark = ",", trim = TRUE), " tỷ")
+    } else {
+      paste0(format(round(value / 1e6, 1), big.mark = ".", decimal.mark = ",", trim = TRUE), " tr")
+    }
+  }, character(1))
+}
 
 listing_url <- function(ad_url, source = NULL) {
   url <- trimws(as.character(ad_url))
@@ -318,37 +329,6 @@ price_m2_display_info <- function(transaction_type) {
   } else {
     list(scale = 1e6, axis = "Triệu VND/m²", unit = "triệu VND/m²", digits = 1)
   }
-}
-
-feature_label_vi <- function(feature) {
-  dplyr::recode(
-    as.character(feature),
-    area = "Diện tích",
-    rooms = "Số phòng",
-    inferred_rooms = "Số phòng suy luận",
-    frontage_width_m = "Ngang nhà/đất",
-    frontage_length_m = "Dài nhà/đất",
-    frontage_ratio = "Tỷ lệ ngang/dài",
-    inferred_floors = "Số tầng/lầu suy luận",
-    title_has_frontage = "Có mặt tiền/mặt phố",
-    title_has_alley = "Có hẻm/ngõ",
-    title_has_car_access = "Hẻm xe hơi/ô tô",
-    title_has_corner = "Căn góc/2 mặt tiền",
-    title_has_elevator = "Có thang máy",
-    title_has_furnished = "Có nội thất",
-    title_has_legal = "Pháp lý/sổ hồng",
-    title_has_income_info = "Có thông tin dòng tiền",
-    title_token_count = "Độ chi tiết tiêu đề",
-    posted_hour = "Giờ đăng tin",
-    distance_to_center = "Khoảng cách tới trung tâm",
-    ward_price_encoded = "Mặt bằng giá phường/xã",
-    listing_age_days = "Tuổi tin đăng",
-    district_name = "Khu vực",
-    category_name = "Loại bất động sản",
-    posted_wday = "Thứ đăng tin",
-    source = "Nguồn dữ liệu",
-    .default = as.character(feature)
-  )
 }
 
 format_metric <- function(x) {
@@ -427,18 +407,11 @@ format_rendered_total <- function(rendered_n, total_n) {
   }
 }
 
-best_model_label <- function(metrics) {
-  if (nrow(metrics) == 0 || !"mape" %in% names(metrics)) return("Chưa có")
-  best <- metrics %>% filter(segment == "sale") %>% arrange(mape) %>% slice(1)
-  if (nrow(best) == 0) best <- metrics %>% arrange(mape) %>% slice(1)
-  paste0(best$model[[1]], " · MAPE ", round(best$mape[[1]] * 100, 1), "%")
-}
-
 best_model_name_only <- function(metrics) {
   if (nrow(metrics) == 0 || !"mape" %in% names(metrics)) return("Chưa có")
   best <- metrics %>% filter(segment == "sale") %>% arrange(mape) %>% slice(1)
   if (nrow(best) == 0) best <- metrics %>% arrange(mape) %>% slice(1)
-  best$model[[1]]
+  model_label_vi(best$model[[1]])
 }
 
 best_model_mape_only <- function(metrics) {
@@ -453,17 +426,6 @@ best_model_from_bundle <- function(bundle) {
     return(bundle$best_model)
   }
   "Random Forest"
-}
-
-model_label_vi <- function(model_name) {
-  dplyr::case_when(
-    identical(model_name, "Linear Regression") ~ "Linear Regression",
-    identical(model_name, "Random Forest") ~ "Random Forest",
-    identical(model_name, "XGBoost") ~ "XGBoost",
-    identical(model_name, "RF + XGBoost Ensemble") ~ "RF + XGBoost Ensemble",
-    identical(model_name, "Tuned RF/XGBoost Ensemble") ~ "Tuned RF/XGBoost Ensemble",
-    TRUE ~ as.character(model_name)
-  )
 }
 
 add_prediction_encoding_keys <- function(input_row) {
@@ -574,7 +536,7 @@ load_model_cached <- function(model_path) {
 
   # Đọc model mới và lưu vào cache
   if (isTRUE(getOption("bds.verbose_model_cache", FALSE))) {
-    message("Đang tải model từ đĩa: ", model_path)
+    message("Đang tải mô hình từ đĩa: ", model_path)
   }
   bundle <- readRDS(model_path)
 
@@ -623,9 +585,9 @@ predict_price <- function(input_row, is_rent) {
 
 prediction_model_label <- function(is_rent) {
   model_path <- if (is_rent) RENT_MODEL_PATH else SALE_MODEL_PATH
-  if (!file.exists(model_path)) return("Chưa có model")
+  if (!file.exists(model_path)) return("Chưa có mô hình")
   bundle <- load_model_cached(model_path)
-  if (is.null(bundle)) return("Chưa có model")
+  if (is.null(bundle)) return("Chưa có mô hình")
   model_label_vi(best_model_from_bundle(bundle))
 }
 
@@ -802,11 +764,6 @@ assistant_has_value <- function(x) {
 
 assistant_is_finite <- function(x) {
   !is.null(x) && length(x) > 0 && !is.na(x[[1]]) && is.finite(as.numeric(x[[1]]))
-}
-
-assistant_number_label <- function(x, digits = 1, suffix = "") {
-  if (!assistant_is_finite(x)) return("Chưa rõ")
-  paste0(format_number_vi(as.numeric(x[[1]]), digits), suffix)
 }
 
 assistant_format_area <- function(x) {
@@ -1597,7 +1554,7 @@ assistant_predict_response <- function(df, criteria) {
   if (length(criteria$districts) == 0) missing <- c(missing, "khu vực cũ")
   if (!assistant_is_finite(criteria$area)) missing <- c(missing, "diện tích")
   if (length(missing) > 0) {
-    return(assistant_clarify_response("predict", criteria, paste0("Cần thêm ", paste(missing, collapse = " và "), " để chạy model.")))
+    return(assistant_clarify_response("predict", criteria, paste0("Cần thêm ", paste(missing, collapse = " và "), " để chạy mô hình.")))
   }
 
   transaction <- criteria$transaction %||% "Bán"
@@ -1625,7 +1582,7 @@ assistant_predict_response <- function(df, criteria) {
   )
   pred <- predict_price(input_row, identical(transaction, "Cho thuê"))
   if (is.na(pred)) {
-    return("<p>Model hiện chưa dự đoán được case này. Bạn thử chọn khu vực/loại BĐS có nhiều dữ liệu hơn nhé.</p>")
+    return("<p>Mô hình hiện chưa dự đoán được trường hợp này. Bạn thử chọn khu vực/loại BĐS có nhiều dữ liệu hơn nhé.</p>")
   }
 
   local_df <- df %>% filter(transaction_type == transaction, district_name == district, category_name == category)
@@ -1656,7 +1613,7 @@ assistant_explain_response <- function(df, criteria) {
   if (file.exists(importance_path)) {
     importance <- read_csv(importance_path, show_col_types = FALSE) %>% slice_head(n = 5)
     if (all(c("feature", "IncNodePurity") %in% names(importance))) {
-      factor_items <- paste0(feature_label_vi(importance$feature), " là yếu tố có ảnh hưởng cao trong Random Forest.")
+      factor_items <- paste0(feature_label_vi(importance$feature), " là yếu tố có ảnh hưởng cao trong mô hình rừng ngẫu nhiên.")
     }
   }
 
@@ -1671,13 +1628,13 @@ assistant_explain_response <- function(df, criteria) {
   paste0(
     assistant_scope_note(criteria),
     assistant_insight_block("Yếu tố chính trong dữ liệu", c(local_items, factor_items)),
-    "<p>Nói ngắn gọn: bot không tự đoán cảm tính, mà lấy tiêu chí bạn nhập, lọc dữ liệu thật, rồi dùng thống kê/model để trả lời. Những chỗ dữ liệu ít sẽ được đánh dấu độ tin cậy thấp.</p>"
+    "<p>Nói ngắn gọn: trợ lý không tự đoán cảm tính, mà lấy tiêu chí bạn nhập, lọc dữ liệu thật, rồi dùng thống kê/mô hình để trả lời. Những chỗ dữ liệu ít sẽ được đánh dấu độ tin cậy thấp.</p>"
   )
 }
 
 assistant_help_response <- function() {
   paste0(
-    "<p class='assistant-lead'>Mình là trợ lý BĐS local chạy trên dữ liệu và model R của dashboard. Mình có memory hội thoại, biết hỏi lại khi thiếu dữ kiện và chỉ dùng số liệu thật trong project.</p>",
+    "<p class='assistant-lead'>Mình là trợ lý BĐS nội bộ chạy trên dữ liệu và mô hình R của bảng điều khiển. Mình có bộ nhớ hội thoại, biết hỏi lại khi thiếu dữ kiện và chỉ dùng số liệu thật trong dự án.</p>",
     assistant_insight_block("Bạn có thể hỏi", c(
       "4 tỷ mua căn hộ tầm 60m2 ở khu nào ổn?",
       "So sánh Thủ Đức với Quận 7 cho căn hộ bán.",
@@ -1786,33 +1743,6 @@ assistant_intro <- function(type, criteria = NULL) {
     c("Chào bạn! Dưới đây là câu trả lời từ mình:")
   )
   sample(intros, 1)
-}
-
-assistant_outro <- function(type) {
-  outros <- switch(type,
-    "stats" = c(
-      "<p>Nếu bạn muốn tìm hiểu sâu hơn về tin đăng cụ thể hoặc dự đoán giá nhà tại khu vực này, cứ hỏi mình nhé! 😉</p>",
-      "<p>Hy vọng bức tranh thống kê này giúp ích cho bạn trong việc định giá khu vực. Hãy cho mình biết nếu bạn cần xem danh sách tin đăng nhé!</p>",
-      "<p>Cần thêm thông tin chi tiết về từng phường/xã hay so sánh với quận khác, bạn cứ nhắn mình nha!</p>"
-    ),
-    "recommend" = c(
-      "<p>Bạn có thể click vào link <b>Xem tin &rarr;</b> ở từng card để đến trang tin đăng gốc và xem ảnh chi tiết nhé. Chúc bạn tìm được căn nhà ưng ý! 🏡</p>",
-      "<p>Các tin đăng này đều được chọn lọc dựa trên sự tối ưu về giá và diện tích. Hãy tham khảo kỹ trước khi liên hệ chính chủ nha!</p>",
-      "<p>Nếu bạn muốn nới rộng ngân sách hoặc đổi sang khu vực khác để so sánh, cứ nói cho mình biết nhé!</p>"
-    ),
-    "compare" = c(
-      "<p>Như bạn thấy đấy, sự chênh lệch giá giữa các khu vực là khá rõ rệt. Hãy cân đối tài chính và nhu cầu di chuyển để đưa ra lựa chọn phù hợp nhất nhé! ⚖️</p>",
-      "<p>Bạn có muốn mình gợi ý một số tin đăng cụ thể tại quận có mức giá tốt nhất trong số này không?</p>",
-      "<p>Hy vọng bảng so sánh trực quan này sẽ giúp bạn dễ dàng đưa ra quyết định đầu tư hoặc an cư!</p>"
-    ),
-    "predict" = c(
-      "<p>Lưu ý là mô hình dự đoán này mang tính tham khảo cao dựa trên thuật toán, bạn nên kết hợp khảo sát thực tế trước khi xuống tiền nhé! 🧠</p>",
-      "<p>Bạn có muốn mình so sánh giá dự đoán này với mặt bằng giá trung bình thực tế tại quận đó không?</p>",
-      "<p>Chúc bạn có những quyết định đầu tư thật sáng suốt! Nếu muốn chạy lại dự đoán cho căn khác, cứ nhập thông tin nha.</p>"
-    ),
-    c("")
-  )
-  sample(outros, 1)
 }
 
 price_color <- function(price, low_cutoff = 3e9, high_cutoff = 8e9) {
@@ -2223,18 +2153,19 @@ median_price_summary <- function(df) {
     select(-.order)
 }
 
-median_price_stack <- function(df, include_counts = FALSE, empty = "Chưa có dữ liệu") {
+median_price_stack <- function(df, include_counts = FALSE, empty = "Chưa có dữ liệu", compact = FALSE) {
   summary <- median_price_summary(df)
   if (nrow(summary) == 0) {
     return(span(class = "median-stack-empty", empty))
   }
+  price_formatter <- if (isTRUE(compact)) format_vnd_short else format_vnd
 
   tagList(lapply(seq_len(nrow(summary)), function(i) {
     row <- summary[i, , drop = FALSE]
     div(
       class = "median-price-line",
       span(class = "median-price-label", row$transaction_type[[1]]),
-      span(class = "median-price-value", format_vnd(row$median_price[[1]])),
+      span(class = "median-price-value", price_formatter(row$median_price[[1]])),
       if (isTRUE(include_counts)) {
         span(class = "median-price-count", paste0(format_count_vi(row$listings[[1]]), " tin"))
       }
@@ -2255,7 +2186,7 @@ median_price_tiles <- function(df, empty = "Chưa có dữ liệu") {
       div(
         class = "report-median-tile",
         span(class = "report-median-tile-label", row$transaction_type[[1]]),
-        span(class = "report-median-tile-value", format_vnd(row$median_price[[1]]))
+        span(class = "report-median-tile-value", format_vnd_short(row$median_price[[1]]))
       )
     })
   )
@@ -2276,9 +2207,14 @@ coordinate_source_summary <- function(df) {
   )
 }
 
-coordinate_source_label <- function(df) {
+coordinate_source_label <- function(df, compact = FALSE) {
   summary <- coordinate_source_summary(df)
   if (summary$total == 0) return("Chưa có dữ liệu")
+
+  if (isTRUE(compact)) {
+    if (!is.finite(summary$exact_pct)) return("Chưa rõ")
+    return(paste0(format_number_vi(summary$exact_pct, 1), "% gốc"))
+  }
 
   pct <- if (is.finite(summary$exact_pct)) {
     paste0(" · ", format_number_vi(summary$exact_pct, 1), "% gốc")

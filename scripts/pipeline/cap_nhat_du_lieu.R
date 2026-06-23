@@ -193,7 +193,7 @@ run_update_data <- function(
     source(PATHS$merge_sources_script, local = TRUE)
     run_merge_sources()
 
-    message("== 10/10 Tao lai feature dataset ==")
+    message("== 10/10 Tạo lại dữ liệu đặc trưng ==")
     source(PATHS$feature_engineering_script, local = TRUE)
     df <- read_project_data()
     featured <- build_features(df)
@@ -201,7 +201,7 @@ run_update_data <- function(
 
     after_rows <- nrow(featured)
     log_entry <- append_update_log("success", before_rows, after_rows)
-    message("Da cap nhat data: ", before_rows, " -> ", after_rows, " dong.")
+    message("Đã cập nhật dữ liệu: ", before_rows, " -> ", after_rows, " dòng.")
     invisible(log_entry)
   }, error = function(e) {
     after_rows <- count_rows(FEATURED_CSV)

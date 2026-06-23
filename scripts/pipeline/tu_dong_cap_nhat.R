@@ -105,10 +105,10 @@ run_auto_update <- function(
 
     decision <- should_retrain(before_rows, after_rows, min_new_ratio, max_model_age_days, force_retrain)
     if (decision$value) {
-      message("== Retrain model: ", decision$reason, " ==")
+      message("== Huấn luyện lại mô hình: ", decision$reason, " ==")
       source(PATHS$train_models_script, local = TRUE)
     } else {
-      message("Bo qua retrain: ", decision$reason)
+      message("Bỏ qua huấn luyện lại: ", decision$reason)
     }
 
     append_auto_log("success", before_rows, after_rows, decision$value, decision$reason)

@@ -51,20 +51,20 @@ run_pipeline <- function() {
   source(PATHS$merge_sources_script, local = TRUE)
   run_merge_sources()
 
-  message("== 10/12 Feature engineering ==")
+  message("== 10/12 Tạo đặc trưng dữ liệu ==")
   source(PATHS$feature_engineering_script, local = TRUE)
   df <- read_project_data()
   featured <- build_features(df)
   readr::write_csv(featured, FEATURED_CSV)
 
-  message("== 11/12 EDA plots ==")
+  message("== 11/12 Vẽ biểu đồ EDA ==")
   source(PATHS$eda_script, local = TRUE)
   run_eda()
 
-  message("== 12/12 Train models ==")
+  message("== 12/12 Huấn luyện mô hình ==")
   source(PATHS$train_models_script, local = TRUE)
 
-  message("Hoàn tất pipeline. Featured data: ", PATHS$featured_csv)
+  message("Hoàn tất quy trình. Dữ liệu đã tạo đặc trưng: ", PATHS$featured_csv)
   message("Chạy app bằng: Rscript app.R")
 }
 

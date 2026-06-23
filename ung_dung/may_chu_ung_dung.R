@@ -441,9 +441,9 @@ server <- function(input, output, session) {
     div(
       class = "kpi-grid",
       kpi_card("Tin đăng đã thu thập", format(nrow(df), big.mark = ","), "sau làm sạch", "database", "default"),
-      kpi_card("Giá trung vị", median_price_stack(df), "tách riêng bán và cho thuê", "coins", "warning", value_class = "median-split"),
+      kpi_card("Giá trung vị", median_price_stack(df, compact = TRUE), "tách riêng bán và cho thuê", "coins", "warning", value_class = "median-split"),
       kpi_card("Khu vực cũ có dữ liệu", paste0(n_distinct(df$district_name[!is_missing_label(df$district_name)]), " khu vực"), "độ phủ địa lý", "location-dot", "success"),
-      kpi_card("Mô hình tốt nhất", best_model_name_only(m), "chọn theo MAPE/RMSE", "bullseye", "success", delta = best_model_mape_only(m), value_class = "text-mode")
+      kpi_card("Mô hình tốt nhất", best_model_name_only(m), "chọn theo sai số kiểm định", "bullseye", "success", delta = best_model_mape_only(m), value_class = "text-mode")
     )
   })
 
@@ -625,7 +625,7 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", tx)),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Nguồn tọa độ"),
-          div(class = "filter-chip-value", coordinate_source_label(df)))
+          div(class = "filter-chip-value", coordinate_source_label(df, compact = TRUE)))
     )
   })
 
@@ -638,7 +638,7 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", format(nrow(df), big.mark = ","))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Giá trung vị"),
-          div(class = "filter-chip-value median-chip-value", median_price_stack(df)))
+          div(class = "filter-chip-value median-chip-value", median_price_stack(df, compact = TRUE)))
     )
   })
 
@@ -648,11 +648,11 @@ server <- function(input, output, session) {
     div(
       class = "filter-summary full",
       div(class = "filter-chip",
-          div(class = "filter-chip-label", "Marker hiển thị"),
+          div(class = "filter-chip-label", "Điểm hiển thị"),
           div(class = "filter-chip-value", format_rendered_total(nrow(display_df), nrow(df)))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Nguồn tọa độ"),
-          div(class = "filter-chip-value", coordinate_source_label(df))),
+          div(class = "filter-chip-value", coordinate_source_label(df, compact = TRUE))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Nguồn"),
           div(class = "filter-chip-value", active_source_or_all(input$map_sources))),
@@ -674,7 +674,7 @@ server <- function(input, output, session) {
           div(class = "filter-chip-value", active_source_or_all(input$data_sources))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Giá trung vị"),
-          div(class = "filter-chip-value median-chip-value", median_price_stack(df)))
+          div(class = "filter-chip-value median-chip-value", median_price_stack(df, compact = TRUE)))
     )
   })
 
@@ -759,11 +759,12 @@ server <- function(input, output, session) {
       mutate(
         total_listings = coalesce(total_listings, train_rows + test_rows),
         segment = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+        model = model_label_vi(model),
         split_type = recode(
           split_type,
-          stratified_random_by_source = "Validate 80/20 theo nguồn",
-          time_based = "Validate theo thời gian",
-          random_fallback = "Validate random",
+          stratified_random_by_source = "Kiểm định 80/20 theo nguồn",
+          time_based = "Kiểm định theo thời gian",
+          random_fallback = "Kiểm định ngẫu nhiên",
           .default = split_type
         ),
         total_listings = format_count_vi(total_listings),
@@ -779,8 +780,8 @@ server <- function(input, output, session) {
         `Tổng listings` = total_listings,
         `Mô hình` = model,
         `Cách đánh giá` = split_type,
-        `Train validate` = train_rows,
-        `Test validate` = test_rows,
+        `Huấn luyện` = train_rows,
+        `Kiểm định` = test_rows,
         RMSE = rmse_vnd,
         MAE = mae_vnd,
         MAPE = mape,
@@ -1287,7 +1288,7 @@ server <- function(input, output, session) {
       zmin = -1,
       zmax = 1,
       colorscale = list(c(0, "#b91c1c"), c(0.5, "#ffffff"), c(1, "#0072bc")),
-      hovertemplate = "Biến X: %{x}<br>Biến Y: %{y}<br>Correlation: %{z:.2f}<extra></extra>"
+      hovertemplate = "Biến X: %{x}<br>Biến Y: %{y}<br>Tương quan: %{z:.2f}<extra></extra>"
     ) %>%
       layout(
         margin = list(l = 150, r = 24, t = 12, b = 120),
@@ -1310,7 +1311,7 @@ server <- function(input, output, session) {
     filter(finite_positive(price_per_m2)) %>%
     mutate(display_m2 = price_per_m2 / m2_info$scale)
     
-  validate(need(nrow(df_base) > 0, paste("Không có dữ liệu", tx, "để vẽ ECDF.")))
+  validate(need(nrow(df_base) > 0, paste("Không có dữ liệu", tx, "để vẽ phân phối tích lũy.")))
   
   # 2. Xác định các quận sẽ vẽ
   top_districts <- df_base %>%
@@ -1387,8 +1388,8 @@ server <- function(input, output, session) {
         "database",
         "default"
       ),
-      kpi_card("Trung vị giá/m²", median_label, "sample statistic", "chart-line", "warning"),
-      kpi_card("Standard error", format_number_vi(se_log, 4), "trên log(giá/m²)", "ruler", "success"),
+      kpi_card("Trung vị giá/m²", median_label, "thống kê mẫu", "chart-line", "warning"),
+      kpi_card("Sai số chuẩn", format_number_vi(se_log, 4), "trên log(giá/m²)", "ruler", "success"),
       kpi_card("P(giá cao)", high_prob_label, "ngưỡng Q3 của nhóm lọc", "percent", "danger")
     )
   })
@@ -1462,7 +1463,7 @@ server <- function(input, output, session) {
     reps <- max(200, min(1500, as.integer(input$stat_reps %||% 600)))
     simulation_seed <- 2026 + sample_size * 31 + reps * 17
     means <- bootstrap_mean_distribution(values / m2_info$scale, sample_size, reps, seed = simulation_seed)
-    validate(need(length(means) > 0, "Cần ít nhất vài dòng giá/m² hợp lệ để mô phỏng CLT."))
+    validate(need(length(means) > 0, "Cần ít nhất vài dòng giá/m² hợp lệ để mô phỏng trung bình mẫu."))
     observed_mean <- mean(values / m2_info$scale, na.rm = TRUE)
 
     plot_ly(x = means, type = "histogram", nbinsx = 34, marker = list(color = "#0072bc", line = list(color = "#ffffff", width = 0.5))) %>%
@@ -1474,7 +1475,7 @@ server <- function(input, output, session) {
           font = list(size = 13)
         ),
         shapes = list(list(type = "line", x0 = observed_mean, x1 = observed_mean, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))),
-        annotations = list(list(x = observed_mean, y = 1, yref = "paper", text = "Mean mẫu gốc", showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444"))),
+        annotations = list(list(x = observed_mean, y = 1, yref = "paper", text = "Trung bình mẫu gốc", showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444"))),
         margin = list(l = 62, r = 20, t = 46, b = 62),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
@@ -1507,14 +1508,14 @@ server <- function(input, output, session) {
         ),
         annotations = list(list(
           x = boot$observed, y = 1, yref = "paper",
-          text = paste0("Median: ", format_number_vi(boot$observed, m2_info$digits), " ", m2_info$unit),
+          text = paste0("Trung vị: ", format_number_vi(boot$observed, m2_info$digits), " ", m2_info$unit),
           showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444")
         )),
         margin = list(l = 62, r = 20, t = 12, b = 62),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         bargap = 0.04,
-        xaxis = list(title = paste0("Bootstrap median giá/m² (", m2_info$unit, ")"), gridcolor = "#e5e7eb"),
+        xaxis = list(title = paste0("Trung vị bootstrap giá/m² (", m2_info$unit, ")"), gridcolor = "#e5e7eb"),
         yaxis = list(title = "Số lần lặp", gridcolor = "#e5e7eb"),
         font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937")
       ) %>%
@@ -1544,9 +1545,9 @@ server <- function(input, output, session) {
     diff_median <- median(group_a$price_per_m2, na.rm = TRUE) - median(group_b$price_per_m2, na.rm = TRUE)
 
     tibble::tibble(
-      `Mục` = c("H0", "Nhóm A", "Nhóm B", "Chênh lệch median A-B", "t-test p-value", "Wilcoxon p-value", "Kết luận α=0,05"),
+      `Mục` = c("H0", "Nhóm A", "Nhóm B", "Chênh lệch trung vị A-B", "p-value kiểm định t", "p-value Wilcoxon", "Kết luận α=0,05"),
       `Giá trị` = c(
-        "Mean log(giá/m²) hai khu vực bằng nhau",
+        "Trung bình log(giá/m²) hai khu vực bằng nhau",
         paste0(district_a, " · n=", format_count_vi(nrow(group_a))),
         paste0(district_b, " · n=", format_count_vi(nrow(group_b))),
         paste0(format_number_vi(diff_median / m2_info$scale, m2_info$digits), " ", m2_info$unit),
@@ -1620,7 +1621,7 @@ server <- function(input, output, session) {
   output$prediction_note <- renderText({
     pred <- prediction()
     if (is.null(pred) || is.na(pred)) {
-      "Hãy chọn khu vực cũ và loại bất động sản có trong dữ liệu train."
+      "Hãy chọn khu vực cũ và loại bất động sản có trong dữ liệu huấn luyện."
     } else {
       paste("Giao dịch:", input$predict_transaction, "· Loại:", input$pred_category, "· Khu vực:", input$pred_district, "· Diện tích:", input$predict_area, "m²")
     }
@@ -1657,7 +1658,7 @@ server <- function(input, output, session) {
             div(class = "filter-chip-label", "Khoảng dự đoán"),
             div(class = "filter-chip-value", paste(format_vnd(error_band$lower), "-", format_vnd(error_band$upper)))),
         div(class = "filter-chip",
-            div(class = "filter-chip-label", "Mẫu sai số model"),
+            div(class = "filter-chip-label", "Mẫu sai số mô hình"),
             div(class = "filter-chip-value", paste0(format_count_vi(error_band$n), " dòng · ", error_band$confidence)))
       )
     } else {
@@ -1666,7 +1667,7 @@ server <- function(input, output, session) {
             div(class = "filter-chip-label", "Khoảng dự đoán"),
             div(class = "filter-chip-value", "Cần thêm mẫu")),
         div(class = "filter-chip",
-            div(class = "filter-chip-label", "Mẫu sai số model"),
+            div(class = "filter-chip-label", "Mẫu sai số mô hình"),
             div(class = "filter-chip-value", paste0(format_count_vi(error_band$n), " dòng · ", error_band$confidence)))
       )
     }
@@ -1679,7 +1680,7 @@ server <- function(input, output, session) {
           div(class = "filter-chip-label", "Q1 thị trường"),
           div(class = "filter-chip-value", format_vnd(band$lower))),
       div(class = "filter-chip",
-          div(class = "filter-chip-label", "Median thị trường"),
+          div(class = "filter-chip-label", "Trung vị thị trường"),
           div(class = "filter-chip-value", format_vnd(band$median))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Q3 thị trường"),
@@ -1695,7 +1696,7 @@ server <- function(input, output, session) {
     } else {
       if (file.exists(RF_IMPORTANCE_SALE_PATH)) RF_IMPORTANCE_SALE_PATH else RF_IMPORTANCE_RENT_PATH
     }
-    validate(need(file.exists(path), "Chưa có feature importance."))
+    validate(need(file.exists(path), "Chưa có dữ liệu mức ảnh hưởng biến."))
     p <- read_csv(path, show_col_types = FALSE) %>%
       slice_head(n = 10) %>%
       mutate(
@@ -1716,17 +1717,17 @@ server <- function(input, output, session) {
     m <- metrics() %>% filter(segment == segment_key)
     r <- registry() %>% filter(segment == segment_key)
     diag <- diagnostic_data()
-    best <- if (nrow(r) > 0) r$best_model[[1]] else best_model_name_only(m)
+    best <- if (nrow(r) > 0) model_label_vi(r$best_model[[1]]) else best_model_name_only(m)
     best_mape <- if (nrow(r) > 0) paste0("MAPE ", round(r$mape[[1]] * 100, 1), "%") else best_model_mape_only(m)
     diag_mape <- if (nrow(diag) > 0) paste0(round(mean(diag$ape, na.rm = TRUE) * 100, 1), "%") else "NA"
     diag_residual <- if (nrow(diag) > 0) format_number_vi(stats::sd(diag$residual_log, na.rm = TRUE), 3) else "NA"
 
     div(
       class = "kpi-grid",
-      kpi_card("Nhóm model", tx, "bán và thuê được train riêng", "tags", "default", value_class = "text-mode"),
-      kpi_card("Best model", best, "chọn theo MAPE/RMSE validate", "bullseye", "success", delta = best_mape, value_class = "text-mode"),
-      kpi_card("MAPE sanity check", diag_mape, "mẫu dự đoán lại từ dữ liệu hiện có", "chart-simple", "warning"),
-      kpi_card("SD residual log", diag_residual, "độ phân tán sai số log", "ruler", "danger")
+      kpi_card("Nhóm mô hình", tx, "bán và thuê được huấn luyện riêng", "tags", "default", value_class = "text-mode"),
+      kpi_card("Mô hình tốt nhất", best, "chọn theo sai số kiểm định", "bullseye", "success", delta = best_mape, value_class = "text-mode"),
+      kpi_card("MAPE kiểm tra", diag_mape, "mẫu dự đoán lại từ dữ liệu hiện có", "chart-simple", "warning"),
+      kpi_card("Độ lệch sai số", diag_residual, "độ phân tán sai số log", "ruler", "danger")
     )
   })
 
@@ -1740,12 +1741,12 @@ server <- function(input, output, session) {
         tooltip = paste0(
           "Khu vực: ", district_name,
           "<br>Loại BĐS: ", category_name,
-          "<br>Actual: ", format_number_vi(actual_display, price_info$digits), " ", price_info$unit,
-          "<br>Predicted: ", format_number_vi(predicted_display, price_info$digits), " ", price_info$unit,
+          "<br>Giá thực tế: ", format_number_vi(actual_display, price_info$digits), " ", price_info$unit,
+          "<br>Giá dự đoán: ", format_number_vi(predicted_display, price_info$digits), " ", price_info$unit,
           "<br>APE: ", round(ape * 100, 1), "%"
         )
       )
-    validate(need(nrow(df) > 0, "Chưa có dữ liệu diagnostics."))
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu kiểm tra mô hình."))
 
     max_axis <- safe_quantile(c(df$actual_display, df$predicted_display), 0.98)
     p <- df %>%
@@ -1754,7 +1755,7 @@ server <- function(input, output, session) {
       geom_point(alpha = 0.55, size = 1.8) +
       geom_abline(slope = 1, intercept = 0, color = "#ef4444", linewidth = 0.9) +
       guides(color = "none") +
-      labs(x = paste0("Actual (", price_info$unit, ")"), y = paste0("Predicted (", price_info$unit, ")")) +
+      labs(x = paste0("Giá thực tế (", price_info$unit, ")"), y = paste0("Giá dự đoán (", price_info$unit, ")")) +
       chart_theme()
     interactive_chart(p, tooltip = "text") %>%
       layout(
@@ -1767,14 +1768,14 @@ server <- function(input, output, session) {
 
   output$diagnostic_residual_plot <- renderPlotly({
     df <- diagnostic_data()
-    validate(need(nrow(df) > 0, "Chưa có dữ liệu residual."))
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu sai số."))
     plot_ly(
       df,
       x = ~residual_log,
       type = "histogram",
       nbinsx = 36,
       marker = list(color = "#f59e0b", line = list(color = "#ffffff", width = 0.5)),
-      hovertemplate = "Residual log: %{x:.3f}<br>Số dòng: %{y}<extra></extra>"
+      hovertemplate = "Sai số log: %{x:.3f}<br>Số dòng: %{y}<extra></extra>"
     ) %>%
       layout(
         shapes = list(list(type = "line", x0 = 0, x1 = 0, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))),
@@ -1784,7 +1785,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         bargap = 0.04,
-        xaxis = list(title = list(text = "Residual log(actual) - log(predicted)", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
+        xaxis = list(title = list(text = "Sai số log(giá thực tế) - log(giá dự đoán)", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
         yaxis = list(title = list(text = "Số dòng", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
       ) %>%
       config(displayModeBar = FALSE, responsive = TRUE)
@@ -1792,14 +1793,14 @@ server <- function(input, output, session) {
 
   output$diagnostic_error_group_plot <- renderPlotly({
     df <- diagnostic_data()
-    validate(need(nrow(df) > 0, "Chưa có dữ liệu diagnostics theo khu vực."))
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu kiểm tra mô hình theo khu vực."))
     plot_df <- df %>%
       group_by(district_name) %>%
       summarise(mape = mean(ape, na.rm = TRUE), n = n(), .groups = "drop") %>%
       filter(n >= 10) %>%
       slice_max(mape, n = 12) %>%
       mutate(
-        tooltip = paste0("Khu vực: ", district_name, "<br>MAPE sanity: ", round(mape * 100, 1), "%<br>Số dòng: ", format_count_vi(n))
+        tooltip = paste0("Khu vực: ", district_name, "<br>MAPE kiểm tra: ", round(mape * 100, 1), "%<br>Số dòng: ", format_count_vi(n))
       )
     validate(need(nrow(plot_df) > 0, "Cần ít nhất 10 dòng/khu vực để vẽ sai số nhóm."))
     p <- plot_df %>%
@@ -1821,27 +1822,27 @@ server <- function(input, output, session) {
     tx <- chart_transaction("diagnostic_tx")
     segment_key <- if (identical(tx, "Cho thuê")) "rent" else "sale"
     m <- metrics() %>% filter(segment == segment_key)
-    validate(need(nrow(m) > 0, "Chưa có file metrics model."))
+    validate(need(nrow(m) > 0, "Chưa có file chỉ số mô hình."))
     min_rmse <- min(m$rmse_vnd, na.rm = TRUE)
     min_mae <- min(m$mae_vnd, na.rm = TRUE)
     plot_df <- bind_rows(
       m %>% transmute(model, metric = "MAPE (%)", value = mape * 100),
       m %>% transmute(model, metric = "R² (%)", value = pmax(r2, 0) * 100),
-      m %>% transmute(model, metric = "RMSE index", value = rmse_vnd / min_rmse * 100),
-      m %>% transmute(model, metric = "MAE index", value = mae_vnd / min_mae * 100)
+      m %>% transmute(model, metric = "Chỉ số RMSE", value = rmse_vnd / min_rmse * 100),
+      m %>% transmute(model, metric = "Chỉ số MAE", value = mae_vnd / min_mae * 100)
     ) %>%
       mutate(
         model_short = dplyr::recode(
           model,
-          "Linear Regression" = "Linear",
-          "Random Forest" = "RF",
+          "Linear Regression" = "Tuyến tính",
+          "Random Forest" = "Rừng NN",
           "XGBoost" = "XGB",
-          "RF + XGBoost Ensemble" = "RF+XGB",
-          "Tuned RF/XGBoost Ensemble" = "Tuned Ens.",
+          "RF + XGBoost Ensemble" = "Tổ hợp",
+          "Tuned RF/XGBoost Ensemble" = "Tối ưu",
           .default = model
         ),
         model_short = factor(model_short, levels = unique(model_short)),
-        tooltip = paste0("Model: ", model, "<br>Metric: ", metric, "<br>Giá trị: ", format_number_vi(value, 1))
+        tooltip = paste0("Mô hình: ", model_label_vi(model), "<br>Chỉ số: ", metric, "<br>Giá trị: ", format_number_vi(value, 1))
       )
 
     plot_ly(
@@ -1863,7 +1864,7 @@ server <- function(input, output, session) {
         plot_bgcolor = "rgba(0,0,0,0)",
         legend = list(orientation = "h", x = 0, y = -0.30, font = list(size = 11), itemwidth = 30),
         xaxis = list(title = "", automargin = TRUE, tickangle = 0, tickfont = list(size = 11)),
-        yaxis = list(title = list(text = "Giá trị / index", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
+        yaxis = list(title = list(text = "Giá trị / chỉ số", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
       ) %>%
       config(displayModeBar = FALSE, responsive = TRUE)
   })

@@ -57,10 +57,6 @@ label_count <- function(x) {
   format(round(x, 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
 }
 
-label_money <- function(x) {
-  format(round(x, 1), big.mark = ".", decimal.mark = ",", scientific = FALSE)
-}
-
 # Hàm load_eda_data: nạp dữ liệu từ file, API hoặc cache.
 load_eda_data <- function() {
   if (file.exists(FEATURED_CSV)) {
@@ -121,9 +117,9 @@ run_eda <- function() {
     facet_wrap(~ transaction_type, scales = "free_y") +
     guides(fill = "none") +
     labs(
-      title = "Phan phoi log(gia) theo loai giao dich",
-      x = "log(1 + gia niem yet VND)",
-      y = "So tin"
+      title = "Phân phối log(giá) theo loại giao dịch",
+      x = "log(1 + giá niêm yết VND)",
+      y = "Số tin"
     ) +
     theme_minimal(base_size = 12)
   save_plot(p1, "01_phan_phoi_log_gia.png")
@@ -140,9 +136,9 @@ run_eda <- function() {
     facet_wrap(~ transaction_label, scales = "free_x") +
     coord_flip() +
     labs(
-      title = "Phan phoi gia theo quan/huyen",
+      title = "Phân phối giá theo quận/huyện",
       x = NULL,
-      y = "Gia niem yet"
+      y = "Giá niêm yết"
     ) +
     theme_minimal(base_size = 12)
   save_plot(p2, "02_gia_theo_quan_boxplot.png")
@@ -161,11 +157,11 @@ run_eda <- function() {
     geom_point(alpha = 0.45, size = 1.4) +
     facet_wrap(~ transaction_label, scales = "free_y") +
     labs(
-      title = "Dien tich va gia theo loai BDS",
-      subtitle = "Da loc 1% diem cuc tri theo tung loai giao dich de bieu do de doc hon",
-      x = "Dien tich (m2)",
-      y = "Gia niem yet",
-      color = "Loai"
+      title = "Diện tích và giá theo loại BĐS",
+      subtitle = "Đã lọc 1% điểm cực trị theo từng loại giao dịch để biểu đồ dễ đọc hơn",
+      x = "Diện tích (m²)",
+      y = "Giá niêm yết",
+      color = "Loại"
     ) +
     theme_minimal(base_size = 12)
   save_plot(p3, "03_dien_tich_va_gia.png")
@@ -182,7 +178,7 @@ run_eda <- function() {
     geom_col() +
     coord_flip() +
     scale_y_continuous(labels = label_count) +
-    labs(title = "Top 10 quan/huyen co nhieu tin nhat", x = NULL, y = "So tin", fill = "Giao dich") +
+    labs(title = "Top 10 quận/huyện có nhiều tin nhất", x = NULL, y = "Số tin", fill = "Giao dịch") +
     theme_minimal(base_size = 12)
   save_plot(p4, "04_top_quan_nhieu_tin.png")
 
@@ -201,10 +197,10 @@ run_eda <- function() {
     geom_col(fill = "#C0504D") +
     coord_flip() +
     labs(
-      title = "Top 10 quan/huyen co gia ban/m2 cao nhat",
-      subtitle = "Tinh median theo tung tin ban, da loc 1% outlier gia/m2",
+      title = "Top 10 quận/huyện có giá bán/m² cao nhất",
+      subtitle = "Tính trung vị theo từng tin bán, đã lọc 1% điểm ngoại lệ giá/m²",
       x = NULL,
-      y = "Trieu VND/m2"
+      y = "Triệu VND/m²"
     ) +
     theme_minimal(base_size = 12)
   save_plot(p5, "05_top_quan_gia_m2_cao.png")
@@ -219,11 +215,11 @@ run_eda <- function() {
       geom_point(size = 1.6) +
       scale_y_log10(labels = label_count) +
       labs(
-        title = "Do phu tin dang theo thang",
-        subtitle = "Dung thang log10 vi du lieu tap trung manh o cac dot crawl/import gan day",
-        x = "Thang",
-        y = "So tin (log10)",
-        color = "Giao dich"
+        title = "Độ phủ tin đăng theo tháng",
+        subtitle = "Dùng thang log10 vì dữ liệu tập trung mạnh ở các đợt thu thập/import gần đây",
+        x = "Tháng",
+        y = "Số tin (log10)",
+        color = "Giao dịch"
       ) +
       theme_minimal(base_size = 12)
     save_plot(p6, "06_xu_huong_tin_theo_ngay.png")
@@ -242,10 +238,10 @@ run_eda <- function() {
       coord_fixed() +
       guides(color = "none") +
       labs(
-        title = "Phan bo dia ly tin dang TP.HCM",
-        subtitle = "Da loc toa do nam ngoai khung TP.HCM",
-        x = "Kinh do",
-        y = "Vi do"
+        title = "Phân bố địa lý tin đăng TP.HCM",
+        subtitle = "Đã lọc tọa độ nằm ngoài khung TP.HCM",
+        x = "Kinh độ",
+        y = "Vĩ độ"
       ) +
       theme_minimal(base_size = 12)
     save_plot(p7, "07_phan_bo_dia_ly_gia.png")
@@ -261,10 +257,10 @@ run_eda <- function() {
     coord_flip() +
     guides(fill = "none") +
     labs(
-      title = "So sanh gia ban/m2 theo loai BDS",
-      subtitle = "Da gop nhom loai BDS va loc 1% outlier gia/m2",
+      title = "So sánh giá bán/m² theo loại BĐS",
+      subtitle = "Đã gộp nhóm loại BĐS và lọc 1% điểm ngoại lệ giá/m²",
       x = NULL,
-      y = "Trieu VND/m2"
+      y = "Triệu VND/m²"
     ) +
     theme_minimal(base_size = 12)
   save_plot(p8, "08_gia_m2_theo_loai_bds.png")

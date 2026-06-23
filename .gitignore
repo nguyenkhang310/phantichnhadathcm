@@ -6,6 +6,7 @@
 
 # Data files (large, not needed in git)
 data/cache/*.sqlite
+data/logs/*.log
 
 # Local R library
 .local/
