@@ -22,8 +22,8 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css?v=fit-screen-20260624e"),
-    tags$script(src = "tuong_tac.js?v=fit-screen-20260624e")
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=mobile-polish-20260624c"),
+    tags$script(src = "tuong_tac.js?v=mobile-polish-20260624c")
   ),
   div(
     class = "app-shell",
@@ -36,10 +36,20 @@ ui <- fluidPage(
           class = "brand-text",
           div(class = "brand-title", "Môn: Lập Trình R"),
           div(class = "brand-subtitle", "Đồ án Cuối kỳ")
+        ),
+        tags$button(
+          id = "mobile_menu_toggle",
+          type = "button",
+          class = "mobile-menu-toggle",
+          `aria-label` = "Mở menu điều hướng",
+          `aria-expanded` = "false",
+          `aria-controls` = "mobile_nav_menu",
+          icon("bars")
         )
       ),
       div(class = "nav-section-label", "BẢNG ĐIỀU KHIỂN"),
       tags$nav(
+        id = "mobile_nav_menu",
         class = "app-sidebar-nav",
         nav_link("overview", "Tổng quan", "chart-line"),
         nav_link("map", "Bản đồ dữ liệu", "map-location-dot"),
@@ -59,7 +69,11 @@ ui <- fluidPage(
         class = "app-topbar",
         div(
           class = "topbar-title-wrap",
-          div(class = "topbar-title", "Hệ thống Phân tích & Dự đoán Giá Bất động sản"),
+          div(
+            class = "topbar-title",
+            span(class = "topbar-title-full", "Hệ thống Phân tích & Dự đoán Giá Bất động sản"),
+            span(class = "topbar-title-mobile", "BĐS TP.HCM")
+          ),
           div(class = "topbar-subtitle", "Dữ liệu thị trường TP.HCM")
         ),
         div(style = "flex: 1;"),

@@ -15,6 +15,35 @@
       $(document).on('shiny:connected', function() {
         $('#nav_overview').addClass('active');
       });
+      function isMobileNavViewport() {
+        return (window.innerWidth || document.documentElement.clientWidth || 1024) <= 900;
+      }
+      function setMobileMenu(open) {
+        var $sidebar = $('.app-sidebar');
+        var $toggle = $('#mobile_menu_toggle');
+        $sidebar.toggleClass('mobile-menu-open', open);
+        $('body').toggleClass('mobile-menu-locked', open && isMobileNavViewport());
+        $toggle.attr('aria-expanded', open ? 'true' : 'false');
+        $toggle.attr('aria-label', open ? 'Đóng menu điều hướng' : 'Mở menu điều hướng');
+        $toggle.html(open ? '<i class="fa fa-xmark"></i>' : '<i class="fa fa-bars"></i>');
+      }
+      $(document).on('click', '#mobile_menu_toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setMobileMenu(!$('.app-sidebar').hasClass('mobile-menu-open'));
+      });
+      $(document).on('click', '.app-sidebar-nav', function(e) {
+        e.stopPropagation();
+      });
+      $(document).on('click', '.app-nav-link', function() {
+        if (isMobileNavViewport()) setMobileMenu(false);
+      });
+      $(document).on('click', function() {
+        if (isMobileNavViewport()) setMobileMenu(false);
+      });
+      $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') setMobileMenu(false);
+      });
       function clampNumber(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
@@ -93,6 +122,7 @@
           var topbarHeight = topbar ? Math.ceil(topbar.getBoundingClientRect().height) : (compact || mobile ? 64 : 72);
           setCssPx('--fit-topbar-actual', topbarHeight);
         }, 0);
+        if (!mobile) setMobileMenu(false);
       }
       var dashboardResizeTimer = null;
       function resizeDashboardWidgets(shouldNotifyWindow) {

@@ -1955,3 +1955,426 @@ html.fit-compact .panel-subtitle {
     max-width: calc(100% - 86px);
   }
 }
+
+/* =========================================================
+   MOBILE POLISH
+   Menu 3 gach, header gon va thanh bao cao de dung hon tren dien thoai.
+   ========================================================= */
+.mobile-menu-toggle,
+.topbar-title-mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body.mobile-menu-locked {
+    overflow: hidden;
+  }
+
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 320;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    overflow: visible;
+  }
+
+  .app-brand {
+    min-height: 64px;
+    padding: 8px 14px;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .brand-logo {
+    width: 48px;
+    flex: 0 0 48px;
+  }
+
+  .brand-logo:hover {
+    transform: none;
+  }
+
+  .brand-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 2px;
+  }
+
+  .brand-title {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.15;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand-subtitle {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .mobile-menu-toggle {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 114, 188, 0.18);
+    border-radius: 14px;
+    background: rgba(0, 114, 188, 0.08);
+    color: var(--primary);
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(0, 114, 188, 0.08);
+    transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .mobile-menu-toggle:active {
+    transform: scale(0.96);
+  }
+
+  .app-sidebar.mobile-menu-open .mobile-menu-toggle {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(0, 114, 188, 0.24);
+  }
+
+  .nav-section-label,
+  .app-sidebar-footer {
+    display: none !important;
+  }
+
+  .app-sidebar .app-sidebar-nav {
+    display: none !important;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    z-index: 340;
+    max-height: calc(100dvh - 92px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+    gap: 4px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-sidebar.mobile-menu-open .app-sidebar-nav {
+    display: grid !important;
+    animation: mobileMenuDrop 0.16s ease-out;
+  }
+
+  .app-sidebar .app-nav-link {
+    min-height: 46px;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: transparent;
+    color: #475569;
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .app-sidebar .app-nav-link:hover,
+  .app-sidebar .app-nav-link:focus,
+  .app-sidebar .app-nav-link.active {
+    transform: none;
+    background: rgba(0, 114, 188, 0.1);
+    color: var(--primary);
+  }
+
+  .app-topbar {
+    position: relative;
+    top: auto;
+    z-index: 120;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 16px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: none;
+  }
+
+  .app-topbar > div[style] {
+    display: none !important;
+  }
+
+  .topbar-title-wrap {
+    width: 100%;
+  }
+
+  .topbar-title {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+
+  .topbar-title-full {
+    display: none;
+  }
+
+  .topbar-title-mobile {
+    display: inline;
+  }
+
+  .topbar-subtitle {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .page-wrap {
+    padding: 18px 14px 28px;
+  }
+
+  .page-title {
+    font-size: 26px;
+    line-height: 1.14;
+  }
+
+  .page-subtitle {
+    margin-top: 8px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.48;
+  }
+
+  .kpi-grid {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    min-height: auto;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .kpi-card-header {
+    margin-bottom: 18px;
+  }
+
+  .kpi-value {
+    padding-top: 8px;
+    font-size: 30px;
+  }
+
+  .kpi-value.text-mode {
+    font-size: 18px;
+  }
+
+  .kpi-value.median-split .median-price-value {
+    font-size: 20px;
+  }
+
+  .kpi-foot {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .report-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 50px;
+    gap: 8px;
+    align-items: stretch;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 8px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .report-search {
+    grid-column: 1 / -1;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .report-search .selectize-input {
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 14px !important;
+    background: #f8fafc !important;
+    font-size: 14px !important;
+  }
+
+  .report-divider {
+    display: none !important;
+  }
+
+  .report-stats {
+    grid-column: 1 / 2;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .report-stat {
+    min-width: 0;
+    min-height: 48px;
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 14px;
+    background: #f8fafc;
+  }
+
+  .report-stat > i {
+    width: 18px;
+    font-size: 13px;
+  }
+
+  .report-stat-value {
+    font-size: 14px;
+    line-height: 1.15;
+  }
+
+  .report-stat-label {
+    font-size: 9px;
+  }
+
+  .report-median-content {
+    min-width: 0;
+  }
+
+  .report-median-tiles {
+    gap: 6px;
+  }
+
+  .report-median-tile {
+    padding: 5px 7px;
+    border-radius: 10px;
+  }
+
+  .report-median-tile-label {
+    font-size: 8px;
+  }
+
+  .report-median-tile-value {
+    font-size: 13px;
+  }
+
+  .report-download-button {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    align-self: end;
+    padding: 0;
+    border-radius: 15px;
+    box-shadow: 0 12px 24px rgba(0, 114, 188, 0.2);
+  }
+
+  .report-download-button span {
+    display: none;
+  }
+
+  .report-download-button i {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-brand {
+    min-height: 60px;
+    padding: 7px 12px;
+  }
+
+  .brand-logo {
+    width: 44px;
+    flex-basis: 44px;
+  }
+
+  .brand-title {
+    font-size: 12px;
+  }
+
+  .mobile-menu-toggle {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .app-topbar {
+    padding: 10px 12px 12px;
+  }
+
+  .topbar-title {
+    font-size: 19px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .kpi-card {
+    padding: 16px;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+  }
+
+  .report-toolbar {
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 7px;
+    padding: 7px;
+    border-radius: 16px;
+  }
+
+  .report-search .selectize-input {
+    height: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .report-stat {
+    min-height: 44px;
+    padding: 7px 9px;
+  }
+
+  .report-download-button {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+}
+
+@keyframes mobileMenuDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
