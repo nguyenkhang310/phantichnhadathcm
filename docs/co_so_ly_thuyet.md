@@ -11,7 +11,7 @@ Do an xay dung mot he thong phan tich bat dong san TP.HCM bang ngon ngu R, ket h
 
 Tap du lieu chinh dang dung trong du an la `data/main/du_lieu_chinh.csv`, gom **30,250 tin dang** va **56 cot** sau khi gop nguon, lam sach va tao dac trung. Du lieu den tu 6 nhom nguon/kenh: Mogi, Cho Tot, Alonhadat, Luachonnhadat, Homedy va Muaban; rieng Alonhadat co ca nguon crawl truc tiep va nguon CSV local duoc import lai, Mogi co them nguon crawl bo sung uu tien tin cho thue. Trong tap du lieu chinh co **14,891 tin ban** va **15,359 tin cho thue**. Gia ban trung vi toan bo phan khuc ban la khoang **6.30 ty VND**, dien tich trung vi **76 m2**, don gia trung vi **91.21 trieu VND/m2**. Gia thue trung vi la khoang **25 trieu VND/thang**, dien tich trung vi **98 m2**, don gia thue trung vi **235.00 nghin VND/m2/thang**.
 
-Quy trinh ETL duoc chia thanh cac buoc ro rang. Cac scraper/importer trong `scripts/scrapers/` va `scripts/importers/` tao du lieu raw theo schema noi bo. Script `scripts/processing/gop_nguon_du_lieu.R` chuan hoa 27 cot chung, loc gia/dien tich bat hop ly va khu trung lap theo `source_id` va URL tin dang. Script `scripts/processing/tao_dac_trung.R` tao cac bien phuc vu thong ke va mo hinh nhu `log_price`, `log_area`, `log_price_per_m2`, `distance_to_center`, cac bien text nhan dien mat tien/hem xe hoi/phap ly/noi that, so tang/phong suy luan, tuoi tin dang va nhom gia.
+Quy trinh ETL duoc chia thanh cac buoc ro rang. Cac scraper/importer trong `scripts/01_thu_thap_du_lieu/` va `scripts/01_thu_thap_du_lieu/` tao du lieu raw theo schema noi bo. Script `scripts/02_xu_ly_du_lieu/gop_nguon_du_lieu.R` chuan hoa 27 cot chung, loc gia/dien tich bat hop ly va khu trung lap theo `source_id` va URL tin dang. Script `scripts/02_xu_ly_du_lieu/tao_dac_trung.R` tao cac bien phuc vu thong ke va mo hinh nhu `log_price`, `log_area`, `log_price_per_m2`, `distance_to_center`, cac bien text nhan dien mat tien/hem xe hoi/phap ly/noi that, so tang/phong suy luan, tuoi tin dang va nhom gia.
 
 Ve mo hinh hoa, do an tach rieng hai bai toan: du doan **gia ban** va du doan **gia thue**. Moi phan khuc duoc danh gia bang 5 mo hinh: Linear Regression, Random Forest, XGBoost, RF + XGBoost Ensemble trung binh 0.5 va Tuned RF/XGBoost Ensemble co trong so toi uu. Cac mo hinh duoc validate theo ti le **80/20 phan tang theo nguon du lieu** (`stratified_random_by_source`). Theo artifact hien tai trong `models/dang_ky_mo_hinh.csv`, mo hinh tot nhat cho ca hai phan khuc la **Tuned RF/XGBoost Ensemble**. Ket qua validate hien tai:
 
@@ -114,10 +114,10 @@ phantichnhadathcm/
 | `app.R` | Diem vao ung dung Shiny, nap package, cau hinh port/host, source UI/server/helper. |
 | `scripts/config/duong_dan_du_an.R` | Khai bao tat ca duong dan du lieu, model, plot, scraper, importer, pipeline. |
 | `scripts/lib/chuan_hoa_quan_huyen.R` | Chuan hoa ten quan/huyen, bo dau tieng Viet, map ten phuong moi/nhan cu. |
-| `scripts/processing/gop_nguon_du_lieu.R` | Doc raw CSV, dua ve 27 cot chung, loc ngoai lai, khu trung lap, luu interim. |
-| `scripts/processing/tao_dac_trung.R` | Tao dac trung tu du lieu gop, tinh log, gia/m2, Haversine, text flags, thoi gian. |
-| `scripts/analysis/phan_tich_eda.R` | Tao 8 bieu do EDA PNG va file `plots/tom_tat_eda_hcm.csv`. |
-| `scripts/models/huan_luyen_mo_hinh.R` | Train/evaluate Linear, RF, XGBoost, Ensemble, K-Means, luu model/metrics. |
+| `scripts/02_xu_ly_du_lieu/gop_nguon_du_lieu.R` | Doc raw CSV, dua ve 27 cot chung, loc ngoai lai, khu trung lap, luu interim. |
+| `scripts/02_xu_ly_du_lieu/tao_dac_trung.R` | Tao dac trung tu du lieu gop, tinh log, gia/m2, Haversine, text flags, thoi gian. |
+| `scripts/03_suy_luan_thong_ke/phan_tich_eda.R` | Tao 8 bieu do EDA PNG va file `plots/tom_tat_eda_hcm.csv`. |
+| `scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R` | Train/evaluate Linear, RF, XGBoost, Ensemble, K-Means, luu model/metrics. |
 | `ung_dung/giao_dien_ung_dung.R` | Khai bao layout Shiny, sidebar, topbar, tabs, input/output placeholder. |
 | `ung_dung/may_chu_ung_dung.R` | Server reactive, render plot/map/table, observeEvent, download report, chat. |
 | `ung_dung/ham_ho_tro_ung_dung.R` | Ham xu ly data, format, du doan, thong ke, chart, assistant NLP, report PDF. |
@@ -515,7 +515,7 @@ Do an co hai lop truc quan hoa: **offline plots** trong `plots/` va **interactiv
 
 ### 4.2 Cac bieu do offline trong `plots/`
 
-Script `scripts/analysis/phan_tich_eda.R` tao 8 bieu do PNG va mot file tong hop CSV.
+Script `scripts/03_suy_luan_thong_ke/phan_tich_eda.R` tao 8 bieu do PNG va mot file tong hop CSV.
 
 | File | Noi dung | Y nghia |
 |---|---|---|
@@ -726,7 +726,7 @@ flowchart TD
 
 #### 5.1.3 Chia Train/Test 80/20 phân tầng
 
-Hàm `make_split()` trong `scripts/models/huan_luyen_mo_hinh.R` chia dữ liệu theo tỉ lệ 80/20 và phân tầng theo biến `source`. Lý do chọn `source` làm biến phân tầng là vì các nguồn dữ liệu có cấu trúc rất khác nhau:
+Hàm `make_split()` trong `scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R` chia dữ liệu theo tỉ lệ 80/20 và phân tầng theo biến `source`. Lý do chọn `source` làm biến phân tầng là vì các nguồn dữ liệu có cấu trúc rất khác nhau:
 
 - Mogi chiếm tỉ trọng lớn và có nhiều tin cho thuê.
 - Chợ Tốt nghiêng mạnh về tin bán.
@@ -1694,10 +1694,10 @@ Log hien tai trong `data/logs/nhat_ky_tu_dong_cap_nhat.csv` co mot lan success n
 ### 8.5 Lenh chay tung buoc
 
 ```bash
-Rscript scripts/processing/gop_nguon_du_lieu.R
-Rscript scripts/processing/tao_dac_trung.R
-Rscript scripts/analysis/phan_tich_eda.R
-Rscript scripts/models/huan_luyen_mo_hinh.R
+Rscript scripts/02_xu_ly_du_lieu/gop_nguon_du_lieu.R
+Rscript scripts/02_xu_ly_du_lieu/tao_dac_trung.R
+Rscript scripts/03_suy_luan_thong_ke/phan_tich_eda.R
+Rscript scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R
 ```
 
 ### 8.6 Lenh kiem tra du an
@@ -1790,7 +1790,7 @@ Phan nay co the dung de viet vao bao cao nhom. Repo khong chua ten thanh vien, n
 
 | Hang muc | Noi dung dong gop | File/minh chung |
 |---|---|---|
-| Thu thap du lieu | Xay scraper/importer cho Cho Tot, Alonhadat, Luachonnhadat, Muaban, Mogi, Homedy | `scripts/scrapers/`, `scripts/importers/` |
+| Thu thap du lieu | Xay scraper/importer cho Cho Tot, Alonhadat, Luachonnhadat, Muaban, Mogi, Homedy | `scripts/01_thu_thap_du_lieu/`, `scripts/01_thu_thap_du_lieu/` |
 | Chuan hoa du lieu | Thiet ke schema chung, khu trung lap, loc gia/dien tich, chuan hoa quan/huyen | `gop_nguon_du_lieu.R`, `chuan_hoa_quan_huyen.R` |
 | Feature engineering | Regex title, Haversine, log transform, thoi gian, price segment | `tao_dac_trung.R` |
 | EDA | Tao plots offline va dashboard phan tich gia | `phan_tich_eda.R`, `may_chu_ung_dung.R` |

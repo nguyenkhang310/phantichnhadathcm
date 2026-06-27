@@ -9,6 +9,5 @@ Thumbs.db
 data/cache/
 data/logs/*.log
 docs/
-plots/*.png
 *.Rproj
 *.docx~

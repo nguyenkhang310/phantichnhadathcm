@@ -2,9 +2,9 @@ flowchart TD
   A["Start"] --> B["Scrape/import từng nguồn"]
   B --> C1["Chợ Tốt API<br/>data/raw/chotot/chotot_schema_chuan.csv"]
   B --> C2["Alonhadat / Luachonnhadat / Muaban<br/>data/raw/*/*.csv"]
-  B --> C3["Mogi clean CSV<br/>scripts/importers/nhap_mogi.R"]
-  B --> C4["Homedy clean CSV<br/>scripts/importers/nhap_homedy.R"]
-  B --> C5["Alonhadat local CSV<br/>scripts/importers/nhap_alonhadat_local.R"]
+  B --> C3["Mogi clean CSV<br/>scripts/01_thu_thap_du_lieu/nhap_mogi.R"]
+  B --> C4["Homedy clean CSV<br/>scripts/01_thu_thap_du_lieu/nhap_homedy.R"]
+  B --> C5["Alonhadat local CSV<br/>scripts/01_thu_thap_du_lieu/nhap_alonhadat_local.R"]
   C1 --> D["Chuẩn hóa schema chung<br/>title, price, area, rooms, ward, district, lat/lon, source"]
   C2 --> D
   C3 --> D

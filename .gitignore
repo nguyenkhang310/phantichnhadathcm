@@ -3,6 +3,7 @@
 .RData
 .Rproj.user
 *.Rproj
+bao_cao_du_an_bds_hcm.html
 
 # Data files (large, not needed in git)
 data/cache/*.sqlite
@@ -14,9 +15,6 @@ data/logs/*.log
 # OS
 .DS_Store
 Thumbs.db
-
-# Plots (generated, not needed)
-plots/*.png
 
 # Docs temp
 *.docx~

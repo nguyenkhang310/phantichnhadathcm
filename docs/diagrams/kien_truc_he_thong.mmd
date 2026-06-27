@@ -18,12 +18,12 @@ flowchart LR
   end
 
   subgraph Analytics["Xử lý & phân tích"]
-    SCR["scripts/scrapers/thu_thap_chotot.R"]
-    SCR2["scripts/scrapers/*.R<br/>scripts/importers/*.R"]
-    MERGE["scripts/processing/gop_nguon_du_lieu.R"]
-    FEA["scripts/processing/tao_dac_trung.R"]
-    EDA["scripts/analysis/phan_tich_eda.R"]
-    ML["scripts/models/huan_luyen_mo_hinh.R"]
+    SCR["scripts/01_thu_thap_du_lieu/thu_thap_chotot.R"]
+    SCR2["scripts/01_thu_thap_du_lieu/*.R<br/>scripts/01_thu_thap_du_lieu/*.R"]
+    MERGE["scripts/02_xu_ly_du_lieu/gop_nguon_du_lieu.R"]
+    FEA["scripts/02_xu_ly_du_lieu/tao_dac_trung.R"]
+    EDA["scripts/03_suy_luan_thong_ke/phan_tich_eda.R"]
+    ML["scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R"]
   end
 
   subgraph Outputs["Đầu ra"]

@@ -1,10 +1,3 @@
-# ============================================================
-# CHUẨN HÓA KHU VỰC TP.HCM
-# Nhãn khu vực chuẩn dùng chung cho dashboard, model và bộ lọc.
-# Tên phường mới năm 2025 được quy về khu vực thị trường cũ.
-# ============================================================
-
-# Hàm district_strip_vietnamese: loại dấu tiếng Việt để so khớp văn bản.
 district_strip_vietnamese <- function(x) {
   x <- tolower(as.character(x))
   replacements <- list(
@@ -22,13 +15,11 @@ district_strip_vietnamese <- function(x) {
   x
 }
 
-# Hàm district_missing_label: chuẩn hóa tên quận huyện.
 district_missing_label <- function(x) {
   key <- district_strip_vietnamese(trimws(as.character(x)))
   is.na(x) | key %in% c("", "unknown", "khong ro", "na", "nan", "null")
 }
 
-# Hàm district_clean_label: chuẩn hóa tên quận huyện.
 district_clean_label <- function(x, fallback = "Không rõ") {
   x <- trimws(as.character(x))
   ifelse(district_missing_label(x), fallback, x)
@@ -89,7 +80,6 @@ new_ward_old_district_patterns <- c(
   "phuong\\s+binh\\s+duong" = "Bình Dương cũ"
 )
 
-# Hàm canonical_hcmc_district_one: chuẩn hóa tên quận huyện.
 canonical_hcmc_district_one <- function(...) {
   parts <- list(...)
   parts <- unlist(parts, use.names = FALSE)
@@ -123,7 +113,6 @@ canonical_hcmc_district_one <- function(...) {
   if (current %in% canonical_district_labels) current else "Không rõ"
 }
 
-# Hàm canonical_hcmc_district: chuẩn hóa tên quận huyện.
 canonical_hcmc_district <- function(current, address = "", title = "", url = "") {
   current <- trimws(as.character(current))
   current[is.na(current)] <- "Không rõ"

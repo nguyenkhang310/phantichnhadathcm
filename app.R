@@ -1,9 +1,3 @@
-# ============================================================
-# ỨNG DỤNG SHINY - BĐS TP.HCM
-# app.R là tên quy ước để shiny::runApp(".") tự nhận diện.
-# Chạy trực tiếp: Rscript app.R
-# ============================================================
-
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
 
@@ -32,6 +26,7 @@ nap_goi_ung_dung <- function(goi = GOI_CAN_THIET) {
 nap_goi_ung_dung()
 source(PATHS$district_normalization_script)
 source(PATHS$display_labels_script)
+source(PATHS$model_feature_script)
 
 lay_bien_moi_truong <- function(ten, mac_dinh = "") {
   gia_tri <- Sys.getenv(ten, unset = "")

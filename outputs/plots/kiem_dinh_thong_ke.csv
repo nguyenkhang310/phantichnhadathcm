@@ -1,0 +1,3 @@
+test,hypothesis,statistic,p_value,conclusion
+Welch t-test log(gia_ban_m2),So sanh gia/m2 trung binh giua Thành phố Thủ Đức va Quận Bình Tân,2.478659519278462,0.013245673581170262,Bác bỏ H0 ở mức ý nghĩa 5%
+Chi-square,Loai giao dich va nhom bat dong san doc lap nhau,9123.265297650392,0,Bác bỏ H0 ở mức ý nghĩa 5%

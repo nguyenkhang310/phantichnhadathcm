@@ -1,0 +1,1912 @@
+---
+title: "Phân tích và dự đoán giá bất động sản TP.HCM"
+author: "Nhóm 21"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 6,
+  fig.path = "outputs/figures/"
+)
+
+find_project_dir <- function() {
+  candidates <- unique(normalizePath(c(".", ".."), mustWork = FALSE))
+  hit <- candidates[
+    file.exists(file.path(candidates, "app.R")) &
+      dir.exists(file.path(candidates, "scripts")) &
+      dir.exists(file.path(candidates, "data"))
+  ]
+  if (length(hit) == 0) stop("Khong tim thay thu muc goc project.")
+  hit[[1]]
+}
+
+PROJECT_DIR <- find_project_dir()
+knitr::opts_knit$set(root.dir = PROJECT_DIR)
+project_file <- function(path) file.path(PROJECT_DIR, path)
+old_wd <- getwd()
+setwd(PROJECT_DIR)
+
+source("scripts/config/duong_dan_du_an.R")
+use_local_r_libs()
+source(PATHS$data_standardization_script)
+source(PATHS$display_labels_script)
+source(PATHS$model_feature_script)
+
+required_packages <- c("dplyr", "readr", "lubridate", "ggplot2", "tidyr", "knitr", "tibble", "DT", "randomForest")
+missing_packages <- required_packages[
+  !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages) > 0) {
+  stop("Thieu package: ", paste(missing_packages, collapse = ", "))
+}
+
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(readr)
+  library(lubridate)
+  library(ggplot2)
+  library(tidyr)
+  library(knitr)
+  library(tibble)
+  library(DT)
+  library(randomForest)
+})
+
+read_csv_if_exists <- function(path) {
+  if (!file.exists(path)) return(tibble())
+  read_csv(path, show_col_types = FALSE)
+}
+
+format_int <- function(x) {
+  format(round(x, 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
+}
+
+format_num <- function(x, digits = 2) {
+  format(round(x, digits), big.mark = ".", decimal.mark = ",", scientific = FALSE)
+}
+
+format_pct <- function(x, digits = 1) {
+  paste0(round(x * 100, digits), "%")
+}
+
+format_vnd <- function(x) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    ifelse(
+      abs(x) >= 1e9,
+      paste0(format_num(x / 1e9, 2), " tỷ"),
+      paste0(format_num(x / 1e6, 1), " triệu")
+    )
+  )
+}
+
+clean_sample_table <- function(df) {
+  text_cols <- intersect(c("title", "district_name", "category_name", "address", "ward", "price_str"), names(df))
+  for (col in text_cols) {
+    df[[col]] <- if (identical(col, "title")) {
+      clean_listing_title(df[[col]])
+    } else {
+      clean_text_field(df[[col]])
+    }
+  }
+  df
+}
+
+has_icon_chars <- function(x) {
+  x <- as.character(x)
+  cleaned <- drop_icon_chars(x)
+  !is.na(x) & !is.na(cleaned) & x != cleaned
+}
+
+source_files <- tibble(
+  nguon = c("Chợ Tốt", "Alonhadat", "Alonhadat local", "Lựa Chọn Nhà Đất", "Mua Bán", "Mogi", "Homedy"),
+  key = c("chotot", "alonhadat", "alonhadat_local", "luachonnhadat", "muaban", "mogi", "homedy"),
+  path = c(
+    PATHS$chotot_raw_csv,
+    PATHS$alonhadat_raw_csv,
+    PATHS$alonhadat_local_raw_csv,
+    PATHS$luachon_raw_csv,
+    PATHS$muaban_raw_csv,
+    PATHS$mogi_raw_csv,
+    PATHS$homedy_raw_csv
+  )
+)
+
+raw_sources <- setNames(lapply(source_files$path, read_csv_if_exists), source_files$key)
+combined <- read_csv_if_exists(PATHS$combined_raw_csv)
+featured <- read_csv_if_exists(PATHS$featured_csv)
+metrics <- read_csv_if_exists(PATHS$metrics_csv)
+registry <- read_csv_if_exists(PATHS$registry_csv)
+clusters <- read_csv_if_exists(PATHS$clusters_csv)
+importance_sale <- read_csv_if_exists(PATHS$rf_importance_sale_csv)
+importance_rent <- read_csv_if_exists(PATHS$rf_importance_rent_csv)
+inference_summary <- read_csv_if_exists(PATHS$inference_summary_csv)
+inference_tests <- read_csv_if_exists(PATHS$inference_tests_csv)
+model_scope_audit <- read_csv_if_exists(file.path(PATHS$model_dir, "pham_vi_mo_hinh_audit.csv"))
+validation_predictions <- bind_rows(
+  read_csv_if_exists(file.path(PATHS$model_dir, "du_doan_kiem_dinh_ban.csv")),
+  read_csv_if_exists(file.path(PATHS$model_dir, "du_doan_kiem_dinh_thue.csv"))
+)
+
+for (metric_col in c("median_ape", "p90_ape")) {
+  if (!metric_col %in% names(metrics)) metrics[[metric_col]] <- NA_real_
+}
+if (nrow(model_scope_audit) == 0) {
+  model_scope_audit <- tibble(segment = character(), model_in_scope = logical(), model_exclusion_reason = character(), rows = numeric())
+}
+
+if (nrow(featured) == 0 && nrow(combined) > 0) featured <- combined
+if (nrow(clusters) > 0 && !"transaction_type" %in% names(clusters)) clusters$transaction_type <- "Bán"
+
+featured <- featured %>%
+  mutate(
+    price = as.numeric(price),
+    area = as.numeric(area),
+    rooms = suppressWarnings(as.numeric(rooms)),
+    price_per_m2 = if_else(!is.na(price_per_m2), as.numeric(price_per_m2), if_else(area > 0, price / area, NA_real_)),
+    is_rent = as.logical(is_rent),
+    transaction_type = case_when(
+      "transaction_type" %in% names(.) & transaction_type %in% c("Bán", "Cho thuê") ~ as.character(transaction_type),
+      is_rent ~ "Cho thuê",
+      TRUE ~ "Bán"
+    ),
+    source = if_else(is.na(source) | source == "", "unknown", as.character(source)),
+    district_name = if_else(is.na(district_name) | district_name == "", "Không rõ", as.character(district_name)),
+    category_name = if_else(is.na(category_name) | category_name == "", "Không rõ", as.character(category_name)),
+    posted_at = suppressWarnings(as_datetime(posted_at)),
+    price_b = price / 1e9,
+    price_m = price / 1e6,
+    log_price = log1p(price),
+    log_area = log1p(area),
+    log_price_per_m2 = log1p(price_per_m2)
+  ) %>%
+  filter(!is.na(price), price > 0, !is.na(area), area > 0) %>%
+  add_model_quality_features()
+
+price_m2_bounds <- tibble(
+  transaction_type = c("Bán", "Cho thuê"),
+  min_price_per_m2 = c(5e5, 1e4),
+  max_price_per_m2 = c(2e9, 5e6)
+)
+
+hcmc_core_districts <- c(
+  "Thành phố Thủ Đức",
+  paste0("Quận ", c(1, 3, 4, 5, 6, 7, 8, 10, 11, 12)),
+  "Quận Bình Tân", "Quận Bình Thạnh", "Quận Gò Vấp",
+  "Quận Phú Nhuận", "Quận Tân Bình", "Quận Tân Phú",
+  "Huyện Bình Chánh", "Huyện Cần Giờ", "Huyện Củ Chi",
+  "Huyện Hóc Môn", "Huyện Nhà Bè"
+)
+
+extended_area_rows <- sum(!featured$district_name %in% c(hcmc_core_districts, "Không rõ"), na.rm = TRUE)
+
+source_inventory <- source_files %>%
+  rowwise() %>%
+  mutate(
+    ton_tai = file.exists(path),
+    so_dong = if (ton_tai) nrow(read_csv_if_exists(path)) else 0L,
+    so_cot = if (ton_tai) ncol(read_csv_if_exists(path)) else 0L
+  ) %>%
+  ungroup()
+
+sale_rows <- sum(featured$transaction_type == "Bán", na.rm = TRUE)
+rent_rows <- sum(featured$transaction_type == "Cho thuê", na.rm = TRUE)
+sale_median <- median(featured$price[featured$transaction_type == "Bán"], na.rm = TRUE)
+rent_median <- median(featured$price[featured$transaction_type == "Cho thuê"], na.rm = TRUE)
+
+setwd(old_wd)
+```
+
+# Giới thiệu
+
+Đề tài phân tích dữ liệu rao bán và cho thuê bất động sản tại TP.HCM từ nhiều website. Project gồm hai phần: thư mục hệ thống Shiny dashboard và một file R Markdown. Báo cáo R Markdown trình bày đúng quy trình phân tích dữ liệu: dữ liệu, xử lý dữ liệu, trực quan hóa, suy luận thống kê và mô hình hóa.
+
+Bộ dữ liệu chính hiện có `r format_int(nrow(featured))` tin đăng, gồm `r format_int(sale_rows)` tin bán và `r format_int(rent_rows)` tin cho thuê. Giá bán trung vị là `r format_vnd(sale_median)`, giá thuê trung vị là `r format_vnd(rent_median)`.
+
+```{r project-summary}
+tibble(
+  hang_muc = c("Dữ liệu raw theo website", "Dữ liệu gộp", "Dữ liệu chính", "Mô hình", "Dashboard"),
+  file_thu_muc = c("data/raw", PATHS$combined_raw_csv, PATHS$featured_csv, PATHS$model_dir, "app.R và ung_dung"),
+  vai_tro = c(
+    "Lưu dữ liệu từng nguồn sau khi crawl/import về schema chuẩn",
+    "Gộp tất cả nguồn raw thành một bảng thống nhất",
+    "Dữ liệu đã tạo đặc trưng dùng cho phân tích và mô hình",
+    "Lưu mô hình dự đoán, chỉ số, độ quan trọng biến và phân cụm",
+    "Giao diện Shiny để xem dữ liệu, biểu đồ và dự đoán"
+  )
+) %>%
+  kable(caption = "Cấu trúc chính của project")
+```
+
+# Dữ liệu
+
+## Nguồn dữ liệu
+
+```{r source-inventory}
+source_inventory %>%
+  transmute(
+    `Nguồn` = nguon,
+    `File` = path,
+    `Tồn tại` = if_else(ton_tai, "Có", "Không"),
+    `Số dòng` = format_int(so_dong),
+    `Số cột` = format_int(so_cot)
+  ) %>%
+  kable(caption = "Số dòng dữ liệu theo từng website")
+```
+
+## Dữ liệu trước làm sạch
+
+Các bảng trong mục này đọc trực tiếp từ `data/raw`, tức dữ liệu sau crawl/import về schema chuẩn nhưng chưa làm sạch nội dung text. Vì vậy một số tiêu đề vẫn còn ký tự trang trí/icon từ tin đăng gốc, ví dụ `🎁`, `🔥`, `✅`. Việc giữ nguyên raw giúp truy vết lại nguồn dữ liệu ban đầu.
+
+```{r raw-icon-summary}
+raw_icon_summary <- lapply(seq_len(nrow(source_files)), function(i) {
+  key <- source_files$key[[i]]
+  label <- source_files$nguon[[i]]
+  df <- raw_sources[[key]]
+  title_values <- if ("title" %in% names(df)) df$title else character()
+
+  tibble(
+    `Nguồn` = label,
+    `File raw` = source_files$path[[i]],
+    `Số dòng raw` = nrow(df),
+    `Tiêu đề còn icon/trang trí` = sum(has_icon_chars(title_values), na.rm = TRUE)
+  )
+}) %>%
+  bind_rows()
+
+raw_icon_summary %>%
+  mutate(
+    `Số dòng raw` = format_int(`Số dòng raw`),
+    `Tiêu đề còn icon/trang trí` = format_int(`Tiêu đề còn icon/trang trí`)
+  ) %>%
+  kable(caption = "Kiểm tra tiêu đề có icon/trang trí trước làm sạch")
+```
+
+```{r source-samples-before-clean, results='asis'}
+show_cols <- c("source", "source_id", "title", "price", "area", "district_name", "category_name", "posted_at", "ad_url")
+for (i in seq_len(nrow(source_files))) {
+  key <- source_files$key[[i]]
+  label <- source_files$nguon[[i]]
+  df <- raw_sources[[key]]
+  cat("\n\n### ", label, "\n\n", sep = "")
+  if (nrow(df) == 0) {
+    cat("Chưa có dữ liệu.\n\n")
+  } else {
+    cols <- intersect(show_cols, names(df))
+    sample_df <- df[, cols, drop = FALSE]
+    if ("title" %in% names(sample_df)) {
+      sample_df <- sample_df %>%
+        mutate(.co_icon = has_icon_chars(title)) %>%
+        arrange(desc(.co_icon)) %>%
+        select(-.co_icon)
+    }
+    print(kable(head(sample_df, 8), caption = paste("Dữ liệu raw trước làm sạch -", label)))
+  }
+}
+```
+
+## Dữ liệu sau làm sạch
+
+Sau bước gộp nguồn và làm sạch, pipeline dùng các hàm trong `scripts/lib/chuan_hoa_du_lieu.R` như `clean_listing_title()` và `drop_icon_chars()` để bỏ ký tự trang trí/icon, chuẩn hóa khoảng trắng, chuẩn hóa nhãn thiếu, lọc giá/diện tích lỗi và loại trùng. Bảng dưới đây đối chiếu số tiêu đề còn icon ở từng giai đoạn.
+
+```{r clean-icon-summary}
+clean_icon_summary <- tibble(
+  `Giai đoạn` = c("Trước làm sạch (raw)", "Sau gộp nguồn", "Dữ liệu chính sau làm sạch"),
+  `File` = c("data/raw/*", PATHS$combined_raw_csv, PATHS$featured_csv),
+  `Số dòng` = c(
+    sum(vapply(raw_sources, nrow, integer(1))),
+    nrow(combined),
+    nrow(featured)
+  ),
+  `Tiêu đề còn icon/trang trí` = c(
+    sum(raw_icon_summary$`Tiêu đề còn icon/trang trí`, na.rm = TRUE),
+    if ("title" %in% names(combined)) sum(has_icon_chars(combined$title), na.rm = TRUE) else NA_integer_,
+    if ("title" %in% names(featured)) sum(has_icon_chars(featured$title), na.rm = TRUE) else NA_integer_
+  )
+)
+
+clean_icon_summary %>%
+  mutate(
+    `Số dòng` = format_int(`Số dòng`),
+    `Tiêu đề còn icon/trang trí` = format_int(`Tiêu đề còn icon/trang trí`)
+  ) %>%
+  kable(caption = "Đối chiếu trước và sau làm sạch text")
+```
+
+### Dữ liệu sau gộp nguồn
+
+```{r combined-counts}
+combined_summary <- combined %>%
+  mutate(
+    is_rent = as.logical(is_rent),
+    transaction_type = if_else(is_rent, "Cho thuê", "Bán")
+  ) %>%
+  count(source, transaction_type, name = "so_tin") %>%
+  arrange(desc(so_tin))
+
+combined_summary %>%
+  mutate(so_tin = format_int(so_tin)) %>%
+  kable(caption = "Số tin sau khi gộp nguồn theo website và loại giao dịch")
+```
+
+```{r combined-sample}
+combined %>%
+  filter(source == "muaban") %>%
+  select(any_of(show_cols)) %>%
+  head(12) %>%
+  kable(caption = "Dữ liệu Mua Bán sau gộp nguồn và làm sạch text")
+```
+
+### Dữ liệu chính
+
+```{r featured-sample}
+featured %>%
+  select(any_of(c(show_cols, "price_per_m2", "transaction_type", "log_price", "log_area", "distance_to_center", "listing_age_days"))) %>%
+  head(15) %>%
+  kable(caption = "Dữ liệu chính sau làm sạch và tạo đặc trưng")
+```
+
+```{r featured-schema}
+tibble(
+  bien = names(featured),
+  kieu_du_lieu = vapply(featured, function(x) paste(class(x), collapse = "/"), character(1)),
+  so_thieu = vapply(featured, function(x) sum(is.na(x)), integer(1)),
+  ty_le_thieu = vapply(featured, function(x) mean(is.na(x)), numeric(1))
+) %>%
+  mutate(so_thieu = format_int(so_thieu), ty_le_thieu = format_pct(ty_le_thieu)) %>%
+  kable(caption = "Schema và tỷ lệ thiếu của dữ liệu chính")
+```
+
+### Dữ liệu đầy đủ
+
+Bảng dưới đây hiển thị toàn bộ `r format_int(nrow(featured))` dòng và `r format_int(ncol(featured))` cột của dữ liệu chính sau làm sạch theo dạng phân trang, có tìm kiếm theo từng cột và xuất CSV.
+
+```{r featured-full-data, echo=FALSE}
+featured_full_view <- featured %>%
+  mutate(
+    across(where(~ inherits(.x, "POSIXt")), ~ format(as.Date(.x), "%d/%m/%Y")),
+    price_per_m2 = if_else(
+      transaction_type == "Bán",
+      paste0(format_num(price_per_m2 / 1e6, 2), " triệu/m²"),
+      paste0(format_num(price_per_m2 / 1e3, 2), " nghìn/m²")
+    ),
+    posted_at = format(as.Date(posted_at), "%d/%m/%Y")
+  )
+
+DT::datatable(
+  featured_full_view,
+  rownames = FALSE,
+  filter = "top",
+  extensions = c("Buttons", "Scroller"),
+  options = list(
+    dom = "Bfrtip",
+    buttons = c("copy", "csv", "colvis"),
+    pageLength = 25,
+    lengthMenu = c(10, 25, 50, 100),
+    scrollX = TRUE,
+    scrollY = "520px",
+    scroller = TRUE,
+    deferRender = TRUE
+  )
+)
+```
+
+Nhận xét: dữ liệu được lấy từ nhiều website nên khác nhau về độ đầy đủ, cách ghi giá, cách ghi khu vực và tọa độ. Vì vậy cần chuẩn hóa trước khi so sánh giá hoặc huấn luyện mô hình. Có `r format_int(extended_area_rows)` dòng thuộc nhóm địa danh mở rộng hoặc nhãn `cũ` ngoài danh sách quận/huyện TP.HCM lõi; nhóm này được giữ để minh bạch theo nguồn và có thể lọc riêng khi phân tích theo phạm vi hẹp.
+
+# Xử lý dữ liệu
+
+## Quy trình xử lý
+
+```{r processing-steps}
+tibble(
+  buoc = c("Thu thập/import", "Chuẩn hóa schema", "Gộp nguồn", "Làm sạch", "Tạo đặc trưng", "Lưu dữ liệu chính"),
+  script = c(
+    "scripts/01_thu_thap_du_lieu",
+    "scripts/lib/chuan_hoa_du_lieu.R",
+    "scripts/02_xu_ly_du_lieu/gop_nguon_du_lieu.R",
+    "scripts/lib/chuan_hoa_quan_huyen.R",
+    "scripts/02_xu_ly_du_lieu/tao_dac_trung.R",
+    PATHS$featured_csv
+  ),
+  ket_qua = c(
+    "Dữ liệu từng website",
+    "Cùng tên cột và cùng đơn vị",
+    "Một bảng interim",
+    "Lọc giá/diện tích lỗi, chuẩn hóa khu vực, xử lý nhãn thiếu",
+    "Thêm log giá, giá/m², đặc trưng tiêu đề, thời gian, khoảng cách",
+    "Bảng sạch phục vụ EDA, suy luận và mô hình"
+  )
+) %>%
+  kable(caption = "Các bước xử lý dữ liệu")
+```
+
+## Kiểm tra chất lượng dữ liệu
+
+```{r data-quality}
+quality_tbl <- tibble(
+  kiem_tra = c(
+    "Dòng thiếu giá",
+    "Dòng thiếu diện tích",
+    "Giá/m² không hợp lệ",
+    "Giá/m² ngoài ngưỡng phân tích",
+    "Tiêu đề còn icon/trang trí",
+    "Thiếu khu vực",
+    "Khu vực mở rộng/nhãn cũ ngoài TP.HCM lõi",
+    "Thiếu loại BĐS",
+    "Có tọa độ gốc",
+    "Ngày đăng trong tương lai"
+  ),
+  so_luong = c(
+    sum(is.na(featured$price) | featured$price <= 0),
+    sum(is.na(featured$area) | featured$area <= 0),
+    sum(is.na(featured$price_per_m2) | featured$price_per_m2 <= 0),
+    featured %>%
+      left_join(price_m2_bounds, by = "transaction_type") %>%
+      summarise(
+        n = sum(
+          !is.na(price_per_m2) &
+            (price_per_m2 < min_price_per_m2 | price_per_m2 > max_price_per_m2),
+          na.rm = TRUE
+        )
+      ) %>%
+      pull(n),
+    sum(has_icon_chars(featured$title), na.rm = TRUE),
+    sum(is.na(featured$district_name) | featured$district_name == "" | featured$district_name == "Không rõ"),
+    extended_area_rows,
+    sum(is.na(featured$category_name) | featured$category_name == "" | featured$category_name == "Không rõ"),
+    sum(!is.na(featured$lat) & !is.na(featured$lon)),
+    sum(as.Date(featured$posted_at) > Sys.Date(), na.rm = TRUE)
+  )
+)
+
+quality_tbl %>%
+  mutate(so_luong = format_int(so_luong)) %>%
+  kable(caption = "Kiểm tra chất lượng dữ liệu")
+```
+
+## Đặc trưng sử dụng
+
+```{r feature-groups}
+tibble(
+  nhom_bien = c("Giá", "Diện tích", "Vị trí", "Loại giao dịch", "Loại BĐS", "Tiêu đề", "Thời gian", "Target encoding"),
+  bien = c(
+    "price, price_m, price_b, log_price",
+    "area, log_area, rooms, inferred_rooms",
+    "district_name, ward, lat, lon, distance_to_center",
+    "is_rent, transaction_type",
+    "category_id, category_name",
+    "title_has_frontage, title_has_alley, title_has_legal, title_token_count",
+    "posted_at, listing_age_days, posted_hour, posted_wday",
+    "ward_price_encoded trong dữ liệu chính; district/category/source encoding tạo trong script mô hình hóa"
+  ),
+  y_nghia = c(
+    "Biến mục tiêu và biến quy đổi để hiển thị",
+    "Mô tả quy mô tài sản",
+    "Mô tả khác biệt khu vực và vị trí",
+    "Tách bài toán bán và cho thuê",
+    "Phân nhóm sản phẩm",
+    "Trích tín hiệu định tính từ tiêu đề tin",
+    "Kiểm tra độ mới và mùa vụ dữ liệu",
+    "Đưa mặt bằng giá theo nhóm vào mô hình"
+  )
+) %>%
+  kable(caption = "Nhóm đặc trưng chính")
+```
+
+# Trực quan hóa dữ liệu
+
+## Cơ cấu nguồn dữ liệu
+
+```{r source-plot}
+featured %>%
+  count(source, transaction_type, name = "so_tin") %>%
+  ggplot(aes(x = reorder(source, so_tin, sum), y = so_tin, fill = transaction_type)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = format_int) +
+  labs(title = "Số tin theo nguồn dữ liệu", x = NULL, y = "Số tin", fill = "Giao dịch") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: cơ cấu nguồn cho thấy website nào chiếm tỷ trọng lớn trong dữ liệu và cũng là dấu hiệu để đánh giá độ lệch mẫu. Nếu một nguồn chiếm tỷ trọng cao, phân tích có thể phản ánh mạnh phân khúc mà nguồn đó phổ biến hơn, ví dụ tin cho thuê phòng trọ, tin nhà phố hoặc tin môi giới. Vì vậy các biểu đồ phía sau không nên đọc như “toàn bộ thị trường TP.HCM tuyệt đối”, mà nên hiểu là bức tranh tổng hợp từ các nguồn rao online đã thu thập.
+
+## Top khu vực có nhiều tin
+
+```{r district-count-plot}
+featured %>%
+  count(district_name, transaction_type, name = "so_tin") %>%
+  group_by(district_name) %>%
+  mutate(tong = sum(so_tin)) %>%
+  ungroup() %>%
+  slice_max(tong, n = 15) %>%
+  ggplot(aes(x = reorder(district_name, tong), y = so_tin, fill = transaction_type)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = format_int) +
+  labs(title = "Top khu vực có nhiều tin đăng", x = NULL, y = "Số tin", fill = "Giao dịch") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: khu vực có nhiều tin đáng tin hơn khi so sánh thống kê vì trung vị và phân vị ít bị dao động bởi một vài tin lạ. Các khu vực ít tin cần đọc kết quả cẩn thận, đặc biệt nếu cùng lúc có diện tích lớn hoặc giá cao bất thường. Khi dùng kết quả để so sánh quận/huyện, nên ưu tiên nhóm có số mẫu đủ lớn và xem kèm loại bất động sản thay vì chỉ nhìn tổng số tin.
+
+## Cơ cấu loại bất động sản
+
+```{r category-count-plot}
+featured %>%
+  count(category_name, transaction_type, name = "so_tin") %>%
+  group_by(category_name) %>%
+  mutate(tong = sum(so_tin)) %>%
+  ungroup() %>%
+  slice_max(tong, n = 12) %>%
+  ggplot(aes(x = reorder(category_name, tong), y = so_tin, fill = transaction_type)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = format_int) +
+  labs(title = "Số tin theo loại bất động sản", x = NULL, y = "Số tin", fill = "Giao dịch") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: loại BĐS ảnh hưởng mạnh đến cả giá tuyệt đối lẫn giá/m², nên không nên so sánh toàn bộ thị trường mà bỏ qua phân nhóm loại tài sản. Căn hộ thường có biên độ diện tích và giá/m² ổn định hơn, trong khi nhà phố, đất và biệt thự dễ có đuôi giá dài do vị trí, mặt tiền, pháp lý và khả năng kinh doanh. Đây cũng là lý do phần mô hình hóa phải tạo thêm nhóm sản phẩm chuẩn hóa thay vì chỉ dùng category gốc.
+
+## Phân phối giá
+
+```{r log-price-plot}
+featured %>%
+  ggplot(aes(x = log_price, fill = transaction_type)) +
+  geom_histogram(bins = 40, color = "white", alpha = 0.85) +
+  facet_wrap(~ transaction_type, scales = "free_y") +
+  guides(fill = "none") +
+  labs(title = "Phân phối log(giá)", x = "log(1 + giá)", y = "Số tin") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: giá bất động sản lệch phải mạnh vì phần lớn tin nằm ở vùng giá phổ thông nhưng vẫn tồn tại một nhóm tài sản rất đắt. Nếu xem giá gốc, vài tin cực cao sẽ làm biểu đồ bị nén và khó thấy cấu trúc chính của dữ liệu. Log-transform giúp biểu đồ dễ đọc hơn, đồng thời phù hợp với bài toán dự đoán vì sai số phần trăm thường có ý nghĩa hơn sai số tuyệt đối khi giá trải rộng từ triệu tới hàng trăm tỷ.
+
+## Diện tích và giá
+
+```{r area-price-plot}
+area_price_df <- featured %>%
+  group_by(transaction_type) %>%
+  mutate(
+    price_display = if_else(transaction_type == "Bán", price / 1e9, price / 1e6),
+    area_cut = quantile(area, 0.99, na.rm = TRUE),
+    price_cut = quantile(price_display, 0.99, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  filter(area <= area_cut, price_display <= price_cut)
+
+ggplot(area_price_df, aes(x = area, y = price_display, color = category_name)) +
+  geom_point(alpha = 0.45, size = 1.1) +
+  facet_wrap(~ transaction_type, scales = "free_y") +
+  labs(title = "Quan hệ giữa diện tích và giá", x = "Diện tích (m²)", y = "Tỷ VND hoặc triệu VND", color = "Loại BĐS") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+Nhận xét: diện tích tăng thường làm giá tăng, nhưng quan hệ không tuyến tính. Một căn diện tích nhỏ ở trung tâm hoặc mặt tiền có thể đắt hơn tài sản lớn ở khu vực xa, còn đất/tòa nhà/văn phòng lại có quy luật khác căn hộ. Do đó scatter plot chỉ cho thấy xu hướng thô; để dự đoán hợp lý cần kết hợp diện tích với khu vực, loại sản phẩm, tín hiệu tiêu đề và các biến giá/m².
+
+## Giá/m² theo khu vực
+
+```{r price-m2-district}
+featured %>%
+  filter(!is.na(price_per_m2), price_per_m2 > 0) %>%
+  group_by(transaction_type, district_name) %>%
+  summarise(so_tin = n(), gia_m2_trung_vi = median(price_per_m2, na.rm = TRUE), .groups = "drop") %>%
+  filter(so_tin >= 3) %>%
+  group_by(transaction_type) %>%
+  slice_max(gia_m2_trung_vi, n = 10) %>%
+  ungroup() %>%
+  mutate(gia_m2_hien_thi = if_else(transaction_type == "Bán", gia_m2_trung_vi / 1e6, gia_m2_trung_vi / 1e3)) %>%
+  ggplot(aes(x = reorder(district_name, gia_m2_hien_thi), y = gia_m2_hien_thi, fill = transaction_type)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ transaction_type, scales = "free") +
+  coord_flip() +
+  labs(title = "Top khu vực theo giá/m² trung vị", x = NULL, y = "Triệu VND/m² hoặc nghìn VND/m²") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: giá/m² giúp so sánh công bằng hơn giữa các tài sản có diện tích khác nhau. Đây là chỉ số quan trọng nhất khi đọc mặt bằng giá theo khu vực.
+
+## Heatmap khu vực và loại BĐS
+
+```{r district-category-heatmap}
+top_districts <- featured %>%
+  count(district_name, sort = TRUE) %>%
+  slice_head(n = 12) %>%
+  pull(district_name)
+
+top_categories <- featured %>%
+  count(category_name, sort = TRUE) %>%
+  slice_head(n = 8) %>%
+  pull(category_name)
+
+featured %>%
+  filter(district_name %in% top_districts, category_name %in% top_categories, price_per_m2 > 0) %>%
+  group_by(transaction_type, district_name, category_name) %>%
+  summarise(gia_m2 = median(price_per_m2, na.rm = TRUE), so_tin = n(), .groups = "drop") %>%
+  filter(so_tin >= 3) %>%
+  mutate(gia_m2_hien_thi = if_else(transaction_type == "Bán", gia_m2 / 1e6, gia_m2 / 1e3)) %>%
+  ggplot(aes(x = district_name, y = category_name, fill = gia_m2_hien_thi)) +
+  geom_tile(color = "white") +
+  facet_wrap(~ transaction_type, scales = "free_x") +
+  scale_fill_viridis_c(option = "C", na.value = "grey90") +
+  labs(title = "Heatmap giá/m² trung vị theo khu vực và loại BĐS", x = NULL, y = NULL, fill = "Giá/m²") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
+
+Nhận xét: heatmap cho biết tổ hợp khu vực - loại BĐS nào có mặt bằng giá/m² cao hơn. Các ô đậm ở khu vực trung tâm hoặc nhóm sản phẩm có tính thương mại cao thường phản ánh mặt bằng giá cao hơn, nhưng ô trống hoặc ô có ít mẫu không nên kết luận mạnh. Khi một tổ hợp có giá/m² rất cao, cần kiểm tra thêm số tin, diện tích trung vị và tiêu đề để tránh nhầm giữa mặt bằng thị trường và một vài tin đặc thù.
+
+## Xu hướng thời gian
+
+```{r time-trend}
+time_trend <- featured %>%
+  mutate(thang = floor_date(as.Date(posted_at), "month")) %>%
+  filter(!is.na(thang), thang <= Sys.Date(), price_per_m2 > 0) %>%
+  group_by(transaction_type, thang) %>%
+  summarise(so_tin = n(), gia_m2_trung_vi = median(price_per_m2, na.rm = TRUE), .groups = "drop") %>%
+  mutate(gia_m2_hien_thi = if_else(transaction_type == "Bán", gia_m2_trung_vi / 1e6, gia_m2_trung_vi / 1e3))
+
+time_trend %>%
+  group_by(transaction_type) %>%
+  summarise(
+    `Từ tháng` = format(min(thang), "%m/%Y"),
+    `Đến tháng` = format(max(thang), "%m/%Y"),
+    `Các năm có dữ liệu` = paste(sort(unique(year(thang))), collapse = ", "),
+    `Số tháng` = n_distinct(thang),
+    .groups = "drop"
+  ) %>%
+  kable(caption = "Khoảng thời gian có dữ liệu theo loại giao dịch")
+
+time_trend_long <- bind_rows(
+  time_trend %>%
+    transmute(transaction_type, thang, chi_so = "Số tin", gia_tri = as.numeric(so_tin)),
+  time_trend %>%
+    transmute(
+      transaction_type,
+      thang,
+      chi_so = if_else(
+        transaction_type == "Bán",
+        "Giá/m² trung vị (triệu VND)",
+        "Giá/m² trung vị (nghìn VND)"
+      ),
+      gia_tri = gia_m2_hien_thi
+    )
+)
+
+ggplot() +
+  geom_col(
+    data = filter(time_trend_long, chi_so == "Số tin"),
+    aes(x = thang, y = gia_tri),
+    fill = "#9ecae1",
+    alpha = 0.75
+  ) +
+  geom_line(
+    data = filter(time_trend_long, chi_so != "Số tin"),
+    aes(x = thang, y = gia_tri, color = transaction_type, group = transaction_type),
+    linewidth = 0.9
+  ) +
+  geom_point(
+    data = filter(time_trend_long, chi_so != "Số tin"),
+    aes(x = thang, y = gia_tri, color = transaction_type),
+    size = 1.4
+  ) +
+  facet_grid(chi_so ~ transaction_type, scales = "free") +
+  scale_x_date(date_breaks = "6 months", date_labels = "%m/%Y") +
+  labs(title = "Xu hướng số tin và giá/m² trung vị theo tháng", x = "Tháng", y = NULL, color = "Giao dịch") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "bottom")
+```
+
+Nhận xét: xu hướng thời gian trong dữ liệu này phản ánh lịch crawl/import và tin rao online, không phải toàn bộ giao dịch thị trường. Nếu nhóm `Bán` không có năm 2024 trong bảng thời gian thì biểu đồ không thể hiển thị năm 2024 cho nhóm này; đó là đặc điểm của dữ liệu hiện có, không phải lỗi vẽ biểu đồ. Vì dữ liệu theo tháng không cân bằng giữa các nguồn, xu hướng nên được dùng để kiểm tra độ phủ dữ liệu và biến động tin đăng, không nên diễn giải trực tiếp thành chỉ số tăng/giảm giá chính thức.
+
+## Tương quan biến số
+
+```{r correlation-heatmap}
+num_cols <- intersect(
+  c("log_price", "log_price_per_m2", "log_area", "rooms", "distance_to_center", "listing_age_days", "title_token_count"),
+  names(featured)
+)
+
+cor_df <- featured[, num_cols, drop = FALSE]
+cor_df[] <- lapply(cor_df, function(x) suppressWarnings(as.numeric(x)))
+cor_mat <- cor(cor_df, use = "pairwise.complete.obs")
+
+as.data.frame(as.table(cor_mat)) %>%
+  ggplot(aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "#b91c1c", mid = "white", high = "#1d4ed8", midpoint = 0, limits = c(-1, 1)) +
+  labs(title = "Ma trận tương quan các biến số", x = NULL, y = NULL, fill = "Tương quan") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
+
+Nhận xét: tương quan chỉ đo quan hệ tuyến tính từng cặp biến nên không thể thay thế mô hình dự đoán. Một biến có tương quan thấp vẫn có thể quan trọng khi kết hợp với biến khác, ví dụ diện tích chỉ phát huy ý nghĩa đầy đủ khi biết khu vực và loại sản phẩm. Vì giá bất động sản phụ thuộc nhiều tương tác phi tuyến, phần mô hình hóa cần dùng mô hình đa biến và kiểm tra sai số trên tập test.
+
+# Suy luận thống kê
+
+## Khoảng tin cậy trung bình log giá
+
+```{r ci-log-price}
+ci_log_mean <- function(x, conf = 0.95) {
+  x <- log1p(x[is.finite(x) & x > 0])
+  n <- length(x)
+  if (n < 2) return(tibble(n = n, mean_value = NA_real_, ci_low = NA_real_, ci_high = NA_real_))
+  alpha <- 1 - conf
+  se <- sd(x) / sqrt(n)
+  center <- mean(x)
+  margin <- qt(1 - alpha / 2, df = n - 1) * se
+  tibble(n = n, mean_value = expm1(center), ci_low = expm1(center - margin), ci_high = expm1(center + margin))
+}
+
+featured %>%
+  group_by(transaction_type) %>%
+  summarise(ci_log_mean(price), .groups = "drop") %>%
+  mutate(
+    n = format_int(n),
+    mean_value = format_vnd(mean_value),
+    ci_low = format_vnd(ci_low),
+    ci_high = format_vnd(ci_high)
+  ) %>%
+  kable(caption = "Khoảng tin cậy 95% cho giá trung bình trên log-scale")
+```
+
+Nhận xét: dùng log-scale giúp khoảng tin cậy ít bị kéo lệch bởi các tin giá cực cao, từ đó phản ánh mặt bằng trung tâm tốt hơn trung bình giá gốc. Khoảng tin cậy hẹp cho thấy dữ liệu trong nhóm tương đối ổn định hoặc có nhiều mẫu; khoảng rộng cho thấy nhóm còn phân tán, ít mẫu hoặc có nhiều sản phẩm không đồng nhất. Khi so sánh giữa các quận, nên xem cả độ rộng khoảng tin cậy chứ không chỉ nhìn điểm ước lượng.
+
+## Bootstrap trung vị giá/m²
+
+```{r bootstrap-ci}
+bootstrap_median_ci <- function(x, reps = 500, conf = 0.95) {
+  x <- x[is.finite(x) & x > 0]
+  if (length(x) < 10) return(tibble(median_value = NA_real_, ci_low = NA_real_, ci_high = NA_real_))
+  boot <- replicate(reps, median(sample(x, replace = TRUE), na.rm = TRUE))
+  alpha <- 1 - conf
+  tibble(
+    median_value = median(x, na.rm = TRUE),
+    ci_low = as.numeric(quantile(boot, alpha / 2, na.rm = TRUE)),
+    ci_high = as.numeric(quantile(boot, 1 - alpha / 2, na.rm = TRUE))
+  )
+}
+
+set.seed(42)
+top_boot_groups <- featured %>%
+  filter(price_per_m2 > 0) %>%
+  count(transaction_type, district_name, name = "n") %>%
+  group_by(transaction_type) %>%
+  slice_max(n, n = 6, with_ties = FALSE) %>%
+  ungroup()
+
+bootstrap_tbl <- lapply(seq_len(nrow(top_boot_groups)), function(i) {
+  row <- top_boot_groups[i, ]
+  values <- featured %>%
+    filter(transaction_type == row$transaction_type, district_name == row$district_name) %>%
+    pull(price_per_m2)
+  bootstrap_median_ci(values) %>%
+    mutate(transaction_type = row$transaction_type, district_name = row$district_name, n = row$n)
+}) %>%
+  bind_rows()
+
+bootstrap_tbl %>%
+  mutate(
+    scale = if_else(transaction_type == "Bán", 1e6, 1e3),
+    unit = if_else(transaction_type == "Bán", "triệu/m²", "nghìn/m²"),
+    median_value = paste0(format_num(median_value / scale, 2), " ", unit),
+    ci_low = paste0(format_num(ci_low / scale, 2), " ", unit),
+    ci_high = paste0(format_num(ci_high / scale, 2), " ", unit),
+    n = format_int(n)
+  ) %>%
+  select(`Giao dịch` = transaction_type, `Khu vực` = district_name, n, `Trung vị` = median_value, `CI thấp` = ci_low, `CI cao` = ci_high) %>%
+  kable(caption = "Bootstrap CI cho trung vị giá/m²")
+```
+
+```{r bootstrap-plot}
+bootstrap_tbl %>%
+  mutate(
+    group = paste(transaction_type, district_name, sep = " - "),
+    display = if_else(transaction_type == "Bán", median_value / 1e6, median_value / 1e3),
+    low = if_else(transaction_type == "Bán", ci_low / 1e6, ci_low / 1e3),
+    high = if_else(transaction_type == "Bán", ci_high / 1e6, ci_high / 1e3)
+  ) %>%
+  ggplot(aes(x = reorder(group, display), y = display, ymin = low, ymax = high, color = transaction_type)) +
+  geom_pointrange() +
+  coord_flip() +
+  labs(title = "Bootstrap CI trung vị giá/m²", x = NULL, y = "Triệu/m² hoặc nghìn/m²", color = "Giao dịch") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: bootstrap phù hợp vì giá/m² lệch phải và có outlier, trong khi giả định phân phối chuẩn có thể quá mạnh. Kết quả bootstrap cho thấy độ bất định của trung vị giá/m²; nhóm có khoảng CI rộng thường có dữ liệu phân tán, số mẫu nhỏ hoặc trộn nhiều phân khúc. Vì vậy khi đưa ra kết luận về khu vực đắt/rẻ, nên ưu tiên nhóm có CI không chồng lấn quá nhiều và có số tin đủ lớn.
+
+## Mô phỏng định lý giới hạn trung tâm
+
+```{r clt-plot}
+set.seed(42)
+sale_m2_values <- featured %>%
+  filter(transaction_type == "Bán", price_per_m2 > 0) %>%
+  pull(price_per_m2)
+
+sale_m2_values <- sale_m2_values[sale_m2_values <= quantile(sale_m2_values, 0.99, na.rm = TRUE)]
+sample_size <- 50
+reps <- 800
+sample_means <- replicate(reps, mean(sample(sale_m2_values / 1e6, sample_size, replace = TRUE), na.rm = TRUE))
+
+tibble(mean_m2 = sample_means) %>%
+  ggplot(aes(x = mean_m2)) +
+  geom_histogram(bins = 35, fill = "#2b8cbe", color = "white") +
+  geom_vline(xintercept = mean(sale_m2_values / 1e6, na.rm = TRUE), color = "#dc2626", linewidth = 1) +
+  labs(title = "Mô phỏng phân phối trung bình mẫu giá bán/m²", x = "Trung bình mẫu (triệu VND/m²)", y = "Số lần lặp") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: dù dữ liệu gốc lệch, trung bình mẫu qua nhiều lần lấy mẫu có xu hướng tập trung quanh trung bình tổng thể khi cỡ mẫu đủ lớn. Tuy nhiên kết quả này là minh họa định lý giới hạn trung tâm trong dữ liệu hiện có, không làm mất đi vấn đề outlier ở cấp từng tin. Vì vậy phần mô hình vẫn cần log-transform, lọc ngoại lệ theo nhóm và đánh giá bằng nhiều metric thay vì chỉ dựa vào RMSE.
+
+## Kiểm định giả thuyết
+
+```{r tests}
+sale_top_districts <- featured %>%
+  filter(transaction_type == "Bán", price_per_m2 > 0) %>%
+  count(district_name, name = "n") %>%
+  slice_max(n, n = 2, with_ties = FALSE) %>%
+  pull(district_name)
+
+test_df <- featured %>%
+  filter(transaction_type == "Bán", district_name %in% sale_top_districts, price_per_m2 > 0) %>%
+  mutate(log_m2 = log(price_per_m2))
+
+t_result <- t.test(log_m2 ~ district_name, data = test_df)
+w_result <- wilcox.test(log_m2 ~ district_name, data = test_df)
+category_table <- table(featured$transaction_type, featured$category_name)
+chi_result <- suppressWarnings(chisq.test(category_table))
+
+tibble(
+  kiem_dinh = c("Welch t-test", "Wilcoxon rank-sum", "Chi-square"),
+  gia_thuyet_khong = c(
+    paste("Trung bình log giá/m² bằng nhau giữa", paste(sale_top_districts, collapse = " và ")),
+    paste("Phân phối log giá/m² giống nhau giữa", paste(sale_top_districts, collapse = " và ")),
+    "Loại giao dịch độc lập với loại bất động sản"
+  ),
+  p_value = c(t_result$p.value, w_result$p.value, chi_result$p.value),
+  ket_luan = if_else(
+    c(t_result$p.value, w_result$p.value, chi_result$p.value) < 0.05,
+    "Bác bỏ H0 ở mức 5%",
+    "Chưa đủ bằng chứng bác bỏ H0"
+  )
+) %>%
+  mutate(p_value = signif(p_value, 4)) %>%
+  kable(caption = "Kết quả kiểm định giả thuyết")
+```
+
+Nhận xét: kiểm định chỉ cho biết khác biệt có ý nghĩa thống kê trong dữ liệu mẫu, không chứng minh nguyên nhân làm giá khác nhau. Với dữ liệu lớn, p-value có thể rất nhỏ ngay cả khi chênh lệch thực tế không quá lớn, nên cần đọc thêm kích thước hiệu ứng, trung vị, khoảng tin cậy và bối cảnh thị trường. Kết quả kiểm định nên được xem như bằng chứng hỗ trợ cho khác biệt giữa nhóm, còn phần nguyên nhân cần kết hợp hiểu biết về vị trí, loại BĐS và chất lượng tin.
+
+# Mô hình hóa
+
+## Mục tiêu và thiết kế mô hình
+
+Mục tiêu của phần mô hình hóa là dự đoán **giá rao đăng** bất động sản, không phải giá giao dịch cuối cùng. Vì giá bán và giá thuê khác nhau rất mạnh về thang đo, hành vi thị trường và cấu trúc sai số, project tách thành hai bài toán riêng: mô hình giá bán và mô hình giá thuê.
+
+Biến mục tiêu được chuyển sang `log_price = log1p(price)` trước khi train. Cách này giúp giảm ảnh hưởng của các tin giá cực cao và làm bài toán hồi quy ổn định hơn. Khi đánh giá, dự đoán được đổi ngược về VND để tính RMSE, MAE, MAPE và R².
+
+```{r modeling-overview, echo=FALSE}
+tibble(
+  thanh_phan = c(
+    "Nhóm bài toán",
+    "Biến mục tiêu",
+    "Phạm vi huấn luyện",
+    "Cách chia dữ liệu",
+    "Đặc trưng bổ sung",
+    "Mô hình so sánh",
+    "Kiểm soát rò rỉ dữ liệu",
+    "Cách chọn mô hình",
+    "Cách dùng kết quả"
+  ),
+  mo_ta = c(
+    "Train riêng cho nhóm Bán và Cho thuê",
+    "log1p(price), sau đó đổi ngược về VND khi đánh giá",
+    "Dữ liệu core market sau khi loại ngoại lệ giá/m² và giá tuyệt đối theo nhóm sản phẩm",
+    "Train/test 80/20, ưu tiên phân tầng theo nguồn dữ liệu",
+    "Tạo model_category, nhóm diện tích, nhóm khoảng cách, tín hiệu tòa nhà/văn phòng/đất/căn hộ/phòng trọ/cao cấp",
+    "Linear Regression, Random Forest, XGBoost, RF + XGBoost Ensemble, Tuned RF/XGBoost Ensemble",
+    "Target encoding được fit trên tập train rồi mới áp dụng cho test; dữ liệu bị loại khỏi model vẫn được lưu audit",
+    "Ưu tiên MAPE thấp nhất, nếu gần nhau thì xem thêm RMSE, MAE và R²",
+    "Dùng để ước lượng mặt bằng giá rao và so sánh tương đối; không thay thế thẩm định thực địa"
+  )
+) %>%
+  kable(caption = "Thiết kế mô hình hóa")
+```
+
+## Dữ liệu đưa vào mô hình
+
+Bảng dưới đây kiểm tra nhanh quy mô dữ liệu train/test và đặc điểm chính của từng phân khúc. Nhóm `Bán` có giá trị tuyệt đối lớn hơn rất nhiều, còn nhóm `Cho thuê` có giá thấp hơn nhưng dễ nhiễu vì phụ thuộc vào nội thất, thời hạn thuê, tình trạng bàn giao và cách ghi tin.
+
+```{r modeling-data-audit, echo=FALSE}
+split_overview <- metrics %>%
+  group_by(segment) %>%
+  summarise(
+    train_rows = max(train_rows, na.rm = TRUE),
+    test_rows = max(test_rows, na.rm = TRUE),
+    split_type = first(split_type),
+    .groups = "drop"
+  )
+
+scope_overview <- model_scope_audit %>%
+  mutate(segment = as.character(segment)) %>%
+  group_by(segment) %>%
+  summarise(
+    model_rows = sum(rows[model_in_scope %in% TRUE], na.rm = TRUE),
+    excluded_rows = sum(rows[!(model_in_scope %in% TRUE)], na.rm = TRUE),
+    .groups = "drop"
+  )
+
+modeling_data_audit <- featured %>%
+  mutate(segment = if_else(transaction_type == "Cho thuê", "rent", "sale")) %>%
+  group_by(segment, transaction_type) %>%
+  summarise(
+    total_rows = n(),
+    median_price = median(price, na.rm = TRUE),
+    median_area = median(area, na.rm = TRUE),
+    median_price_per_m2 = median(price_per_m2, na.rm = TRUE),
+    district_count = n_distinct(district_name),
+    category_count = n_distinct(category_name),
+    model_category_count = n_distinct(model_category),
+    source_count = n_distinct(source),
+    coord_rows = sum(!is.na(lat) & !is.na(lon)),
+    .groups = "drop"
+  ) %>%
+  left_join(split_overview, by = "segment") %>%
+  left_join(scope_overview, by = "segment") %>%
+  arrange(match(transaction_type, c("Bán", "Cho thuê")))
+
+modeling_data_audit %>%
+  mutate(
+    total_rows = format_int(total_rows),
+    model_rows = format_int(model_rows),
+    excluded_rows = format_int(excluded_rows),
+    train_rows = format_int(train_rows),
+    test_rows = format_int(test_rows),
+    median_price = format_vnd(median_price),
+    median_area = paste0(format_num(median_area, 1), " m²"),
+    median_price_per_m2 = if_else(
+      transaction_type == "Bán",
+      paste0(format_num(median_price_per_m2 / 1e6, 2), " triệu/m²"),
+      paste0(format_num(median_price_per_m2 / 1e3, 2), " nghìn/m²")
+    ),
+    coord_rows = paste0(format_int(coord_rows), " dòng")
+  ) %>%
+  select(
+    `Nhóm` = transaction_type,
+    `Tổng dòng` = total_rows,
+    `Dòng train được giữ` = model_rows,
+    `Dòng loại khỏi model` = excluded_rows,
+    Train = train_rows,
+    Test = test_rows,
+    `Giá trung vị` = median_price,
+    `Diện tích trung vị` = median_area,
+    `Giá/m² trung vị` = median_price_per_m2,
+    `Số khu vực` = district_count,
+    `Số loại BĐS` = category_count,
+    `Số nhóm model` = model_category_count,
+    `Số nguồn` = source_count,
+    `Có tọa độ` = coord_rows
+  ) %>%
+  kable(caption = "Tổng quan dữ liệu dùng cho mô hình")
+```
+
+## Vì sao sai số nhìn lớn
+
+Sai số đang được báo cáo bằng VND sau khi đổi ngược từ log-price, nên độ lớn tuyệt đối phụ thuộc trực tiếp vào thang giá. Trong dữ liệu này, nhóm `Bán` có những tin từ vài trăm triệu tới hàng trăm tỷ, còn nhóm `Cho thuê` có cả phòng/căn hộ nhỏ và các tin thuê nguyên tòa nhà. Vì vậy RMSE và MAE nhìn lớn không đồng nghĩa model bị hỏng; cần đọc chung với MAPE, median APE, P90 APE và R².
+
+```{r modeling-price-spread, echo=FALSE}
+price_spread <- featured %>%
+  group_by(transaction_type) %>%
+  summarise(
+    n = n(),
+    min_price = min(price, na.rm = TRUE),
+    p05_price = quantile(price, 0.05, na.rm = TRUE),
+    median_price = median(price, na.rm = TRUE),
+    p75_price = quantile(price, 0.75, na.rm = TRUE),
+    p95_price = quantile(price, 0.95, na.rm = TRUE),
+    p99_price = quantile(price, 0.99, na.rm = TRUE),
+    max_price = max(price, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(match(transaction_type, c("Bán", "Cho thuê")))
+
+price_spread %>%
+  mutate(
+    n = format_int(n),
+    across(ends_with("_price"), format_vnd)
+  ) %>%
+  select(
+    `Nhóm` = transaction_type,
+    `Số tin` = n,
+    Min = min_price,
+    `P05` = p05_price,
+    `Trung vị` = median_price,
+    `P75` = p75_price,
+    `P95` = p95_price,
+    `P99` = p99_price,
+    Max = max_price
+  ) %>%
+  kable(caption = "Độ rộng thang giá trong dữ liệu")
+```
+
+```{r modeling-high-price-tail, echo=FALSE}
+high_price_tail <- featured %>%
+  group_by(transaction_type) %>%
+  mutate(price_p90 = quantile(price, 0.90, na.rm = TRUE)) %>%
+  filter(price >= price_p90) %>%
+  summarise(
+    n = n(),
+    min_price = min(price, na.rm = TRUE),
+    median_price = median(price, na.rm = TRUE),
+    max_price = max(price, na.rm = TRUE),
+    median_area = median(area, na.rm = TRUE),
+    top_category = names(sort(table(category_name), decreasing = TRUE))[1],
+    .groups = "drop"
+  ) %>%
+  arrange(match(transaction_type, c("Bán", "Cho thuê")))
+
+high_price_tail %>%
+  mutate(
+    n = format_int(n),
+    min_price = format_vnd(min_price),
+    median_price = format_vnd(median_price),
+    max_price = format_vnd(max_price),
+    median_area = paste0(format_num(median_area, 1), " m²")
+  ) %>%
+  select(
+    `Nhóm` = transaction_type,
+    `Số tin top 10%` = n,
+    `Giá thấp nhất trong nhóm` = min_price,
+    `Giá trung vị nhóm` = median_price,
+    `Giá cao nhất` = max_price,
+    `Diện tích trung vị` = median_area,
+    `Loại xuất hiện nhiều` = top_category
+  ) %>%
+  kable(caption = "Đuôi giá cao làm RMSE tăng mạnh")
+```
+
+Nhận xét: top 10% giá cao có thang giá cách rất xa nhóm trung vị, đặc biệt là các tin nhà mặt tiền, biệt thự, đất diện tích lớn hoặc thuê nguyên tòa nhà. RMSE phạt nặng các lỗi ở nhóm này vì bình phương sai số, nên một số tin cực trị có thể kéo RMSE lên dù phần lớn dự đoán vẫn bám xu hướng chung.
+
+## Làm sạch riêng cho mô hình
+
+Dữ liệu chính vẫn giữ lại các tin hợp lệ để phục vụ EDA và phân tích thị trường. Riêng phần mô hình dự đoán giá cần ổn định hơn, nên script huấn luyện tạo thêm `model_category` từ tiêu đề và loại BĐS, sau đó loại khỏi **tập train/test của model** các dòng có giá/m² hoặc giá tuyệt đối nằm ở đuôi quá xa trong từng nhóm sản phẩm. Các dòng này không bị xóa khỏi project; chúng được lưu riêng để kiểm tra lại.
+
+```{r model-scope-audit, echo=FALSE}
+if (nrow(model_scope_audit) > 0) {
+  scope_display <- model_scope_audit %>%
+    mutate(
+      segment_vi = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+      trang_thai = if_else(model_in_scope, "Giữ lại để train", "Loại khỏi train/test model")
+    ) %>%
+    group_by(segment_vi) %>%
+    mutate(total_segment_rows = sum(rows, na.rm = TRUE), pct = rows / total_segment_rows) %>%
+    ungroup() %>%
+    arrange(match(segment_vi, c("Bán", "Cho thuê")), desc(model_in_scope), model_exclusion_reason)
+
+  scope_display %>%
+    mutate(
+      rows = format_int(rows),
+      pct = format_pct(pct)
+    ) %>%
+    select(
+      `Nhóm` = segment_vi,
+      `Trạng thái` = trang_thai,
+      `Lý do` = model_exclusion_reason,
+      `Số dòng` = rows,
+      `Tỷ lệ` = pct
+    ) %>%
+    kable(caption = "Phạm vi dữ liệu dùng để huấn luyện mô hình")
+} else {
+  cat("Chưa có audit phạm vi mô hình. Chạy `scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R` để tạo bảng này.")
+}
+```
+
+```{r model-category-distribution, echo=FALSE}
+featured %>%
+  count(transaction_type, model_category, name = "rows") %>%
+  group_by(transaction_type) %>%
+  mutate(pct = rows / sum(rows)) %>%
+  ungroup() %>%
+  arrange(match(transaction_type, c("Bán", "Cho thuê")), desc(rows)) %>%
+  mutate(
+    rows = format_int(rows),
+    pct = format_pct(pct)
+  ) %>%
+  select(
+    `Nhóm` = transaction_type,
+    `Nhóm sản phẩm mô hình` = model_category,
+    `Số dòng` = rows,
+    `Tỷ lệ` = pct
+  ) %>%
+  kable(caption = "Nhóm sản phẩm chuẩn hóa dùng trong mô hình")
+```
+
+Nhận xét: cách làm này giảm ảnh hưởng của các tin siêu cao cấp, tin nguyên tòa nhà hoặc giá/m² bất thường lên mô hình tổng quát. Nếu mục tiêu là định giá riêng biệt cho các tài sản rất đặc thù, nên train thêm một mô hình chuyên biệt thay vì ép mô hình core market học chung tất cả.
+
+## Đặc trưng và kiểm soát rò rỉ dữ liệu
+
+Mô hình không chỉ dùng diện tích và khu vực, mà còn dùng đặc trưng từ tiêu đề, thời gian đăng, khoảng cách đến trung tâm và target encoding theo khu vực/loại BĐS/nguồn. Target encoding là nhóm biến mạnh, nhưng nếu tính trên toàn bộ dữ liệu trước khi chia train/test sẽ gây rò rỉ dữ liệu. Vì vậy script mô hình fit encoding trên tập train, áp dụng sang test, sau đó mới refit mô hình cuối trên toàn bộ dữ liệu sạch.
+
+```{r modeling-feature-design, echo=FALSE}
+tibble(
+  nhom_bien = c(
+    "Quy mô tài sản",
+    "Quy mô suy luận",
+    "Vị trí",
+    "Loại sản phẩm gốc",
+    "Nhóm sản phẩm mô hình",
+    "Nguồn dữ liệu",
+    "Text trong tiêu đề",
+    "Thời gian",
+    "Target encoding"
+  ),
+  bien_dai_dien = c(
+    "area, log_area, rooms, inferred_rooms, frontage_width_m, frontage_length_m",
+    "floor_area_proxy, log_floor_area_proxy, room_density, area_per_room, area_band",
+    "district_name, ward, distance_to_center, log_distance_to_center, distance_band",
+    "category_name",
+    "model_category",
+    "source",
+    "title_has_frontage, title_has_alley, title_has_car_access, title_has_legal, title_has_building, title_has_business, title_has_land_signal, title_has_apartment_signal",
+    "posted_hour, posted_wday, listing_age_days",
+    "ward_price_encoded, district_price_encoded, category_price_encoded, district_category_price_encoded, model_category_price_encoded, district_model_category_price_encoded"
+  ),
+  vai_tro = c(
+    "Mô tả kích thước và cấu trúc cơ bản của tài sản",
+    "Bắt tốt hơn tác động phi tuyến của diện tích, số tầng, mật độ phòng và nhóm diện tích",
+    "Bắt chênh lệch mặt bằng giá giữa các khu vực",
+    "Phân biệt căn hộ, nhà riêng, đất, phòng trọ và các nhóm sản phẩm khác",
+    "Chuẩn hóa category nhiễu thành các nhóm dễ học hơn như căn hộ, đất, nhà phố, phòng trọ, tòa nhà/văn phòng",
+    "Giảm lệch do mỗi website có phân khúc đăng tin khác nhau",
+    "Khai thác tín hiệu định tính như mặt tiền, hẻm xe hơi, pháp lý, nội thất, tòa nhà, đất, căn hộ, phòng trọ",
+    "Bắt tín hiệu thời điểm đăng và độ mới của tin",
+    "Đưa mặt bằng giá lịch sử theo nhóm vào mô hình, được fit riêng trên train để giảm rò rỉ"
+  )
+) %>%
+  kable(caption = "Nhóm đặc trưng sử dụng trong mô hình")
+```
+
+## Train thử trên mẫu dữ liệu
+
+Chunk dưới đây train thử trực tiếp trong báo cáo trên một mẫu phân tầng theo nguồn. Mục tiêu của phần này là minh họa quy trình train ở quy mô nhẹ để file R Markdown vẫn render được: tách riêng bán/thuê, chia train/test, dùng `log_price`, dự đoán ngược về VND và so sánh mô hình tuyến tính với Random Forest.
+
+```{r model-training-demo}
+set.seed(42)
+
+collapse_rare_factor <- function(x, min_n = 25) {
+  x <- as.character(x)
+  x[is.na(x) | x == ""] <- "Không rõ"
+  freq <- table(x)
+  keep <- names(freq[freq >= min_n])
+  factor(if_else(x %in% keep, x, "Khác"))
+}
+
+sample_stratified_rows <- function(data, max_rows = 2500) {
+  if (nrow(data) <= max_rows) return(data)
+
+  allocation <- data %>%
+    count(source, name = "source_rows") %>%
+    mutate(
+      n_take = pmax(1L, round(max_rows * source_rows / sum(source_rows))),
+      n_take = pmin(n_take, source_rows)
+    )
+
+  data %>%
+    left_join(allocation, by = "source") %>%
+    group_by(source) %>%
+    group_modify(~ slice_sample(.x, n = as.integer(min(.x$n_take[[1]], nrow(.x))))) %>%
+    ungroup() %>%
+    select(-source_rows, -n_take)
+}
+
+make_demo_split <- function(data, train_ratio = 0.8) {
+  split_df <- data %>%
+    group_by(source) %>%
+    mutate(
+      split_rank = rank(runif(n()), ties.method = "first"),
+      split_n = n(),
+      train_n = if_else(split_n >= 5, pmax(1L, floor(split_n * train_ratio)), ceiling(split_n * train_ratio)),
+      is_train = split_rank <= train_n
+    ) %>%
+    ungroup()
+
+  list(
+    train = split_df %>% filter(is_train) %>% select(-split_rank, -split_n, -train_n, -is_train),
+    test = split_df %>% filter(!is_train) %>% select(-split_rank, -split_n, -train_n, -is_train)
+  )
+}
+
+eval_demo_model <- function(actual_log, pred_log) {
+  actual <- expm1(actual_log)
+  pred <- pmax(expm1(pred_log), 1)
+  tibble(
+    rmse_vnd = sqrt(mean((actual - pred)^2, na.rm = TRUE)),
+    mae_vnd = mean(abs(actual - pred), na.rm = TRUE),
+    mape = mean(abs((actual - pred) / actual), na.rm = TRUE),
+    r2 = 1 - sum((actual - pred)^2, na.rm = TRUE) /
+      sum((actual - mean(actual, na.rm = TRUE))^2, na.rm = TRUE)
+  )
+}
+
+train_demo_segment <- function(segment_label, max_rows = 2500, rf_trees = 120) {
+  segment_raw <- featured %>%
+    filter(transaction_type == segment_label, price > 0, area > 0, !is.na(log_price))
+
+  distance_fallback <- median(segment_raw$distance_to_center, na.rm = TRUE)
+  if (!is.finite(distance_fallback)) distance_fallback <- 0
+
+  model_data <- segment_raw %>%
+    transmute(
+      log_price,
+      price,
+      log_area = as.numeric(log_area),
+      rooms = coalesce(as.numeric(rooms), 0),
+      distance_to_center = coalesce(as.numeric(distance_to_center), distance_fallback),
+      title_has_frontage = as.integer(coalesce(as.logical(title_has_frontage), FALSE)),
+      title_has_alley = as.integer(coalesce(as.logical(title_has_alley), FALSE)),
+      title_has_car_access = as.integer(coalesce(as.logical(title_has_car_access), FALSE)),
+      title_has_elevator = as.integer(coalesce(as.logical(title_has_elevator), FALSE)),
+      title_has_furnished = as.integer(coalesce(as.logical(title_has_furnished), FALSE)),
+      title_has_legal = as.integer(coalesce(as.logical(title_has_legal), FALSE)),
+      title_token_count = coalesce(as.numeric(title_token_count), 0),
+      posted_hour = coalesce(as.integer(posted_hour), 0L),
+      source = collapse_rare_factor(source),
+      district_name = collapse_rare_factor(district_name),
+      category_name = collapse_rare_factor(category_name),
+      posted_wday = collapse_rare_factor(posted_wday, min_n = 10)
+    ) %>%
+    filter(if_all(everything(), ~ !is.na(.x))) %>%
+    sample_stratified_rows(max_rows = max_rows)
+
+  split <- make_demo_split(model_data)
+  train <- split$train
+  test <- split$test
+
+  demo_formula <- log_price ~ log_area + rooms + distance_to_center +
+    title_has_frontage + title_has_alley + title_has_car_access +
+    title_has_elevator + title_has_furnished + title_has_legal +
+    title_token_count + posted_hour + source + district_name +
+    category_name + posted_wday
+
+  model_vars <- all.vars(demo_formula)
+  train <- train[complete.cases(train[, model_vars]), ]
+  test <- test[complete.cases(test[, model_vars]), ]
+  pred_bounds <- quantile(train$log_price, c(0.01, 0.99), na.rm = TRUE)
+  clamp_log <- function(x) pmin(pmax(x, pred_bounds[[1]]), pred_bounds[[2]])
+
+  lm_fit <- lm(demo_formula, data = train)
+  lm_pred <- clamp_log(suppressWarnings(predict(lm_fit, newdata = test)))
+
+  rf_fit <- randomForest(
+    demo_formula,
+    data = train,
+    ntree = rf_trees,
+    importance = TRUE
+  )
+  rf_pred <- clamp_log(predict(rf_fit, newdata = test))
+
+  bind_rows(
+    eval_demo_model(test$log_price, lm_pred) %>% mutate(model = "Linear Regression"),
+    eval_demo_model(test$log_price, rf_pred) %>% mutate(model = "Random Forest")
+  ) %>%
+    mutate(
+      segment = segment_label,
+      sample_rows = nrow(model_data),
+      train_rows = nrow(train),
+      test_rows = nrow(test),
+      .before = 1
+    )
+}
+
+demo_metrics <- bind_rows(
+  train_demo_segment("Bán"),
+  train_demo_segment("Cho thuê")
+)
+
+demo_metrics %>%
+  group_by(segment) %>%
+  arrange(mape, rmse_vnd, .by_group = TRUE) %>%
+  mutate(rank = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    model = model_label_vi(model),
+    rmse_vnd = format_vnd(rmse_vnd),
+    mae_vnd = format_vnd(mae_vnd),
+    mape = format_pct(mape),
+    r2 = format_num(r2, 3),
+    sample_rows = format_int(sample_rows),
+    train_rows = format_int(train_rows),
+    test_rows = format_int(test_rows)
+  ) %>%
+  select(
+    `Nhóm` = segment,
+    `Hạng` = rank,
+    `Mô hình` = model,
+    `Mẫu` = sample_rows,
+    Train = train_rows,
+    Test = test_rows,
+    RMSE = rmse_vnd,
+    MAE = mae_vnd,
+    MAPE = mape,
+    `R²` = r2
+  ) %>%
+  kable(caption = "Train thử trên mẫu phân tầng theo nguồn")
+```
+
+```{r model-training-demo-comment, results='asis', echo=FALSE}
+demo_best <- demo_metrics %>%
+  group_by(segment) %>%
+  arrange(mape, rmse_vnd, .by_group = TRUE) %>%
+  slice(1) %>%
+  ungroup()
+
+for (i in seq_len(nrow(demo_best))) {
+  row <- demo_best[i, ]
+  cat(
+    "**", row$segment, "**: trong phần train thử, ",
+    model_label_vi(row$model),
+    " là mô hình tốt hơn theo MAPE, với MAPE khoảng ",
+    format_pct(row$mape),
+    " và R² khoảng ",
+    format_num(row$r2, 3),
+    ". Kết quả này chỉ dùng để kiểm tra nhanh tín hiệu biến; phần đánh giá chính vẫn dựa trên script huấn luyện toàn bộ dữ liệu.\n\n",
+    sep = ""
+  )
+}
+```
+
+Nhận xét: kết quả train thử cho thấy quan hệ giá không thuần tuyến tính. Random Forest thường bắt tốt hơn các quan hệ dạng ngưỡng, tương tác khu vực - loại BĐS và tác động của các biến text. Tuy vậy, mẫu train thử đã rút gọn nên không dùng để chọn mô hình cuối cùng.
+
+## Kết quả mô hình chính
+
+Mô hình chính được huấn luyện trong `scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R`. Script này dùng dữ liệu core market sau lọc ngoại lệ theo nhóm sản phẩm, tạo thêm target encoding trên train, so sánh nhiều thuật toán và lưu kết quả vào thư mục `outputs/models`.
+
+```{r model-metrics-table, echo=FALSE}
+metrics_ranked <- metrics %>%
+  mutate(segment_order = match(segment, c("sale", "rent"))) %>%
+  group_by(segment) %>%
+  arrange(mape, rmse_vnd, .by_group = TRUE) %>%
+  mutate(rank = row_number()) %>%
+  ungroup()
+
+metrics_ranked %>%
+  arrange(segment_order, rank) %>%
+  mutate(
+    segment = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+    model = model_label_vi(model),
+    rmse_vnd = format_vnd(rmse_vnd),
+    mae_vnd = format_vnd(mae_vnd),
+    mape = format_pct(mape),
+    median_ape = format_pct(median_ape),
+    p90_ape = format_pct(p90_ape),
+    r2 = format_num(r2, 3),
+    train_rows = format_int(train_rows),
+    test_rows = format_int(test_rows)
+  ) %>%
+  select(
+    `Nhóm` = segment,
+    `Hạng` = rank,
+    `Mô hình` = model,
+    `Train` = train_rows,
+    `Test` = test_rows,
+    RMSE = rmse_vnd,
+    MAE = mae_vnd,
+    MAPE = mape,
+    `Median APE` = median_ape,
+    `P90 APE` = p90_ape,
+    `R²` = r2
+  ) %>%
+  kable(caption = "Xếp hạng mô hình theo từng phân khúc")
+```
+
+```{r model-registry, echo=FALSE}
+best_metrics <- metrics_ranked %>%
+  filter(rank == 1) %>%
+  select(segment, segment_order, best_model = model, mape, median_ape, p90_ape, rmse_vnd, mae_vnd, r2, train_rows, test_rows)
+
+baseline_metrics <- metrics %>%
+  filter(model == "Linear Regression") %>%
+  select(segment, baseline_mape = mape, baseline_mae = mae_vnd, baseline_rmse = rmse_vnd, baseline_r2 = r2)
+
+best_vs_baseline <- best_metrics %>%
+  left_join(baseline_metrics, by = "segment") %>%
+  mutate(
+    segment_vi = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+    mape_gain = (baseline_mape - mape) / baseline_mape,
+    mae_gain = (baseline_mae - mae_vnd) / baseline_mae,
+    r2_gain = r2 - baseline_r2,
+    dien_giai = case_when(
+      segment == "sale" ~ "Mô hình giải thích tương đối tốt mặt bằng giá bán; sai số vẫn lớn với tin cao cấp, diện tích lớn hoặc giá rao lệch thị trường.",
+      segment == "rent" ~ "Mô hình bắt được xu hướng giá thuê nhưng sai số cao hơn vì giá thuê nhạy với nội thất, thời hạn thuê, tiện ích và tình trạng bàn giao.",
+      TRUE ~ "Đọc kết quả theo MAPE, MAE và R² cùng lúc."
+    )
+  )
+
+best_vs_baseline %>%
+  arrange(segment_order) %>%
+  mutate(
+    rmse_vnd = format_vnd(rmse_vnd),
+    mae_vnd = format_vnd(mae_vnd),
+    mape = format_pct(mape),
+    median_ape = format_pct(median_ape),
+    p90_ape = format_pct(p90_ape),
+    r2 = format_num(r2, 3),
+    mape_gain = format_pct(mape_gain),
+    mae_gain = format_pct(mae_gain),
+    r2_gain = format_num(r2_gain, 3),
+    best_model = model_label_vi(best_model)
+  ) %>%
+  select(
+    `Nhóm` = segment_vi,
+    `Mô hình chọn` = best_model,
+    MAPE = mape,
+    `Median APE` = median_ape,
+    `P90 APE` = p90_ape,
+    MAE = mae_vnd,
+    RMSE = rmse_vnd,
+    `R²` = r2,
+    `Giảm MAPE so với tuyến tính` = mape_gain,
+    `Giảm MAE so với tuyến tính` = mae_gain,
+    `Tăng R²` = r2_gain,
+    `Diễn giải` = dien_giai
+  ) %>%
+  kable(caption = "Mô hình tốt nhất và mức cải thiện so với hồi quy tuyến tính")
+```
+
+```{r model-quality-comments, results='asis', echo=FALSE}
+best_vs_baseline <- best_vs_baseline %>%
+  arrange(match(segment, c("sale", "rent")))
+
+for (i in seq_len(nrow(best_vs_baseline))) {
+  row <- best_vs_baseline[i, ]
+  cat(
+    "**", row$segment_vi, "**: mô hình được chọn là ",
+    model_label_vi(row$best_model),
+    " trên tập core market đã lọc ngoại lệ theo nhóm sản phẩm",
+    ". MAPE khoảng ",
+    format_pct(row$mape),
+    ", median APE khoảng ",
+    format_pct(row$median_ape),
+    " và P90 APE khoảng ",
+    format_pct(row$p90_ape),
+    ". Điều này nghĩa là lỗi trung bình còn khá lớn, nhưng cần tách phần lỗi thường gặp khỏi nhóm đuôi giá cao hoặc tin bất thường. MAE khoảng ",
+    format_vnd(row$mae_vnd),
+    ", RMSE khoảng ",
+    format_vnd(row$rmse_vnd),
+    "; RMSE cao hơn MAE cho thấy vẫn có nhóm tin dự đoán lệch mạnh, thường là outlier hoặc tin thiếu đặc trưng quan trọng. R² đạt ",
+    format_num(row$r2, 3),
+    ", tức mô hình giải thích được một phần đáng kể biến thiên giá rao nhưng chưa đủ để xem là công cụ định giá chính xác tuyệt đối.\n\n",
+    sep = ""
+  )
+}
+```
+
+```{r validation-error-diagnostics, echo=FALSE}
+if (nrow(validation_predictions) > 0) {
+  validation_clean <- validation_predictions %>%
+    mutate(
+      segment_vi = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+      actual_price = as.numeric(actual_price),
+      predicted_price = as.numeric(predicted_price),
+      abs_error_vnd = as.numeric(abs_error_vnd),
+      ape = as.numeric(ape)
+    ) %>%
+    filter(actual_price > 0, predicted_price > 0, !is.na(ape))
+
+  validation_by_tail <- validation_clean %>%
+    group_by(segment, segment_vi) %>%
+    mutate(price_p90 = quantile(actual_price, 0.90, na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(price_group = if_else(actual_price >= price_p90, "Top 10% giá cao", "90% còn lại")) %>%
+    group_by(segment_vi, price_group) %>%
+    summarise(
+      n = n(),
+      mae_vnd = mean(abs_error_vnd, na.rm = TRUE),
+      mape = mean(ape, na.rm = TRUE),
+      median_ape = median(ape, na.rm = TRUE),
+      p90_ape = quantile(ape, 0.90, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    arrange(match(segment_vi, c("Bán", "Cho thuê")), desc(price_group))
+
+  print(
+    validation_by_tail %>%
+      mutate(
+        n = format_int(n),
+        mae_vnd = format_vnd(mae_vnd),
+        mape = format_pct(mape),
+        median_ape = format_pct(median_ape),
+        p90_ape = format_pct(p90_ape)
+      ) %>%
+      select(
+        `Nhóm` = segment_vi,
+        `Nhóm giá` = price_group,
+        `Số dòng test` = n,
+        MAE = mae_vnd,
+        MAPE = mape,
+        `Median APE` = median_ape,
+        `P90 APE` = p90_ape
+      ) %>%
+      kable(caption = "Chẩn đoán sai số theo nhóm giá")
+  )
+
+  if ("model_category" %in% names(validation_clean)) {
+    validation_by_model_category <- validation_clean %>%
+      group_by(segment_vi, model_category) %>%
+      summarise(
+        n = n(),
+        mae_vnd = mean(abs_error_vnd, na.rm = TRUE),
+        mape = mean(ape, na.rm = TRUE),
+        median_ape = median(ape, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      filter(n >= 20) %>%
+      arrange(match(segment_vi, c("Bán", "Cho thuê")), desc(mape))
+
+    print(
+      validation_by_model_category %>%
+        mutate(
+          n = format_int(n),
+          mae_vnd = format_vnd(mae_vnd),
+          mape = format_pct(mape),
+          median_ape = format_pct(median_ape)
+        ) %>%
+        select(
+          `Nhóm` = segment_vi,
+          `Nhóm sản phẩm mô hình` = model_category,
+          `Số dòng test` = n,
+          MAPE = mape,
+          `Median APE` = median_ape,
+          MAE = mae_vnd
+        ) %>%
+        kable(caption = "Sai số theo nhóm sản phẩm mô hình")
+    )
+  }
+
+  validation_hotspots <- validation_clean %>%
+    group_by(segment_vi, district_name, category_name) %>%
+    summarise(
+      n = n(),
+      mape = mean(ape, na.rm = TRUE),
+      median_ape = median(ape, na.rm = TRUE),
+      mae_vnd = mean(abs_error_vnd, na.rm = TRUE),
+      median_actual = median(actual_price, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    filter(n >= 25) %>%
+    arrange(desc(mape)) %>%
+    slice_head(n = 10)
+
+  if (nrow(validation_hotspots) > 0) {
+    print(
+      validation_hotspots %>%
+        mutate(
+          n = format_int(n),
+          mape = format_pct(mape),
+          median_ape = format_pct(median_ape),
+          mae_vnd = format_vnd(mae_vnd),
+          median_actual = format_vnd(median_actual)
+        ) %>%
+        select(
+          `Nhóm` = segment_vi,
+          `Quận/huyện` = district_name,
+          `Loại BĐS` = category_name,
+          `Số dòng test` = n,
+          `Giá thực tế trung vị` = median_actual,
+          MAPE = mape,
+          `Median APE` = median_ape,
+          MAE = mae_vnd
+        ) %>%
+        kable(caption = "Nhóm quận/loại BĐS có sai số cao trong tập test")
+    )
+  }
+} else {
+  cat("Chưa có file dự đoán kiểm định theo từng dòng. Chạy `scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R` để tạo bảng chẩn đoán này.")
+}
+```
+
+Nhận xét: sau khi lọc ngoại lệ theo nhóm sản phẩm, sai số giảm rõ nhưng không biến mất. Các nhóm như căn hộ thường dễ dự đoán hơn vì mặt bằng giá đồng nhất hơn; nhóm biệt thự/cao cấp, đất hoặc tòa nhà/văn phòng vẫn khó hơn vì giá phụ thuộc mạnh vào vị trí chính xác, pháp lý, dòng tiền, chiều ngang mặt tiền và chất lượng tài sản.
+
+```{r model-close-calls, results='asis', echo=FALSE}
+top_two_models <- metrics_ranked %>%
+  arrange(segment_order, rank) %>%
+  group_by(segment) %>%
+  slice_head(n = 2) %>%
+  mutate(
+    segment_vi = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+    mape_gap = mape - first(mape),
+    mae_gap = mae_vnd - first(mae_vnd)
+  ) %>%
+  ungroup() %>%
+  arrange(segment_order, rank)
+
+for (segment_name in unique(top_two_models$segment)) {
+  rows <- top_two_models %>% filter(segment == segment_name)
+  if (nrow(rows) == 2 && rows$mape_gap[[2]] <= 0.01) {
+    gap_pp <- rows$mape_gap[[2]] * 100
+    gap_text <- if (gap_pp < 0.1) {
+      "dưới 0,1 điểm phần trăm"
+    } else {
+      paste0(format_num(gap_pp, 2), " điểm phần trăm")
+    }
+    cat(
+      "**Lưu ý chọn mô hình - ", rows$segment_vi[[1]], "**: ",
+      model_label_vi(rows$model[[1]]),
+      " và ",
+      model_label_vi(rows$model[[2]]),
+      " có MAPE rất gần nhau, chênh ",
+      gap_text,
+      ". Vì vậy phần chọn mô hình không chỉ dựa vào tên thuật toán, mà đọc chung MAPE, MAE, RMSE, R² và độ ổn định khi refit.\n\n",
+      sep = ""
+    )
+  }
+}
+```
+
+Nhận xét tổng quát: nhóm `Bán` có R² cao hơn và MAPE thấp hơn nhóm `Cho thuê`, cho thấy cấu trúc giá bán trong dữ liệu ổn định hơn. Nhóm `Cho thuê` khó hơn vì giá thuê thường phụ thuộc mạnh vào nội thất, hợp đồng, tiện ích tòa nhà, tình trạng bàn giao và các yếu tố này chưa có đủ trong dữ liệu.
+
+## Biểu đồ so sánh mô hình
+
+```{r model-metrics-plot, echo=FALSE}
+metrics_plot <- metrics %>%
+  mutate(
+    segment = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+    model = factor(model_label_vi(model), levels = unique(model_label_vi(model)))
+  ) %>%
+  select(segment, model, rmse_vnd, mae_vnd, mape, r2) %>%
+  pivot_longer(c(rmse_vnd, mae_vnd, mape, r2), names_to = "metric", values_to = "value") %>%
+  group_by(segment, metric) %>%
+  mutate(value_index = case_when(
+    metric %in% c("rmse_vnd", "mae_vnd") ~ value / min(value, na.rm = TRUE),
+    metric == "mape" ~ value / min(value, na.rm = TRUE),
+    metric == "r2" & value > 0 ~ max(value, na.rm = TRUE) / value,
+    TRUE ~ value
+  ),
+  metric = recode(
+    metric,
+    rmse_vnd = "RMSE",
+    mae_vnd = "MAE",
+    mape = "MAPE",
+    r2 = "R²"
+  )) %>%
+  ungroup()
+
+ggplot(metrics_plot, aes(x = model, y = value_index, fill = metric)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~ segment, scales = "free_x") +
+  labs(title = "So sánh mô hình theo chỉ số chuẩn hóa", x = NULL, y = "Chỉ số chuẩn hóa", fill = "Metric") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
+
+Nhận xét: biểu đồ chuẩn hóa giúp so sánh các metric khác đơn vị. Chỉ số càng thấp càng tốt; riêng R² đã được đảo chiều để cùng hướng với sai số. Nếu hai mô hình có MAPE gần nhau, nên ưu tiên mô hình có MAE/RMSE thấp hơn và R² cao hơn.
+
+## Heatmap so sánh giữa các mô hình
+
+```{r model-heatmap, echo=FALSE}
+metrics_heatmap <- metrics %>%
+  mutate(
+    segment = recode(segment, sale = "Bán", rent = "Cho thuê", .default = segment),
+    model_key = paste(segment, model_label_vi(model), sep = " - "),
+    rmse_index = rmse_vnd / ave(rmse_vnd, segment, FUN = min),
+    mae_index = mae_vnd / ave(mae_vnd, segment, FUN = min),
+    mape_index = mape / ave(mape, segment, FUN = min),
+    r2_index = if_else(r2 > 0, ave(r2, segment, FUN = max) / r2, NA_real_)
+  ) %>%
+  select(model_key, rmse_index, mae_index, mape_index, r2_index) %>%
+  pivot_longer(-model_key, names_to = "metric", values_to = "value") %>%
+  mutate(metric = recode(
+    metric,
+    rmse_index = "RMSE",
+    mae_index = "MAE",
+    mape_index = "MAPE",
+    r2_index = "R² đảo chiều"
+  ))
+
+ggplot(metrics_heatmap, aes(x = metric, y = model_key, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "#10b981", high = "#dc2626") +
+  labs(title = "Heatmap so sánh rủi ro giữa các mô hình", x = NULL, y = NULL, fill = "Index") +
+  theme_minimal(base_size = 12)
+```
+
+Nhận xét: heatmap cho thấy mô hình cây và ensemble thường ổn hơn hồi quy tuyến tính, đặc biệt ở MAPE. Điều này phù hợp với dữ liệu bất động sản vì giá phụ thuộc vào nhiều tương tác phi tuyến như khu vực - loại BĐS - diện tích - tín hiệu tiêu đề.
+
+## Biến quan trọng và diễn giải
+
+```{r importance-table, echo=FALSE}
+importance_pieces <- list()
+if (nrow(importance_sale) > 0) importance_pieces[["Bán"]] <- importance_sale %>% mutate(segment = "Bán")
+if (nrow(importance_rent) > 0) importance_pieces[["Cho thuê"]] <- importance_rent %>% mutate(segment = "Cho thuê")
+importance_all <- bind_rows(importance_pieces)
+
+if (nrow(importance_all) > 0) {
+  importance_all %>%
+    group_by(segment) %>%
+    slice_head(n = 8) %>%
+    ungroup() %>%
+    mutate(
+      feature_label = feature_label_vi(feature),
+      IncNodePurity = format_num(IncNodePurity, 1),
+      `%IncMSE` = format_num(`%IncMSE`, 1)
+    ) %>%
+    select(
+      `Nhóm` = segment,
+      `Biến` = feature_label,
+      `%IncMSE`,
+      IncNodePurity
+    ) %>%
+    kable(caption = "Top biến quan trọng theo Random Forest")
+} else {
+  cat("Chưa có dữ liệu độ quan trọng biến.")
+}
+```
+
+```{r importance-plots, echo=FALSE}
+plot_importance <- function(importance_df, title) {
+  if (nrow(importance_df) == 0) return(NULL)
+  importance_df %>%
+    slice_head(n = 12) %>%
+    mutate(feature_label = reorder(feature_label_vi(feature), IncNodePurity)) %>%
+    ggplot(aes(x = feature_label, y = IncNodePurity)) +
+    geom_col(fill = "#2563eb") +
+    coord_flip() +
+    labs(title = title, x = NULL, y = "IncNodePurity") +
+    theme_minimal(base_size = 12)
+}
+
+plot_importance(importance_sale, "Độ quan trọng biến - mô hình giá bán")
+```
+
+```{r importance-rent, echo=FALSE}
+plot_importance(importance_rent, "Độ quan trọng biến - mô hình giá thuê")
+```
+
+```{r importance-comments, results='asis', echo=FALSE}
+describe_importance <- function(importance_df, segment_label) {
+  if (nrow(importance_df) == 0) return(invisible(NULL))
+  top_features <- importance_df %>%
+    slice_head(n = 4) %>%
+    mutate(feature_label = feature_label_vi(feature)) %>%
+    pull(feature_label)
+
+  cat(
+    "**", segment_label, "**: các biến nổi bật gồm ",
+    paste(top_features, collapse = ", "),
+    ". Điều này cho thấy mô hình đang dựa nhiều vào quy mô tài sản và mặt bằng giá theo khu vực/loại BĐS. Các biến text như mặt tiền, hẻm xe hơi, pháp lý hoặc độ chi tiết tiêu đề có vai trò bổ sung, giúp mô hình phân biệt những tin có cùng diện tích nhưng chất lượng vị trí khác nhau.\n\n",
+    sep = ""
+  )
+}
+
+describe_importance(importance_sale, "Bán")
+describe_importance(importance_rent, "Cho thuê")
+```
+
+Nhận xét: độ quan trọng biến là tín hiệu từ mô hình, không phải bằng chứng nhân quả. Ví dụ `district_category_price_encoded` quan trọng vì nó tóm tắt mặt bằng giá theo khu vực và loại BĐS, chứ không có nghĩa chỉ cần đổi nhãn khu vực là giá thay đổi. Khi dùng mô hình để diễn giải thị trường, nên đọc biến quan trọng cùng với phân phối dữ liệu và số lượng mẫu từng nhóm.
+
+## Dự đoán so với thực tế
+
+```{r model-existing-plots, echo=FALSE, out.width='100%'}
+model_plot_files <- file.path(
+  PATHS$plot_dir,
+  c(
+    "du_doan_so_voi_thuc_te_ban.png",
+    "du_doan_so_voi_thuc_te_thue.png"
+  )
+)
+model_plot_files <- project_file(model_plot_files)
+model_plot_files <- model_plot_files[file.exists(model_plot_files)]
+model_plot_files <- normalizePath(model_plot_files, mustWork = FALSE)
+if (length(model_plot_files) > 0) knitr::include_graphics(model_plot_files, rel_path = FALSE)
+```
+
+Nhận xét: điểm càng gần đường chéo thì dự đoán càng sát giá rao thực tế. Những điểm lệch xa thường thuộc nhóm dữ liệu thiếu đặc trưng, giá rao quá khác mặt bằng hoặc tin có yếu tố chưa được mã hóa như pháp lý, nội thất, hướng nhà, chiều rộng hẻm, tầng căn hộ, tiện ích tòa nhà. Vì RMSE lớn hơn MAE rõ rệt, có thể thấy vẫn tồn tại các outlier làm sai số bình phương tăng mạnh.
+
+## Phân cụm khu vực
+
+Ngoài mô hình dự đoán giá từng tin, project còn phân cụm khu vực theo giá/m² trung vị, diện tích trung vị và số lượng tin. Phần này hỗ trợ đọc cấu trúc thị trường theo nhóm khu vực, không dùng để dự đoán giá trực tiếp.
+
+```{r cluster-summary, echo=FALSE}
+if (nrow(clusters) > 0) {
+  clusters %>%
+    mutate(
+      transaction_type = as.character(transaction_type),
+      display_price_m2 = if_else(transaction_type == "Bán", median_price_per_m2 / 1e6, median_price_per_m2 / 1e3),
+      cluster = as.factor(cluster),
+      unit = if_else(transaction_type == "Bán", "triệu/m²", "nghìn/m²")
+    ) %>%
+    group_by(transaction_type, cluster, unit) %>%
+    summarise(
+      so_nhom_khu_vuc = n(),
+      median_price_m2 = median(display_price_m2, na.rm = TRUE),
+      median_area = median(median_area, na.rm = TRUE),
+      median_listing_count = median(listing_count, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      median_price_m2 = paste0(format_num(median_price_m2, 2), " ", unit),
+      median_area = paste0(format_num(median_area, 1), " m²"),
+      median_listing_count = format_int(median_listing_count)
+    ) %>%
+    select(
+      `Giao dịch` = transaction_type,
+      `Cụm` = cluster,
+      `Số nhóm khu vực-loại` = so_nhom_khu_vuc,
+      `Giá/m² trung vị cụm` = median_price_m2,
+      `Diện tích trung vị cụm` = median_area,
+      `Số tin trung vị` = median_listing_count
+    ) %>%
+    kable(caption = "Tóm tắt các cụm khu vực")
+}
+```
+
+```{r cluster-plot, echo=FALSE}
+if (nrow(clusters) > 0) {
+  clusters %>%
+    mutate(
+      transaction_type = as.character(transaction_type),
+      display_price_m2 = if_else(transaction_type == "Bán", median_price_per_m2 / 1e6, median_price_per_m2 / 1e3),
+      cluster = as.factor(cluster)
+    ) %>%
+    ggplot(aes(x = median_area, y = display_price_m2, color = cluster, size = listing_count)) +
+    geom_point(alpha = 0.75) +
+    facet_wrap(~ transaction_type, scales = "free_y") +
+    labs(title = "Phân cụm khu vực theo diện tích và giá/m²", x = "Diện tích trung vị (m²)", y = "Triệu/m² hoặc nghìn/m²", color = "Cụm", size = "Số tin") +
+    theme_minimal(base_size = 12)
+}
+```
+
+Nhận xét: phân cụm giúp nhóm các tổ hợp khu vực - loại BĐS có mặt bằng giá và diện tích tương tự nhau. Các cụm có giá/m² cao thường đại diện cho nhóm khu vực trung tâm hoặc sản phẩm có thanh khoản cao; các cụm có diện tích lớn nhưng giá/m² thấp hơn thường nghiêng về nhà đất/đất hoặc khu vực xa trung tâm hơn. Khi đọc cụm, cần chú ý `listing_count` vì cụm có ít tin dễ bị nhiễu.
+
+## Đánh giá hạn chế và hướng cải thiện mô hình
+
+```{r modeling-limitations, echo=FALSE}
+tibble(
+  han_che = c(
+    "Giá mục tiêu là giá rao online",
+    "Thiếu nhiều đặc trưng chất lượng tài sản",
+    "Tọa độ không đầy đủ",
+    "Dữ liệu thời gian không cân bằng",
+    "Model hiện tối ưu cho core market",
+    "Một số nhóm khu vực/loại BĐS còn ít mẫu"
+  ),
+  anh_huong = c(
+    "Giá rao có thể cao hơn hoặc thấp hơn giá giao dịch thực tế",
+    "Mô hình chưa thấy rõ pháp lý, nội thất, hướng nhà, tầng, tiện ích, chiều rộng hẻm",
+    "Khoảng cách đến trung tâm chỉ có giá trị tốt với tin có tọa độ hoặc khu vực chuẩn",
+    "Không nên đọc biểu đồ thời gian như chỉ số thị trường đại diện toàn bộ TP.HCM",
+    "Các tin siêu cao cấp, nguyên tòa nhà hoặc giá/m² quá khác biệt được audit riêng thay vì ép vào mô hình tổng quát",
+    "Dự đoán ở nhóm ít mẫu kém ổn định hơn nhóm có nhiều tin"
+  ),
+  huong_cai_thien = c(
+    "Bổ sung dữ liệu giao dịch thật hoặc giá chốt nếu có",
+    "Trích xuất thêm đặc trưng từ mô tả chi tiết và ảnh/tin gốc",
+    "Geocode địa chỉ hoặc chuẩn hóa phường/xã tốt hơn",
+    "Thu thập dữ liệu đều theo tháng và theo nguồn",
+    "Train thêm mô hình chuyên biệt cho biệt thự/cao cấp, đất lớn và tòa nhà/văn phòng",
+    "Dùng cross-validation theo thời gian hoặc theo nguồn để kiểm tra độ bền"
+  )
+) %>%
+  kable(caption = "Hạn chế và hướng cải thiện mô hình")
+```
+
+Kết luận phần mô hình hóa: phiên bản mô hình sau tối ưu đã tốt hơn rõ rệt nhờ chuẩn hóa nhóm sản phẩm, bổ sung đặc trưng quy mô/tín hiệu tiêu đề và lọc ngoại lệ theo từng nhóm trước khi train. Mô hình phù hợp để ước lượng nhanh mặt bằng giá rao và hỗ trợ so sánh tương đối giữa khu vực, loại BĐS và đặc trưng tin đăng. Kết quả vẫn nên được trình bày như công cụ phân tích dữ liệu và tham khảo định giá sơ bộ, chưa phải hệ thống định giá tự động chính xác tuyệt đối.
+
+# Kết luận
+
+Báo cáo đã trình bày đầy đủ quy trình phân tích dữ liệu bất động sản TP.HCM bằng R: đọc dữ liệu từng website, gộp và xử lý dữ liệu, kiểm tra chất lượng, trực quan hóa thị trường, thực hiện suy luận thống kê và đánh giá mô hình dự đoán giá.
+
+Kết quả chính cho thấy cần tách riêng bán và cho thuê vì phân phối giá, đơn vị đo và sai số mô hình khác nhau. Giá/m², khu vực, loại BĐS, diện tích và các đặc trưng tiêu đề là các biến quan trọng để giải thích và dự đoán giá rao đăng.
+
+Hạn chế của dữ liệu là đây là giá rao online, không phải giá giao dịch cuối cùng. Một số tin thiếu tọa độ hoặc thiếu đặc trưng định tính như pháp lý, nội thất, hướng nhà, hẻm/mặt tiền chi tiết. Nếu phát triển tiếp, nên bổ sung các đặc trưng này và cải thiện phát hiện tin trùng gần đúng giữa các nguồn.

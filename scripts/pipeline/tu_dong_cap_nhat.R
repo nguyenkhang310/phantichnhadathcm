@@ -1,8 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Data refresh + conditional retraining.
-# Retraining is triggered only when the data changed enough or the model is stale.
-
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
 
@@ -23,13 +20,11 @@ FEATURED_CSV <- PATHS$featured_csv
 METADATA_PATH <- PATHS$model_metadata_rds
 AUTO_LOG <- PATHS$auto_update_log_csv
 
-# Hàm count_rows: đếm hoặc kiểm tra điều kiện xử lý.
 count_rows <- function(path) {
   if (!file.exists(path)) return(0L)
   nrow(read_csv(path, show_col_types = FALSE))
 }
 
-# Hàm model_age_days: hỗ trợ xử lý dữ liệu trong script.
 model_age_days <- function() {
   if (!file.exists(METADATA_PATH)) return(Inf)
   metadata <- readRDS(METADATA_PATH)
@@ -38,7 +33,6 @@ model_age_days <- function() {
   as.numeric(difftime(Sys.time(), trained_at, units = "days"))
 }
 
-# Hàm append_auto_log: lưu hoặc cập nhật dữ liệu đầu ra.
 append_auto_log <- function(status, before_rows, after_rows, retrained, reason, message_text = "") {
   dir.create(PATHS$data_dir, showWarnings = FALSE)
   entry <- tibble(
@@ -72,7 +66,6 @@ append_auto_log <- function(status, before_rows, after_rows, retrained, reason, 
   invisible(entry)
 }
 
-# Hàm should_retrain: đếm hoặc kiểm tra điều kiện xử lý.
 should_retrain <- function(before_rows, after_rows, min_new_ratio, max_model_age_days, force = FALSE) {
   if (force) return(list(value = TRUE, reason = "force"))
   if (!file.exists(METADATA_PATH)) return(list(value = TRUE, reason = "missing_model_metadata"))
@@ -91,7 +84,6 @@ should_retrain <- function(before_rows, after_rows, min_new_ratio, max_model_age
   list(value = FALSE, reason = "data_refreshed_model_still_valid")
 }
 
-# Hàm run_auto_update: chạy toàn bộ bước xử lý chính.
 run_auto_update <- function(
     min_new_ratio = as.numeric(Sys.getenv("RETRAIN_MIN_NEW_RATIO", "0.12")),
     max_model_age_days = as.numeric(Sys.getenv("RETRAIN_MAX_MODEL_AGE_DAYS", "7")),
@@ -107,6 +99,7 @@ run_auto_update <- function(
     if (decision$value) {
       message("== Huấn luyện lại mô hình: ", decision$reason, " ==")
       source(PATHS$train_models_script, local = TRUE)
+      run_train_models()
     } else {
       message("Bỏ qua huấn luyện lại: ", decision$reason)
     }

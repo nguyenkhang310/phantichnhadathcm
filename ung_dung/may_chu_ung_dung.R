@@ -1,8 +1,3 @@
-# ============================================================
-# MÁY CHỦ ỨNG DỤNG
-# Reactive data, observeEvent và render output cho toàn bộ dashboard.
-# ============================================================
-
 server <- function(input, output, session) {
   map_marker_limit <- performance_limit("BDS_MAP_MAX_MARKERS", 35000)
 
@@ -61,7 +56,6 @@ server <- function(input, output, session) {
   assistant_messages <- reactiveVal(list())
   assistant_context <- reactiveVal(assistant_empty_context())
 
-  # Doi giao dien tro ly theo trang thai: chua chat thi hien goi y, co chat thi hien log.
   output$gemini_chat_view <- renderUI({
     messages <- assistant_messages()
     if (length(messages) == 0) {
@@ -328,12 +322,6 @@ server <- function(input, output, session) {
     listings() %>% filter(transaction_type == tx)
   }
 
-  # ------------------------------------------------------------
-  # PHAM VI DU LIEU SERVER - PHAN TICH GIA
-  # Ham nay gom tat ca filter cua tab "Phan tich gia" de cac chart EDA
-  # dung cung mot tap du lieu: scatter dien tich-gia, gia/m2, heatmap,
-  # xu huong thoi gian, ECDF va tuong quan.
-  # ------------------------------------------------------------
   analysis_chart_data <- function(input_id) {
     tx <- chart_transaction(input_id)
     df <- listings() %>% filter(transaction_type == tx)
@@ -358,12 +346,6 @@ server <- function(input, output, session) {
       )
   }
 
-  # ------------------------------------------------------------
-  # PHAM VI DU LIEU SERVER - SUY LUAN THONG KE
-  # stat_base_data() la mau thong ke sau khi loc nguon/giao dich/loai BDS.
-  # Cac output xac suat, CLT, bootstrap va kiem dinh deu dung scope nay
-  # de tranh moi bieu do tinh tren mot tap du lieu khac nhau.
-  # ------------------------------------------------------------
   stat_base_data <- reactive({
     tx <- input$stat_transaction %||% "Bán"
     df <- listings() %>%
@@ -890,17 +872,6 @@ server <- function(input, output, session) {
       )
   })
 
-  # ============================================================
-  # OUTPUTS - PHAN TICH GIA / EDA
-  # Nhom output nay chuyen data sach thanh insight thi truong:
-  # - scatter dien tich vs gia
-  # - ranking gia/m2 theo khu vuc
-  # - khoang gia theo loai BDS
-  # - histogram/log price distribution
-  # - heatmap, radar nguon, xu huong thoi gian, tuong quan va ECDF
-  # ============================================================
-
-  # EDA: quan he dien tich va gia, dung de nhin pattern phi tuyen/outlier.
   output$area_price_plot <- renderPlotly({
     tx <- chart_transaction("area_price_tx")
     price_info <- price_display_info(tx)
@@ -933,7 +904,6 @@ server <- function(input, output, session) {
       layout(showlegend = FALSE, margin = list(l = 92, r = 28, t = 16, b = 78))
   })
 
-  # EDA: top khu vuc theo median gia/m2, dung median de giam anh huong outlier.
   output$price_m2_plot <- renderPlotly({
     tx <- chart_transaction("price_m2_tx")
     m2_info <- price_m2_display_info(tx)
@@ -962,7 +932,6 @@ server <- function(input, output, session) {
     interactive_chart(p, tooltip = "text")
   })
 
-  # EDA: so sanh khoang gia theo loai BDS bang median va IQR.
   output$price_category_plot <- renderPlotly({
     selected_transaction <- chart_transaction("price_category_tx")
     price_info <- price_display_info(selected_transaction)
@@ -1040,7 +1009,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA: histogram log(price) de xu ly phan phoi gia lech phai.
   output$log_price_plot <- renderPlotly({
     tx <- chart_transaction("log_price_tx")
     plot_df <- analysis_chart_data("log_price_tx") %>%
@@ -1069,7 +1037,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: heatmap median gia/m2 theo khu vuc va loai BDS.
   output$district_category_heatmap <- renderPlotly({
     tx <- chart_transaction("district_category_heatmap_tx")
     m2_info <- price_m2_display_info(tx)
@@ -1119,7 +1086,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: radar de thay co cau nguon theo nhom giao dich dang chon.
   output$source_sunburst_plot <- renderPlotly({
     tx <- chart_transaction("source_radar_tx")
     df <- analysis_chart_data("source_radar_tx") %>%
@@ -1213,7 +1179,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: time trend, loai ngay dang tuong lai de khong lam sai xu huong.
   output$time_trend_plot <- renderPlotly({
     tx <- chart_transaction("time_trend_tx")
     m2_info <- price_m2_display_info(tx)
@@ -1260,7 +1225,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA nang cao: correlation matrix tren cac bien so chinh.
   output$correlation_plot <- renderPlotly({
     tx <- chart_transaction("correlation_tx")
     df <- analysis_chart_data("correlation_tx") %>%
@@ -1301,64 +1265,47 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # EDA/xac suat: ECDF gia/m2 de doc percentile va so sanh phan phoi khu vuc.
   output$price_ecdf_plot <- renderPlotly({
   tx <- chart_transaction("ecdf_tx")
   m2_info <- price_m2_display_info(tx)
-  
-  # 1. Lấy dữ liệu cơ bản
+
   df_base <- analysis_chart_data("ecdf_tx") %>%
     filter(finite_positive(price_per_m2)) %>%
     mutate(display_m2 = price_per_m2 / m2_info$scale)
-    
+
   validate(need(nrow(df_base) > 0, paste("Không có dữ liệu", tx, "để vẽ phân phối tích lũy.")))
-  
-  # 2. Xác định các quận sẽ vẽ
+
   top_districts <- df_base %>%
     count(district_name, sort = TRUE) %>%
     head(4) %>%
     pull(district_name)
-    
+
   target_districts <- unique(c(top_districts, "Quận 1", "Quận Bình Tân"))
-  
-  # 3. Lọc theo quận và CẮT BỎ OUTLIER
+
   cutoff_price <- quantile(df_base$display_m2, 0.95, na.rm = TRUE)
-  
+
   df_plot <- df_base %>%
     filter(district_name %in% target_districts) %>%
-    filter(display_m2 <= cutoff_price) 
-  
-  # 4. TÍNH TOÁN TRỰC TIẾP ECDF BẰNG TOÁN HỌC (ĐỂ SỬA LỖI PLOTLY)
+    filter(display_m2 <= cutoff_price)
+
   df_plot <- df_plot %>%
-    arrange(district_name, display_m2) %>%           # Sắp xếp giá từ thấp đến cao theo từng quận
-    group_by(district_name) %>%                      # Gom nhóm theo quận
-    mutate(ecdf_prob = row_number() / n()) %>%       # Tự tính xác suất tích lũy (từ 0 đến 1)
+    arrange(district_name, display_m2) %>%
+    group_by(district_name) %>%
+    mutate(ecdf_prob = row_number() / n()) %>%
     ungroup()
-  
-  # 5. Vẽ biểu đồ bằng geom_step (thay vì stat_ecdf)
+
   p <- ggplot(df_plot, aes(x = display_m2, y = ecdf_prob, color = district_name)) +
     geom_step(linewidth = 1) +
     labs(x = m2_info$axis, y = "Xác suất tích lũy", color = "Khu vực") +
     chart_theme()
-  
-  # 6. Chuyển sang Plotly tương tác
-  interactive_chart(p) %>% 
+
+  interactive_chart(p) %>%
     layout(
       legend = list(orientation = "h", x = 0, y = 1.1),
       margin = list(l = 60, r = 20, t = 40, b = 60)
     )
 })
 
-  # ============================================================
-  # OUTPUTS - SUY LUAN THONG KE
-  # Nhom output nay gan voi cac bai ly thuyet trong docs:
-  # - Xac suat: xac suat thuc nghiem, xac suat co dieu kien
-  # - Luat so lon/CLT: phan phoi mau va sai so chuan
-  # - Bootstrap: phan phoi bootstrap va khoang tin cay
-  # - Kiem dinh: H0/H1, p-value, ket luan theo alpha
-  # ============================================================
-
-  # Xac suat thong ke mo ta: co mau, trung vi, sai so chuan, P(gia cao).
   output$stat_kpi_cards <- renderUI({
     df <- stat_base_data()
     tx <- input$stat_transaction %||% "Bán"
@@ -1394,7 +1341,6 @@ server <- function(input, output, session) {
     )
   })
 
-  # Xac suat: P(loai BDS | khu vuc).
   output$probability_heatmap <- renderPlotly({
     df <- stat_base_data() %>%
       filter(!is_missing_label(district_name), !is_missing_label(category_name))
@@ -1433,7 +1379,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # Phan phoi xac suat: ECDF de so sanh gia/m2 giua hai khu vuc.
   output$stat_distribution_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -1454,7 +1399,6 @@ server <- function(input, output, session) {
     interactive_chart(p)
   })
 
-  # CLT: lay mau co hoan lai nhieu lan de tao phan phoi trung binh mau.
   output$clt_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -1487,7 +1431,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # Bootstrap: tao phan phoi bootstrap cua trung vi va lay CI theo muc tin cay.
   output$bootstrap_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -1506,11 +1449,23 @@ server <- function(input, output, session) {
           list(type = "line", x0 = boot$upper, x1 = boot$upper, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#f59e0b", width = 2, dash = "dash")),
           list(type = "line", x0 = boot$observed, x1 = boot$observed, y0 = 0, y1 = 1, yref = "paper", line = list(color = "#ef4444", width = 3))
         ),
-        annotations = list(list(
-          x = boot$observed, y = 1, yref = "paper",
-          text = paste0("Trung vị: ", format_number_vi(boot$observed, m2_info$digits), " ", m2_info$unit),
-          showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444")
-        )),
+        annotations = list(
+          list(
+            x = boot$lower, y = 0.95, yref = "paper",
+            text = format_number_vi(boot$lower, m2_info$digits),
+            showarrow = FALSE, xanchor = "left", font = list(color = "#d97706")
+          ),
+          list(
+            x = boot$upper, y = 0.95, yref = "paper",
+            text = format_number_vi(boot$upper, m2_info$digits),
+            showarrow = FALSE, xanchor = "right", font = list(color = "#d97706")
+          ),
+          list(
+            x = boot$observed, y = 1, yref = "paper",
+            text = format_number_vi(boot$observed, m2_info$digits),
+            showarrow = FALSE, xanchor = "left", font = list(color = "#ef4444")
+          )
+        ),
         margin = list(l = 62, r = 20, t = 12, b = 62),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
@@ -1522,8 +1477,6 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
-  # Kiem dinh gia thuyet: H0 la mean log(gia/m2) cua hai khu vuc bang nhau.
-  # Dung t-test cho mean log-scale va Wilcoxon nhu phuong an ben hon voi du lieu lech.
   output$hypothesis_table <- renderTable({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
@@ -1558,7 +1511,6 @@ server <- function(input, output, session) {
     )
   })
 
-  # Xac suat thuc nghiem: uoc luong truc tiep tu mau du lieu dang loc.
   output$empirical_probability_table <- renderTable({
     df <- stat_base_data()
     district <- stat_selected_district_a()
@@ -1791,6 +1743,75 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE, responsive = TRUE)
   })
 
+  output$diagnostic_error_heatmap <- renderPlotly({
+    df <- diagnostic_data()
+    validate(need(nrow(df) > 0, "Chưa có dữ liệu để vẽ heatmap sai số."))
+
+    top_districts <- df %>%
+      filter(!is_missing_label(district_name)) %>%
+      count(district_name, sort = TRUE) %>%
+      slice_head(n = 12) %>%
+      pull(district_name)
+    top_categories <- df %>%
+      filter(!is_missing_label(category_name)) %>%
+      count(category_name, sort = TRUE) %>%
+      slice_head(n = 8) %>%
+      pull(category_name)
+
+    plot_df <- df %>%
+      filter(district_name %in% top_districts, category_name %in% top_categories) %>%
+      group_by(district_name, category_name) %>%
+      summarise(
+        mape = mean(ape, na.rm = TRUE) * 100,
+        median_residual = median(residual_log, na.rm = TRUE),
+        n = n(),
+        .groups = "drop"
+      ) %>%
+      filter(n >= 4)
+    validate(need(nrow(plot_df) > 0, "Cần ít nhất 4 dòng cho mỗi nhóm khu vực - loại BĐS."))
+
+    z <- matrix(NA_real_, nrow = length(top_categories), ncol = length(top_districts), dimnames = list(top_categories, top_districts))
+    text <- matrix("", nrow = length(top_categories), ncol = length(top_districts), dimnames = list(top_categories, top_districts))
+    for (i in seq_len(nrow(plot_df))) {
+      category <- plot_df$category_name[[i]]
+      district <- plot_df$district_name[[i]]
+      z[category, district] <- plot_df$mape[[i]]
+      text[category, district] <- paste0(
+        "Khu vực: ", district,
+        "<br>Loại BĐS: ", category,
+        "<br>MAPE: ", format_number_vi(plot_df$mape[[i]], 1), "%",
+        "<br>Trung vị residual log: ", format_number_vi(plot_df$median_residual[[i]], 3),
+        "<br>Số dòng: ", format_count_vi(plot_df$n[[i]])
+      )
+    }
+
+    plot_ly(
+      x = top_districts,
+      y = top_categories,
+      z = z,
+      text = text,
+      type = "heatmap",
+      colorscale = list(
+        list(0, "#e0f2fe"),
+        list(0.45, "#facc15"),
+        list(0.75, "#f97316"),
+        list(1, "#dc2626")
+      ),
+      colorbar = list(title = "MAPE (%)"),
+      hovertemplate = "%{text}<extra></extra>"
+    ) %>%
+      layout(
+        margin = list(l = 178, r = 42, t = 16, b = 130),
+        font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
+        hoverlabel = list(bgcolor = "#ffffff", bordercolor = "#d7e6f5", font = list(color = "#1f2937")),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        xaxis = list(title = "", automargin = TRUE, tickangle = -35, tickfont = list(size = 10)),
+        yaxis = list(title = "", automargin = TRUE, tickfont = list(size = 10))
+      ) %>%
+      config(displayModeBar = FALSE, responsive = TRUE)
+  })
+
   output$diagnostic_error_group_plot <- renderPlotly({
     df <- diagnostic_data()
     validate(need(nrow(df) > 0, "Chưa có dữ liệu kiểm tra mô hình theo khu vực."))
@@ -1870,7 +1891,7 @@ server <- function(input, output, session) {
   })
 
   output$cluster_plot <- renderPlotly({
-    validate(need(file.exists(CLUSTER_PATH), paste0("Chưa có ", PATHS$clusters_csv, ". Hãy chạy scripts/models/huan_luyen_mo_hinh.R.")))
+    validate(need(file.exists(CLUSTER_PATH), paste0("Chưa có ", PATHS$clusters_csv, ". Hãy chạy scripts/04_mo_hinh_hoa/huan_luyen_mo_hinh.R.")))
     tx <- chart_transaction("cluster_tx")
     m2_info <- price_m2_display_info(tx)
     cluster_df <- read_csv(CLUSTER_PATH, show_col_types = FALSE)

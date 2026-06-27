@@ -1,0 +1,384 @@
+segment,model_exclusion_reason,source,title,price,area,price_per_m2,district_name,category_name,model_category
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,alonhadat,"KTX mới đẹp Bình Thạnh ngay DH Văn Lang, chỉ 1.5tr/tháng bao trọn gói",1500000,80,18750,Quận Bình Thạnh,Văn phòng/Mặt bằng,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,SANG NHƯỢNG QUÁN HỦ TIẾU ĐANG HOẠT ĐỘNG TỐT – TÂN PHÚ,100000000,35,2857142.8571428573,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang Tiệm Kinh Doanh Giặt Ủi CS 2,115000000,32,3593750,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Cần Sang Nhượng Cửa Hàng Điện Nước Gia Dụng,230000000,50,4600000,Quận Gò Vấp,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,SANG QUÁN CAFE – ĐỒ ĂN SÁNG NGAY SẢNH CHUNG CƯ,250000000,85,2941176.470588235,Quận Bình Tân,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,"Sang Gấp Quán Phở Mặt Tiền Phạm Văn Hai P.1 Tân Bình - Giá 135Tr, Thuê",135000000,40,3375000,Quận Tân Bình,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang nhượng mặt bằng kinh doanh trà sữa tại Tân Bình,122200000,43,2841860.465116279,Quận Tân Bình,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Cần sang lại 2 căn hộ dịch vụ (gồm 12 phòng),450000000,140,3214285.714285714,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Nắm full giỏ hàng cho thuê Empire City 1PN- 2PN- 3PN- 4PN mới nhất. Vă,200000000,230,869565.2173913043,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Hiếm-cho thuê nhà Trần Quang Khải,Quận 1.Ngang 5m-Giá chỉ 48 triệu",48000000,1110,43243.24324324324,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"BĐS HUNGVILAND[NC] Tòa số 9 Võ Thị Sáu Q1, 5x20m có PCCC kết cấu 6T",180000000,100,1800000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê Tòa nhà hạng A trung tâm Hcm làm khách sạn cao cấp Q3,1400000000,2783,503054.25799496943,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Biệt Thự 1000 m2 (10x100) mặt tiền đường Dương Công Khi,25000000,1000,25000,Huyện Hóc Môn,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ ngắn hạn & dài hạn – vào ở ngay, PMH, Q7",3000000,127,23622.047244094487,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Căn hộ CHO THUÊ đầy đủ nội thất, thuê ngày hoặc tháng, giá tốt",1800000,127,14173.228346456694,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Căn hộ cho thuê linh hoạt theo ngày hoặc theo tháng, Gía rẻ 2tr. 1,8tr",2000000,127,15748.031496062991,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê căn hộ ngắn hạn & dài hạn –vào ở ngay 3 phòng ngủ Giá 2tr/th,2000000,100,20000,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cần cho thuê căn hộ đầy đủ nội thất – bao chi phí Thuê ngày hoặc tháng,1800000,127,14173.228346456694,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Ở Gần Sân Bay, Đi Làm Nhanh, Về Nhà Sớm – Chỉ Từ 1,3 Triệu/Tháng",1300000,70,18571.428571428572,Quận Phú Nhuận,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Căn hộ MT Eastmark City ( Giá cập nhật mới nhất ),5000000,63,79365.07936507936,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê chung cư 80m2, 6,5 triệu",6500000,80,81250,Quận 5,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê căn hộ Vincom Đồng Khởi Q1 - 160m2 - 3pn 2wc - chỉ 120 triệu,120000000,160,750000,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Chung Cư Mini Nằm Ngay Ngã Tư Bình Thái - Thuận tiện đi metro,4800000,60,80000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Căn Hộ Full Nội Thất Tách Bếp, Có Rèm Che, Q9",4700000,60,78333.33333333333,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê căn hộ Vincom Center Q1 có sân vườn và hồ bơi cực chill,85000000,139,611510.7913669065,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cần cho thuê căn hộ cao cấp Vincom Center - Vinhomes Đồng Khởi, Quận 1",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Tin Mới, cho thuê căn hộ cao cấp tại trung tâm Q1 Vincom Center",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Về quê cho thuê căn hộ 2PN 73m2- KINGDOM101 giá 16 triệu NTCB view mát,160000000,73,2191780.821917808,Quận 10,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê CH Biệt thự Luxury Him Lam, Quận 7, nội thất nhà gần 20 tỷ",200000000,1200,166666.66666666666,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhanh căn hộ Vincom Đồng Khởi, Quận 1",85000000,139,611510.7913669065,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ Vincom Đồng Khởi, Quận 1 view đẹp",84000000,139,604316.54676259,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ Vincom Center - Đồng Khởi, Căn góc 2 view cực đẹp Q.1",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ Góc 2 view Bitesco, sông và phố đi bộ Quận 1 – Vincom",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ cao cấp Vincom Center - Vinhomes Đồng Khởi, Quận 1",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê gấp căn hộ cao cấp Vincom Center - Vinhomes Đồng Khởi, Quận 1",110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,TIN NHANH! cho thuê căn hộ cao cấp Vincom Center - Vinhomes Đồng Khởi,110000000,166,662650.6024096386,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"TIN MỚI! Cần cho thuê nhanh căn hộ cao cấp Vincom Center, Q1",85000000,139,611510.7913669065,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ cao cấp Vinhomes Đồng Khởi - Vincom Center, Quận 1",110000000,160,687500,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"For rent! Penhouse The Ascentia Phú Mỹ Hưng, 4rooms, luxury style",140000000,240,583333.3333333334,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê CH Hưng Phúc, 3PN, giá rẻ, nhà mới đẹp, Phú Mỹ Hưng, Q7, HCM",23000000,1350,17037.037037037036,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Villa 38B Lam Sơn, Phường 02, Quận Tân Bình",32000000,550,58181.818181818184,Quận Tân Bình,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"cho thuê mặt bằng đường 836, phường phú hữu giá 7 triệu",7000000,168,41666.666666666664,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê khách sạn 50 phòng đường Châu Văn Liêm Q.5,585000000,320,1828125,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"21PHÒNG THANG MÁY - Cho thuê nhà 78 Nam Kỳ Khởi Nghĩa, Quận 1 - 9TẦNG",268000000,150,1786666.6666666667,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 26 Cao Thắng - Võ Văn Tần, Phường 5, Quận 3, Hồ C",500000000,160,3125000,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 2 Mạc Thị Bưởi, Phường Bến Nghé, Quận 1, HCM",450000000,144,3125000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 138 Lý Tự Trọng, Phường Bến Thành, Quận 1, HCM",750000000,576,1302083.3333333333,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê Tòa Nhà 98 Xuân Thủy, Phường Thảo Điền, Quận 2, Hồ Chí Minh",850000000,220,3863636.363636364,Thành phố Thủ Đức,Nhà phố,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà Góc 2MT 38A Cửu Long, Phường 2, Quận Tân Bình, HCM",575000000,200,2875000,Quận Tân Bình,Nhà phố,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 38 Đông Du, Phường Bến Nghé, Quận 1, Hồ Chí Minh",282000000,66,4272727.2727272725,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT Hồ Tùng Mậu, Phường Bến Nghé, Quận 1, Hồ Chí Min",375000000,150,2500000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê nhà GÓC 2MT số 74 đường Nguyễn Văn Trỗi & Nguyễn Đình Chính,899000000,749,1200267.0226969293,Quận Phú Nhuận,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 128 Hai Bà Trưng+ Trần Cao Vân, Phường Đa Kao, Q1",987000000,400,2467500,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà 40-42 Nguyễn Trãi, Phường Bến Thành, Quận 1, Hồ Chí Minh",625000000,198,3156565.6565656564,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền số 655-657-659 Lạc Long Quân, P.10, Q.Tân Bình",1350000000,1000,1350000,Quận Tân Bình,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 120 Lý Thái Tổ, Phường 2, Quận 3, Hồ Chí Minh",850000000,1044,814176.245210728,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 190-192-192A Lý Tự Trọng - Trương Định, Quận 1",750000000,500,1500000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 110 Lý Tự Trọng, P.Bến Thành, Quận 1",710000000,200,3550000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 204 Hai Bà Trưng - Võ Thị Sáu, Quận 1",160000000,50,3200000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 254 Nguyễn Trãi, Phường 3, Quận 5, Hồ Chí Minh",130000000,36,3611111.111111111,Quận 5,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 200 Lê Lai, Phường Phạm Ngũ Lão, Quận 1, Hồ Chí M",420000000,156,2692307.6923076925,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà 90-92 Lê Thị Riêng, Phường Bến Thành, Quận 1, Hồ Chí Minh",350000000,126,2777777.777777778,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê đất GÓC 2MT số 371A Nguyễn Trãi, P.Nguyễn Cư Trinh, Quận 1",1225000000,1100,1113636.3636363635,Quận 1,Đất nền,Đất/đất nền
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà 655-657-659 Lạc Long Quân, Phường 8, Quận Tân Bình, HCM",1390000000,730,1904109.589041096,Quận Tân Bình,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 24-26 Phạm Ngọc Thạch, Phường 6, Quận 3",800000000,288,2777777.777777778,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền số 160-162 đường Lê Hồng Phong, Phường 3, Quận 5",350000000,220,1590909.0909090908,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà góc 2MT Hai Bà Trưng-Điện Biên Phủ, Phường Đa Kao, Quận 1",840000000,375,2240000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 101 Sương Nguyệt Ánh, P. Bến Thành, Quận 1, HCM",700000000,300,2333333.3333333335,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 125 Cách Mạng Tháng Tám, P. Bến Thành, Quận 1,HCM",1200000000,1200,1000000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Nguyễn Hữu Cầu, Phường Tân Định, Quận",375000000,95,3947368.421052631,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 223 Phan Xích Long, Phường Cầu Kiệu, Hồ Chí Minh",90000000,35,2571428.5714285714,Quận Phú Nhuận,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà 6 Nguyễn Bỉnh Khiêm, Phường Đa Kao, Quận 1, Hồ Chí Minh",750000000,2240,334821.4285714286,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà Góc 3MT 92 Nguyễn Thái Học, P.Cầu Ông Lãnh, Quận 1",600000000,144,4166666.6666666665,Quận 1,Nhà phố,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 11 Nguyễn Thiệp - Đồng Khởi, Quận 1,HCM",960000000,200,4800000,Quận 1,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 11-13 Hàn Thuyên, Phường Bến Nghé, Quận 1, HCM",700000000,210,3333333.3333333335,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê nhà Góc 2MT 30 Nguyễn Văn Trỗi và Huỳnh Văn Bánh,750000000,1060,707547.1698113207,Quận Phú Nhuận,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà 35-37-39 Cách Mạng Tháng Tám, P.Bến Thành, Quận 1",674999000,210,3214280.9523809524,Quận 1,Nhà phố,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT số 74 đường Cách Mạng Tháng Tám, Phường 6, Quận 3",500000000,192,2604166.6666666665,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền đường Lê Thánh Tôn, Phường Bến Nghé, Quận 1",200000000,88,2272727.272727273,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà 59-59B Nguyễn Hữu Cầu, Phường Tân Định, Quận 1, HCM",822000000,281,2925266.903914591,Quận 1,Nhà phố,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà nguyên căn Thảo Điền, Quận 2 (4,5x18m) - trệt 1lầu. Giá thuê 35tr",3500000,81,43209.87654320987,Thành phố Thủ Đức,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nguyên căn góc mặt tiền - 149 Nguyễn Văn Cừ & Phan Văn Trị, Q",340000000,137,2481751.8248175182,Quận 5,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê Góc 2 Mặt Tiền Cao Lỗ, Q.8 Diện Tích 3.628 m2 Chỉ 130tr/th",130000000,3628,35832.41455347299,Quận 8,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mt vừa ở vừa minh doanh, TX 33 Q12",8000000,180,44444.444444444445,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho Thuê Biệt Thự Trần Cao Vân – Ngang 15m. Diện tích gần 1500m2,450000000,750,600000,Quận 1,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Vip- Biệt thự 3 MT Trần Quốc Thảo, Võ Thị Sáu- 25mx35m- 2 tầng- Quận 3",450000000,875,514285.71428571426,Quận 3,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền đường Nguyễn Thị Minh Khai, P.PNL Q1",540000000,153,3529411.7647058824,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền 3/2, Phường 11, Quận 10, Hồ Chí Minh",360000000,148,2432432.4324324327,Quận 10,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà góc 2 mặt tiền – vị trí đắc địa trên đường Cộng Hòa,130000000,47,2765957.4468085105,Quận Tân Bình,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền Nguyễn Thị Minh Khai, Phường Đa Kao, Quận 1",245000000,93,2634408.6021505375,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Nguyễn Thông-Kỳ Đồng, Phường 9, Quận 3",1100000000,420,2619047.619047619,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền đường Cách Mạng Tháng Tám, Phường Bến Thành, Q1",270000000,110,2454545.4545454546,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền Phó Đức Chính, Phường Nguyễn Thái Bình, Quận 1",980000000,300,3266666.6666666665,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê 2 căn đôi nhà mặt tiền Mạc Thị Bưởi, Phường Bến Nghé, Quận 1",540000000,160,3375000,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền đường Lê Thánh Tôn, Phường Bến Thành, Quận 1",300000000,121,2479338.8429752067,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2 mặt tiền đường Sư Vạn Hạnh, Phường 12, Quận 10",150000000,68,2205882.3529411764,Quận 10,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê khách sạn 3 sao - Golden Rose, Võ Văn Tần, Phường 6, Quận 3",1300000000,400,3250000,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền đường Nguyễn Thiện Thuật, Phường 2, Quận 3",100000000,44,2272727.272727273,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền số 73A Nguyễn Thị Minh Khai, P. Phạm Ngũ Lão, Q1",650000000,153,4248366.013071896,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Thạnh Xuân 25, quận 12 Dt 5*12 1pn 1 gác 1wc Giá 3,5tr",3500000,60,58333.333333333336,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Nhà cho thuê ngay công viên Tl 37 Dt 4x5m 1 lầu 2pn.1wc Giá 3tr,3000000,20,150000,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê Nhà 2/ TL31 ,Q12 _dt:4x4m trệt lầu 1pn,1wc 3tr",3000000,16,187500,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà Hà Huy Giáp thạnh xuân quận 12 DT 4,5x26m trệt lầu 2pn.2wc Hẻm xh",6000000,118,50847.457627118645,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê nhà Thạnh Xuân 21 q12 Dt :4m x 5m đúc 1 trệt 1 lầu Giá 3tr,3000000,20,150000,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nguyên căn hẻm xe tải, 2 triệu",2000000,24,83333.33333333333,Quận Bình Tân,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Chính chủ cho thuê nhà Trần Khánh Dư, Quận 1, sạch sẽ, giá 6 triệu",6000000,168,35714.28571428572,Quận 1,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cần Cho Thuê Nhà Xiêu Rộng 120m2 Đông Thạnh HM giá Tốt 6tr,6000000,120,50000,Huyện Hóc Môn,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho Thuê Nhà mới Full Nội Thất Cao Cấp, Ngay Cầu Tham Thương",7000000,50,140000,Quận 12,Nhà phố,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà 101m2 giá rẻ tại Tỉnh Lộ 10, Bình Tân",5000000,101,49504.9504950495,Quận Bình Tân,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà đẹp hẻm 10m Phạm Văn Chiêu, 4 tầng 4PN",18000000,352,51136.36363636364,Quận Gò Vấp,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Góc 2 mặt tiền Phạm Ngọc Thạch 10x14m 4 LẦU-Phù hợp SHOWROOM,CAFE,SPA",350000000,140,2500000,Quận 3,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà ở tại Đường Hiệp Bình - Thủ Đức, Hồ Chí Minh",2500000,150,16666.666666666668,Thành phố Thủ Đức,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà nguyên căn quận Thủ Đức,5000000,132,37878.78787878788,Thành phố Thủ Đức,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Nhà 5 x 20, Đoàn Nguyên Tuấn, Chợ Hưng Long, Bình Chánh",4000000,100,40000,Huyện Bình Chánh,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà thạnh xuân 24 quận 12 DT 4x20m trệt lầu 2pn.2wc Giá 4tr,4000000,80,50000,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà vườn tx 14 q12 Dt 7×30 có nhà c4 50m còn lại là vườn 5tr,5000000,210,23809.52380952381,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho nhà nguyên căn, HXH, Thạnh Xuân Q12",4500000,80,56250,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà gần cầu phú long,Q12 Diện tích. 5*25. 2pn. 1wc Giá 6,5tr",6500000,125,52000,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà Đường Lớn Cực Rộng 140m2, Giá 6tr, Trung Mỹ Tây, Sát Ngã Tư Sương",6000000,110,54545.454545454544,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"NHÀ THUÊ TX52 q12 DT 3x7m 1 lầu 2pn, 1wc Giá 3tr thángcọc 1 tháng",3000000,21,142857.14285714287,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Phan Văn Hân, P.17, 4x16m, 6 căn hộ, 48tr",48000000,64,750000,Quận Bình Thạnh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà tx38 q12 DT 4x20m có 2pn,1wc và 1 gác nhỏ để chứa đồ giá 4,5tr",4500000,80,56250,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Nhà Tx33 quận12 DT 3x7m trệt lầu 2pn.1wc Giá 3tr,3000000,21,142857.14285714287,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê nhà nhỏ 20m2 quận Gò Vấp,2700000,20,135000,Quận Gò Vấp,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà cho thuê giá rẻ Hóc Môn, sạch đẹp, gần chợ chữ S",4900000,120,40833.333333333336,Huyện Hóc Môn,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,[ 1TR2 - Quận 5] - KTX full Tiện Ích,1200000,100,12000,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho Thuê Phòng Studio , cửa sổ trời, thoáng mát, ngay đường nguyễn duy",2500000,25,100000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Chỗ ở giá tốt tại Tân Phú dành cho sinh viên và nhân viên văn phòng,1350000,49,27551.020408163266,Quận Tân Phú,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Ở Ghép Khu Dân Cư Cao Cấp Gần ĐH FPT, UFM, TP.Thủ Đức",1000000,100,10000,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Căn hộ mini Q12 – 25m², ở 3 người, gần ĐH GTVT – giá tốt 2tr9",2900000,22,131818.18181818182,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng studio cửa sổ cao cấp full nội thất P14 Gò Vấp,3000000,35,85714.28571428571,Quận Gò Vấp,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,PHÒNG STUDIO CV LÀNG HOA Cửa Sổ Lớn Full Nội Thất Xịn Xò,3000000,35,85714.28571428571,Quận Gò Vấp,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Căn Hộ Có Gác (Duplex) FULL Nội Thất Cao Cấp NGUYỄN OANH - HÀ HUY GIÁP,2500000,35,71428.57142857143,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Căn Hộ FULL Nội Thất Cao Cấp Ngã Tư Ga Ngay NTTU,2500000,35,71428.57142857143,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ký Túc Xá Sinh Viên Quận 10 - Gần Phạm Ngọc Thạch,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ký Túc Xá Giá Rẻ Quận 10 - Full Nội Thất - Giá Chỉ Từ 1tr200,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ký Túc Xá Sinh Viên Quận 10 - Giá Chỉ Từ 1tr200 - Full Chi Phí,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Phòng STUDIO cửa sổ trời ngay Nguyễn Duy Trinh,2800000,25,112000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ngay TÔ KÝ - CVPM - DƯƠNG THỊ MƯỜI - Căn hộ có Gác Full nội thất,2500000,30,83333.33333333333,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng Trọ Ký Túc Xá Hồ Văn Huê Quận Phú Nhuận – đầy đủ full tiện nghi,1500000,150,10000,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Hòa Hảo, Quận 10 - Dành Cho Nữ, đầy đủ tiện nghi",1800000,150,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Đồng Nai, Quận 10(KTX Nam) -1tr8k,đầy đủ tiện nghi",1800000,150,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Đồng Nai, Quận 10(KTX Nam) -1tr8k,đầy đủ tiện nghi",1800000,140,12857.142857142857,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Hòa Hảo, Quận 10 - Dành Cho Nữ, đầy đủ tiện nghi",1800000,130,13846.153846153846,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Nguyễn Tri Phương Quận 5 – Full Nội Thất, máy lạnh",1400000,130,10769.23076923077,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Nguyễn Giản Thanh Quận 10 –trọn gói,full tiện nghi",1400000,130,10769.23076923077,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Phòng Trọ Ký Túc Xá Thành Thái Quận 10 – Giá Rẻ, Sạch Sẽ, Tiện Nghi",1300000,130,10000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Phòng Trọ Ký Túc Xá Nguyễn Kim Quận 10- 1tr4,free máy lạnh",1400000,120,11666.666666666666,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng Trọ Ký Túc Xá Hồ Văn Huê Quận Phú Nhuận – đầy đủ tiện nghi,1500000,120,12500,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ký Túc Xá Cao Cấp - Quận 10 - Freee Trọn Gói Dịch Vụ,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,HAPPY HOUSE – Ký Túc Xá Cao Cấp Dành Cho Sinh Viên & Người Đi Làm,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,KÝ TÚC XÁ QUẬN 10 – Full Nội Thất – Giá Chỉ Từ 1tr200/Tháng,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Ký Túc Xá Quận 10 Giá Rẻ - Full Nội Thất - Không Phát Sinh Chi Phí,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,KÝ TÚC XÁ GIÁ RẺ QUẬN 10 Giá chỉ từ 1tr200 Full Tiện Nghi,1200000,100,12000,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Không gian làm việc chung không giới hạn tại Regus MACH Building,2390000,30,79666.66666666667,Quận Bình Thạnh,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê không gian làm việc chung tại HQ Zeta Building,2190000,30,73000,Quận Phú Nhuận,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê bàn ​​làm việc chung tại HQ Songha Building,2690000,30,89666.66666666667,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Văn phòng sẵn sàng để sử dụng – Đa dạng diện tích,2450000,10,245000,Quận 1,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê Biệt thự nguyên căn 04 tầng 8x45 gần CV Hoàng Văn Thụ,1000000000,1400,714285.7142857143,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Sàn Văn Phòng_SHOPHOUSE 2300m2 Tại SALA Nguyễn Cơ Thạch, An Lợi Đông",1400000000,2300,608695.6521739131,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê toà nhà mới mặt tiền Ngô Tất Tố, Bình Thạnh, 2 hầm + 12 tầng",1890000000,4500,420000,Quận Bình Thạnh,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà 5.000m2 sàn ngay P. Bến Nghé, Q1 giá 70.000USD TL",1800000000,5000,360000,Quận 1,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê toà nhà Pasteur Quận 3, DT sàn 2992m2, 2 hầm + 10 tầng",1275000000,2992,426136.3636363637,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê toà nhà Quận 1, MT đường Thi Sách, 8x17m đất, 1 hầm + 7 tầng",600000000,136,4411764.705882353,Quận 1,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Tòa nhà Văn phòng MT Trần Não, Q2 DT: 5300m2 sàn",1975000000,4390,449886.1047835991,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Tòa Nhà 10 tầng Etown Building Cộng Hòa, Phường 13",48000000,1000,48000,Quận Tân Bình,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Văn phòng MT gần trung tâm, DT 18x17, Giá thuê: 16$/m2",694200000,170,4083529.411764706,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê sàn VP diện tích lớn 1431,5. Giá 880TR tại Bình Thạnh",880000000,1432,614525.1396648044,Quận Bình Thạnh,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê toà VP MT Điện Biên Phủ, Quận 3, 2 hầm 9 tầng, 12 x 37.5m",1050000000,2410,435684.6473029046,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"CHO THUÊ Tòa Nhà 1.350 m² - MT Hòa Bình, Quận 11 - 9m x 25m -1T 5L",80000000,1350,59259.25925925926,Quận 11,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà có hầm 660m2/sàn, Đ. Lương ĐÌnh Của, P. Bình Khánh",180000000,3300,54545.454545454544,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Tòa Nhà Cho Thuê Có Thể Làm Văn Phòng Và Phòng Giao Dịch Tại Trung Tâm,8000000,260,30769.23076923077,Quận Tân Bình,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà MT Bàn Cờ, Phường 3, Quận 3",70000000,43,1627906.976744186,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê tòa nhà siêu lớn mới 100% DT 20 x 50m hầm 8 tầng,1200000000,2200,545454.5454545454,Quận Tân Bình,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,VĂN PHÒNG cho thuê Bùi Tá Hán - An Phú 500m2. Giá thuê chỉ từ 20 tr/th,20000000,500,40000,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Mặt Bằng Văn Phòng 180m2 Hai Ban Công View Vô Cực - Chợ Căn Cứ Gò Vấp,10000000,180,55555.555555555555,Quận Gò Vấp,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Sàn văn phòng nho nhỏ cực xinh Quận Tân Phú 8m2 chỉ 2tr5/th,2500000,8,312500,Quận Tân Phú,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê toà nhà Phan Đăng Lưu, Phú Nhuận DT:3.000m2",1500000000,3000,500000,Quận Phú Nhuận,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê sàn văn phòng 20F Lam Sơn, Phường 2, Quận Tân Bình",35000000,900,38888.88888888889,Quận Tân Bình,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê tòa nhà 2 MT Lê Thánh Tôn Q1(16x15m) hầm 12 tầng giá siêu tốt,760000000,240,3166666.6666666665,Quận 1,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Tòa văn phòng Hầm 7 Lầu, Lê Quang Định, Bình Thạnh",130000000,3200,40625,Quận Bình Thạnh,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Mặt tiền Phùng Khắc Khoan Q1, 1 hầm 7 tầng giá 1.2 tỷ",1200000000,4000,300000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Building 655 Lạc Long Quân, 1 hầm 8 tầng, diện tích sử dụng 4.200m2",1276000000,4200,303809.5238095238,Quận Tân Bình,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,tòa nhà 34 Bạch Đằng 3 hầm 12 tầng lầu diện tích văn phòng 4.500m2,1786000000,4500,396888.8888888889,Quận Tân Bình,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Building office 181 Nguyễn ĐÌnh Chiểu Q3, 2 hầm 12 tầng nổi",1999000000,3500,571142.8571428572,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,BDS HVL Mới Cứng ! MTKD 57 Hồ Hảo Hớn Q1 8x25m 7T chỉ 330tr 04/05/2023,330000000,200,1650000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê Tòa nhà VP Q3, 113 Trần Quốc Toản",1300000000,1500,866666.6666666666,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê tòa nhà văn phòng mặt tiền TT Quận 3,1300000000,1500,866666.6666666666,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Siêu hiếm ! cho thuê tòa nhà văn phòng đường Huỳnh Tịnh Của , Q3",420000000,120,3500000,Quận 3,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho Thuê nhà góc 2MT Hàm Nghi Quận 1, DT: 25 x 15m, 6 tầng, 2 tỷ/tháng",2000000000,1400,1428571.4285714286,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê văn phòng, văn phòng chia sẻ, văn phòng ảo",2500000,6,416666.6666666667,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Văn Phòng Mặt Tiền Đảo Kim Cương Quận 2 Full Tiện Ích,7000000,180,38888.88888888889,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT phố đi bộ Nguyễn Huệ - phù hợp F&B, showroom",100000000,25,4000000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê MB Nguyễn Huệ Q.1 - ngang 6m, DTSD 72m2",220000000,72,3055555.5555555555,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê GÓC 2MT ngay phố đi bộ Nguyễn Huệ - DT 17x20m, hiếm nhất SG",900000000,700,1285714.2857142857,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Siêu phẩm GÓC Hàm Nghi - Đối diện chợ Bến Thành, vị trí VIP nhất Q.1",2000000000,1500,1333333.3333333333,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê khách sạn Nguyễn Trãi - Quận 1 - gần KS New World - 60 phòng,1200000000,2000,600000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"cho thuê gần 800m2 mặt bằng mt Nguyễn Thị Tú Bình Hưng Hòa B, Bình Tân",43000000,790,54430.379746835446,Quận Bình Tân,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Mặt bằng mặt tiền – Vị trí đẹp, dễ kinh doanh",2000000,50,40000,Huyện Nhà Bè,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Đề Thám, Phường Phạm Ngũ Lão, Quận 1, HCM",282000000,83,3397590.361445783,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền Nguyễn Du, Phường Bến Nghé, Quận 1, Hồ Chí Minh",759000000,270,2811111.111111111,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Cách Mạng Tháng Tám, Phường 6, Quận 3, HCM",550000000,192,2864583.3333333335,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT Trần Hưng Đạo, Phường Phạm Ngũ Lão, Quận 1, Hồ Ch",500000000,300,1666666.6666666667,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền 231 Nguyễn Thị Minh Khai, P.Nguyễn Cư Trinh, Q1",276000000,93,2967741.935483871,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Phan Xích Long, Phường 2, Quận Phú Nhuận",207000000,128,1617187.5,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Nhà Góc 2 Mặt Tiền Nguyễn Trãi, Phường Bến Thành, Quận 1",188000000,105,1790476.1904761903,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền số 116-118-120 Nguyễn Trãi, P.Bến Thành, Q.1,HCM",690000000,360,1916666.6666666667,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT Trần Hưng Đạo, Phường Phạm Ngũ Lão, Quận 1, HCM",50000000,28,1785714.2857142857,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT số 178 Ký Con, P.Nguyễn Thái Bình, Q.1, HCM",207000000,104,1990384.6153846155,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền số 490B Nguyễn Thị Minh Khai, P.2, Q.3, HCM",230000000,112,2053571.4285714289,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 3MT đường Phan Xích Long, Phường 2, Quận Phú Nhuận",176000000,80,2200000,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT Nam Kỳ Khởi Nghĩa & Huỳnh Thúc Kháng, Q1",450000000,280,1607142.857142857,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Lý Tự Trọng, Phường Bến Thành, Quận 1",195500000,108,1810185.1851851852,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Võ Thị Sáu-Phạm Ngọc Thạch, Phường 6, Q.3",150000000,72,2083333.3333333333,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Phan Xích Long, P. 2, Q. Phú Nhuận",90000000,45,2000000,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT đường Võ Văn Tần, Phường 5, Quận 3, Hồ Chí Minh",207000000,126,1642857.142857143,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà mặt tiền Nguyễn Thị Minh Khai, P. Nguyễn Cư Trinh, Q.1",276000000,93,2967741.935483871,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà số 21 đường Bùi Thị Xuân, P.Bến Thành, Q.1, Hồ Chí Minh",322000000,180,1788888.888888889,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Nhà Mặt Tiền Sư Vạn Hạnh, Phường 12, Quận 10, TPHCM.8x18m",230000000,144,1597222.2222222222,Quận 10,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê mặt bằng 1075m2 Tân Kỳ Tân Quý, Bình Hưng Hoà B, Bình Tân",59000000,1075,54883.72093023256,Quận Bình Tân,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê tòa nhà phòng trà, cafe, piza KD đa ngành65 triệu/th",45000000,1200,37500,Quận Bình Tân,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cần Cho Thuê Mặt Bằng 10x40m, 2 căn giáp nhau, KD Mọi Ngành Nghề",13000000,400,32500,Huyện Hóc Môn,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cần Cho Thuê Nhà ở+ mặt bằng KB, 3 phòng trọ sau. 5phòng, 5wc giá 10tr",10000000,190,52631.57894736842,Huyện Hóc Môn,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cần Cho Thuê Mặt Bằng KD Đa Ngành Nghề,Đông Thạnh Hóc Môn Giá tốt 10tr",10000000,204,49019.60784313725,Huyện Hóc Môn,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"MT Tô Ký 5x25 3L Mới đẹp Ngay Chung Cư Đông Hải , Tower , Chợ TCH",25000000,300,83333.33333333333,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"MT Tô Ký 8X20m 3L Via He 8m ngay Đại Học , cao đẳng , chung cư tower",40000000,500,80000,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"CHO THUÊ Nhà MT - Nguyễn Văn Trỗi, PN, NGANG LỚN 11m",130000000,77,1688311.6883116884,Quận Phú Nhuận,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 53 Nguyễn Trãi, P. 2, Quận 5",830000000,2480,334677.4193548387,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 131 Nguyễn Trãi, Q.5 - DT 20x20, 1 trệt 1 lửng",1000000000,600,1666666.6666666667,Quận 5,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà Góc 2MT 122 Hồ Tùng Mậu, Q1. DT: 3.5x12m, 1 trệt 1 lầu",139000000,84,1654761.9047619049,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT số 128 đường Hai Bà Trưng, Phường Đa Kao, Quận 1",900000000,1200,750000,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 190-192-192A Lý Tự Trọng, Q.1 - DT 20x25m, 4 tầng",812000000,1500,541333.3333333334,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 359 Lê Văn Sỹ, Quận 3. MT 26m, DTSD ~ 1600m2",1200000000,1600,750000,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà 75-77 Nguyễn Huệ, Q.1 - DTSD 1200m2",820000000,1200,683333.3333333334,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà 68 Lê Lợi, Q.1 - DT: 8.5x25m, 1 trệt",657000000,212,3099056.603773585,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 359 Lê Văn Sỹ, Q.3 - DT 26x38m, trệt 2 lầu ST",1200000000,1600,750000,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT 189A Hai Bà Trưng, Q.3 - DT 15x50m, nở hậu 20m",1055000000,1500,703333.3333333334,Quận 3,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Mặt Bằng Kinh Doanh Phạm Văn Đồng, dt: 5 x 21, 4 lầu, mới",35000000,630,55555.555555555555,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Mặt Bằng Kinh Doanh Phạm Văn Đồng, DT: 27mx77m, nhà và đất",70000000,2079,33670.03367003367,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Mặt Bằng Kinh Doanh Phạm Văn Đồng, DT: 10X32, trống suốt",18000000,320,56250,Thành phố Thủ Đức,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Nhà Mặt Tiền 212/A-C Nguyễn Trãi Q1 giá chỉ 115 triệu,115000000,56,2053571.4285714289,Quận 1,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê gấp BT compound Hồ Gia Trang 5pn có Thang máy Chỉ 4,600$",120000000,110,1090909.0909090908,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê biệt thự phong cách châu Âu ,Thảo Điền DT 230m2 Chỉ 99 triệu",990000000,230,4304347.826086956,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà 22x28m 1 hầm 2 lầu Pasteur Phường Võ Thị Sáu Quận 3,520000000,600,866666.6666666666,Quận 3,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê biệt thự 30x40m Tam Bình Phường Hiệp Bình Chánh Thủ Đức,60000000,1500,40000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê biệt thự Nguyễn Thị Diệu, Phường Võ Thị Sáu, Quận 3, TP. HCM",170000000,200,850000,Quận 3,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Mặt tiền 5x20m 1 hầm 1 trệt 4 lầu Cộng Hòa Phường 4 Quận Tân Bình,90000000,100,900000,Quận Tân Bình,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn nhà phố liền kề Hà Đô 200m2 SD, Giá giảm sâu 50 triệu",50000000,55,909090.9090909092,Quận 10,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà Phố Villa Hà Đô Centrosa Quận 10- trệt 3 lầu giá 55 triệu,55000000,70,785714.2857142857,Quận 10,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà mặt tiền 170 HOA LAN QUẬN PHÚ NHUẬN DT 8x16m Trệt 4 Lầu,105000000,128,820312.5,Quận Phú Nhuận,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Em Chuyên cho thuê Villas BaSon cho thuê căn 225m2 giá 170 triệu,180000000,225,800000,Quận 1,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà GÓC 2MT số 232 Tân Sơn Nhì, P.Tân Sơn Nhì, Quận Tân Phú",318000000,272,1169117.6470588236,Quận Tân Phú,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"CHO THUÊ BIỆT THỰ MẶT TIỀN 500M² GẦN KCN TÂN PHÚ TRUNG, 20 TRIỆU/THÁNG",20000000,500,40000,Huyện Củ Chi,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê gấp biệt thự Nam Thông, Phú Mỹ Hưng, Quận 7, Tp HCM",40000000,3000,13333.333333333334,Quận 7,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê Biệt Thự Song Lập Mỹ Hưng Phú Mỹ Hưng Q7,130000000,154,844155.8441558442,Quận 7,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Biệt Thự Nguyễn Thị Diệu – Cao Tầng, Thang Máy, Khu Vực Vip",385000000,212,1816037.7358490569,Quận 3,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,𝐌Ặ𝐓 𝐓𝐈Ề𝐍 𝐐𝐔Ậ𝐍 10 𝐁𝐈Ệ𝐓 𝐓𝐇Ự 26x20,55000000,800,68750,Quận 3,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà thô 1 trệt 2 lầu – KHU ĐÔNG TĂNG LONG, Q.9",7000000,100,70000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Villa mới full nội thất - sân siêu rộng (dựng đc 5–6 sân pickleball),79000000,2000,39500,Quận Gò Vấp,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Biệt Thự Sông Giồng _An Phú Hướng Đông Nam 325m2 Cho Thuê,28000000,400,70000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê Biệt thự khu biệt lập riêng, an ninh, DT 1200m2",60000000,1200,50000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê Villa cao cấp ở Đường 20 , P. An Phú 10 x 20",57000000,2000,28500,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà Thô Đông Tăng Long 160m2 nhà 3 tầng giá 6tr/tháng,6000000,160,37500,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê Góc 2 MT Nguyễn Thiệp + Đồng Khởi, Q.1 - 10*20m - 2 Tầng",700000000,200,3500000,Quận 1,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ 3 PN full nội thất, The Horizon Phú Mỹ Hưng, Quận 7",70000000,120,583333.3333333334,Quận 7,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà đường số 43, phường thảo điền, quận 2",135000000,150,900000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Biệt Thự Phú Mỹ Hưng Quận 7- 200 Triệu- 251 m2,200000000,249,803212.8514056224,Quận 7,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê nhà Nguyễn Văn Hưởng, 1 hầm + 4 tầng, view sông, DTSD 1800m2",1190000000,1800,661111.1111111111,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê nhà vườn nghỉ dưỡng 1500m2 Tam Bình, Thủ Đức",25000000,1500,16666.666666666668,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"cho thuê biệt thự Mỹ phú , 5PN, full nội thất 85tr / tháng",850000000,300,2833333.3333333335,Quận 7,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê Siêu biệt thự Vũ Khắc Tiệp - Ngọc Trinh Thảo Điền, Quận 2",450000000,1600,281250,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê biệt thự thảo điền thành phố thủ đức,190000000,244,778688.524590164,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà mặt tiền KĐT Đông Tăng Long 200m2 giá 4tr/tháng,4000000,100,40000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Biệt thự biệt lập Saigon Pearl giá siêu tốt sang trọng, hiện đại, đẹp",14900000,250,59600,Quận Bình Thạnh,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Biệt thự Khu sang, an ninh GÓC 2 MẶT TIỀN NGUYỄN VĂN TRỖI, GẦN SÂN BAY",170000000,180,944444.4444444444,Quận Phú Nhuận,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Thuê chung cư 1 PN - Tiện nghi - Giá rẻ - An ninh - Có sân vườn riêng,10000000,120,83333.33333333333,Quận Bình Thạnh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà HXH gần Cầu vượt Linh Xuân.135M2/2PN/KD Onl và Kho,8000000,135,59259.25925925926,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Chuyên cho thuê Biệt thự/ Villa cao cấp khu vực Q2, Nhà y hình",245000000,280,875000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê Biệt thự 2 MT 09 The Victorya Bason (14 x 20m; Trệt 3 Lầu),360000000,300,1200000,Quận 1,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê biệt thự 1200m2 Phường Long Trường, Quận 9, giá 55 triệu/th",65000000,1200,54166.666666666664,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cần cho thuê gấp BT sát bờ sông gió mát quanh năm, view đẹp",18000000,250,72000,Thành phố Thủ Đức,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê nhà thạnh xuân 33 quận 12,9000000,100,90000,Quận 12,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê biệt thự Vườn Lài, APĐ Q12",15000000,250,60000,Quận 12,Biệt thự,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê Biệt Thự làm kho xưởng KĐT Đông Tăng Long 250m² giá 6tr/tháng,6000000,160,37500,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê nhà thô làm kho xưởng khu đô thị Đông Tăng Long 250m²,6000000,160,37500,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,homedy,"Cho thuê căn hộ, 85 Bình Thành, Bình Hưng hòa B, Quận Bình Tân",2700000,20,135000,Quận Bình Tân,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,CHDV mới 100% full nội thất cao cấp thiết kế hiện đại ở Phan Văn Hớn,5800000,30,193333.33333333337,Quận 12,Bất động sản khác,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê góc 2 MT CMT8 Phường 15 Quận 10,140000000,200,700000,Quận 10,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nguyên căn Thảo Điền, Quận 2 - 4 tầng, có thang máy. Giá thuê 50tr/th",50000000,40,1250000,Thành phố Thủ Đức,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê kho xưởng 2000m2 Cộng Hoà Tân Bình,400000000,2000,200000,Quận Tân Bình,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Căn Hộ Full Nội Thất_Ban Công_Đi bộ ĐH Nguyễn Tất Thành_An Phú Đông,2700000,30,90000,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê, share NGUYÊN phòng căn hộ CHUNG CƯ CAO CẤP - 3,5 triệu/tháng",3500000,56,62500,Quận Bình Tân,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Đất 31X60 Tại Hương Lộ 2, Phường Bình Trị Đông, Quận Bình Tân",30000000,1800,16666.666666666668,Quận Bình Tân,Đất nền,Đất/đất nền
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Tìm chỗ ở gần HUIT giá rẻ mà đầy đủ tiện nghi?,1350000,50,27000,Quận Tân Phú,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Chỗ ở sạch sẽ gần Aeon Tân Phú – gần HUIT,1350000,50,27000,Quận Tân Phú,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê căn hộ penthouse View Sông_vinhome central park_3Br 170m2,100000000,170,588235.2941176471,Quận Bình Thạnh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho Thuê Căn Hộ Vinhome Golden River_4PN 250m2_View Sông Cực Đẹp,140000000,260,538461.5384615385,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho thuê căn hộ penthouse City Garden_3 Phòng Ngủ 4 WC 320m2_City View,120000000,320,375000,Quận Bình Thạnh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Căn Hộ The MarQ_3PN_215m2_Full Nội Thất Cao Cấp_City View,100000000,160,625000,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho Thuê Duplex Cove Residence_3 bedroom_250m2_City view,140000000,250,560000,Thành phố Thủ Đức,Bất động sản khác,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Căn Hộ Empire City_3 bedroom_River View_Full nt cao cấp,100000000,160,625000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho Thuê Penthouse Define_4PN 5WC_Hồ Bơi Riêng_River View_Q2,120000000,352,340909.0909090909,Thành phố Thủ Đức,Bất động sản khác,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Duplex Empire Ciity_ 4 bedroom 240m2_City River view,175000000,240,729166.6666666666,Thành phố Thủ Đức,Bất động sản khác,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho Thuê Căn Hộ The Empire City_3 Bedroom +1_160m2_City View,100000000,160,625000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê kho xưởng 2059m2, 4118m2 KCN Tân Phú Trung Củ Chi",452980000,4118,110000,Huyện Củ Chi,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Khai trương căn hộ mini tách bếp ngay ngã 6 Quang Trung quận Gò Vấp,60000000,40,1500000,Quận Gò Vấp,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê kho mặt tiền QL1A, 40 triệu",40000000,700,57142.857142857145,Huyện Bình Chánh,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Nhượng Quyền Thương Hiệu PARMANO COFEE -P Tây Thạnh-Tân Phú,135000000,56,2410714.285714286,Quận Tân Phú,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Khai trương CHDV full nội thất cao cấp mới 100% - ngay Ngã 4 Bốn Xã,5500000,30,183333.33333333337,Quận Bình Tân,Bất động sản khác,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Nhà xưởng cho thuê 500m2, 520m2 An Phú Đông Quận 12",28000000,520,53846.15384615384,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"An Phú Đông (TL, TX) Quận 12, cần cho thuê kho - nhà xưởng l",60000000,1300,46153.84615384616,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê kho xưởng SIÊU VIP 2.000m2 Sân Bay Tân Sơn Nhất, Q. Tân Bình",400000000,2000,200000,Quận Tân Bình,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Nhà xưởng cho thuê giá tốt 1800m2 Tân Thới Nhất 8 Quận 12,100000000,1800,55555.555555555555,Quận 12,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê kho xưởng 2100m2 mặt tiền đường Trần Văn Giàu, Bình Chánh",120000000,2100,57142.857142857145,Huyện Bình Chánh,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Cho thuê kho CAO CẤP gần sát Khu Công Nghệ Cao, Q.9 (TP. THỦ ĐỨC)",420000000,3000,140000,Thành phố Thủ Đức,Bất động sản khác,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Ở ghép máy lạnh, tắm nước nóng: 350 Huỳnh tấn phát",750000,20,37500,Quận 7,Bất động sản khác,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Ở ghép Giường tầng Q8 trọn gói 900K,800000,20,40000,Quận 8,Bất động sản khác,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê kho xưởng 2 mặt tiền đường Kinh Dương Vương, P. BTĐ, Q. Bình",80000000,2000,40000,Quận Bình Tân,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Ở ghép giường tầng cách Trường Cao Thắng 800m,900000,20,45000,Quận 1,Bất động sản khác,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê kho xưởng 1400m2 mặt tiền đường Nguyễn Văn Bữa, Hóc Môn",59999000,1400,42856.42857142857,Huyện Hóc Môn,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Homestay Hoàng Phúc cách đại học Luật 200m,800000,20,40000,Quận 4,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Ký túc xá cho sinh viên và người đi làm,800000,20,40000,Quận 7,Bất động sản khác,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,Mình cho thuê căn hộ chung cư nguyễn kim 86m2- 3PN giá 11 triệu,86000000,86,1000000,Quận 10,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,Cho thuê mặt tiền kinh doanh 120m2,5000000,120,41666.666666666664,Huyện Bình Chánh,Văn phòng/Mặt bằng,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,Chính chủ cho thuê căn hộ Vincom Đồng Khởi Q.1- Tầng 25 view nhà thờ,118000000,170,694117.6470588235,Quận 1,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,CHO THUÊ 2700m2 NHÀ XƯỞNG GIÁ 39tr/ tháng,39000000,2700,14444.444444444443,Huyện Củ Chi,Đất,Đất/đất nền
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,muaban,PHÒNG GIÁ RẺ NGAY TRƯỜNG CHINH - SIÊU RỘNG - THANG MÁY - MÁY LẠNH,2900000,30,96666.66666666669,Quận 12,Văn phòng/Mặt bằng,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,"KHÁCH SẠN 208B HOÀNG VĂN THỤ, PHÚ NHUẬN",590000000,360,1638888.888888889,Quận Phú Nhuận,Nhà đất cho thuê,Đất/đất nền
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,"Cho thuê nhà 1 tầng mới, mặt tiền 8m, 7A Đỗ Xuân Hợp, Quận 2, 70m2",35000000,8,4375000,Thành phố Thủ Đức,Phòng trọ,Phòng trọ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,muaban,"Phòng chính chủ cho thuê 1800k, bảo vệ 24/24",1800000,16,112500,Quận 7,Nhà đất cho thuê,Đất/đất nền
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,"Cho thuê căn hộ chung cư Him Lam, 100m2, đường Ba Tơ phường 7 quận 8",5500000,100,55000,Quận 8,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,muaban,Cho Thuê Phòng Đầy Đủ Nội Thất đẹp,2800000,22,127272.72727272728,Quận Tân Phú,Kho xưởng,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,muaban,"Cho thuê phòng Nơ Trang Long và Nguyễn Khuyến giá từ 2,6 triệu - 5,5tr",2600000,30,86666.66666666667,Quận Bình Thạnh,Kho xưởng,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,muaban,CHO THUÊ NHÀ MẶT TIỀN 6.3x15m (94.5m2) GÓC NGÃ TƯ,40000000,15,2666666.6666666665,Quận Phú Nhuận,Nhà đất cho thuê,Đất/đất nền
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Cho thuê căn hộ Grand Marina Q.1 - 124m2 3pn dạng Dual key,180000000,124,1451612.9032258063,Quận 1,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê gấp CH Panorama, 55 triệu, 199m2, 4PN, 2WC, Tân Phong, Q7",5500000,199,27638.19095477387,Quận 7,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Chính chủ Chỉ 2 tr 6 Hẻm 1502/12 Nguyễn Duy Trinh Gần ĐH UFM_FPT_HUTEC,2600000,29,89655.1724137931,Thành phố Thủ Đức,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Kho Diện Tích Thuê Nhỏ Lớn Kho Mát Mỹ Phẩm TPCN Phần Mềm Quản Lý Từ Xa,3000000,45,66666.66666666667,Quận Phú Nhuận,Bất động sản khác,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Dự Án Nóng Hổi Ở CNC. Tiện Nghi Hơn Chung Cư. Duplex 1 phòng ngủ,4500000,60,75000,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho Thuê Căn Hộ Sân Thượng Riêng + Full Nội Thất, Rộng 60m2 Tại Q9",4599000,60,76650,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Siêu Phẩm Gác Cao, Full Nội Thất Ngay Phạm Văn Đồng - Thủ Đức",4600000,45,102222.22222222222,Thành phố Thủ Đức,Bất động sản khác,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Cho Thuê CHDV Cao Cấp Khu Sân Bay - Tân Bình,5000000,30,166666.66666666666,Quận Tân Bình,Bất động sản khác,Biệt thự/cao cấp
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê CH Grand Marina Saigon, 77 triệu VND, 79 m2, 2PN, full nội thất tại phố Tôn Đức Thắng",77000000,79,974683.5443037974,Quận 1,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,"Khai Trương Dự Án Studio - Sau ĐH GTVT, LĐXH - CVPMQT chỉ 5p",2800000,25,112000,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ Terra Rosa Bình Chánh giá 6tr/tháng, 2pn nội thất",6500000,80,81250,Huyện Bình Chánh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,mogi,Không gian văn phòng cho mọi quy mô doanh nghiệp HQ Marinity Building,2890000,10,289000,Quận Bình Thạnh,Phòng/Cho thuê,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Nhà nguyên căn 4PN đang trống 2PN tìm người thuê,2800000,100,28000,Thành phố Thủ Đức,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,Cho thuê mặt bằng 500m2 - Liên hệ (Call / Zalo): 0938809091 (Chính chủ),15000000,500,30000,Huyện Hóc Môn,Bất động sản khác,Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng Ở Ghép Gần CĐ Kinh Tế Đối Ngoại TP.Thủ Đức,1400000,120,11666.666666666666,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng Ở Ghép Gần CĐ Kinh Tế Đối Ngoại TP.Thủ Đức,1000000,100,10000,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,Phòng Ở Ghép Khu Dân Cư Cao Cấp Gần Khu Công Nghệ Cao TP.Thủ Đức,1200000,100,12000,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê CH 3PN Hàng Hiệu Grand Marina - 124m2 - Căn Góc - View Trực diện sông Saigon, Bao PQL",180000000,124,1451612.9032258063,Quận 1,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê căn hộ 2p ngủ- 95m2, C/c Tín Phong 12 View giá 8tr/th",8000000,95,84210.52631578948,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,mogi,"Cho thuê căn hộ 2p ngủ- 95m2, C/c Tín Phong 12 View giá 8tr/th",8000000,95,84210.52631578948,Quận 12,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang Nhượng Lại Mặt Bằng Cơm Trưa,75000000,25,3000000,Quận 7,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,chính chủ cần bán sạp đôi bán quần áo,50000000,10,5000000,Quận 12,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Cần sang nhượng quán mặt tiền Quận 10,195000000,40,4875000,Quận 10,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,"SANG TIỆM BÁNH NGAY TRƯỜNG HỌC CẤP 3 , SÁT TRƯỜNG ĐẠI HỌC",100000000,36,2777777.777777778,Quận 4,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang nhượng mặt bằng kinh doanh spa . lượng khách ổn định,95000000,20.5,4634146.341463415,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,sang mặt bằng tiệm cafe bánh q1,290000000,70,4142857.1428571423,Quận 1,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,CHO THUÊ TOÀ OFFICE MỚI QUẬN 3 DTSD 2100m2,115000000,2100,54761.90476190476,Quận 3,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang Quán Cơm Tấm 720 Tên Lửa,90000000,30,3000000,Quận Bình Tân,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang Lai Tiệm Nước Mía Đang Hoạt Động Ổn Định,100000000,30,3333333.3333333335,Quận Phú Nhuận,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Tôi sang lại Quán Cafe có lượng khách ổn định và giá thuê rẽ,300000000,80,3750000,Quận 1,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,sang nhượng tiệm tóc,60000000,12,5000000,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,"Sang quán giá thuê chỉ 5tr5, khu vực Hương Lộ sầm uất nhất Bình Tân",85000000,24,3541666.6666666665,Quận Bình Tân,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,chotot,Sang Nhượng Petshop - Mặt Tiền Tân Sơn Nhì - Full Setup,280000000,86.4,3240740.7407407407,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",Tòa nhà/văn phòng/mặt bằng
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,alonhadat,Penthouse Phú Mỹ Hưng 280m² – 7PN – Sân BBQ – Giá 5.500 USD/Tháng,145000000,280,517857.1428571429,Quận 7,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,alonhadat,Bảng giá cho thuê lâu dài nhà Becamex: 17/5/26,1500000,30,50000,Bình Dương cũ,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,alonhadat,"(8672) cho thuê lâu dài chung cư Phú Mỹ, 50 m², giá 3 triệu/ tháng",3000000,50,60000,TP Bến Cát cũ,Căn hộ/Chung cư,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,Cho thuê Vinhomes Central Park. Căn hộ: 1 - 2 - 3 - 4 Phòng ngủ. LH: 0908132054,55000000,53,1037735.8490566036,Quận Bình Thạnh,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê căn hộ Idico-khu C: 2p ngủ, 2wc, có đủ nội thất, 10,5tr/th",105000000,74,1418918.9189189188,Quận Tân Phú,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,homedy,Cho thuê căn hộ hạng sạng - DEFINE | Full nội thất - Sân vườn riêng - Thang máy riêng,120000000,220,545454.5454545454,Thành phố Thủ Đức,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,Phòng Ở Ghép Khu Dân Cư Cao Cấp Gần Khu Công Nghệ Cao TP.Thủ Đức,1200000,100,12000,Thành phố Thủ Đức,Phòng/Cho thuê,Phòng trọ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"C/c Carillon 2, Trịnh Đình Thảo, TP: 2p ngủ, 2WC, 70m2, 10tr5/th, NT",1050000,70,15000,Quận Tân Phú,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê, share NGUYÊN phòng căn hộ chung cư cao cấp - 3,5 triệu/tháng (NAM ở) - Free GYM, Hồ bơi",3500000,56,62500,Quận Bình Tân,Căn hộ,Căn hộ
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,homedy,"Cho thuê ngắn hạn Hà Đô Centrosa Q10 2-3PN, 1.3-2tr/ngày",2000000,86,23255.81395348837,Quận 10,Bất động sản khác,Khác
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê nhà khu Tên Lửa, MT đường Số 7, DT 4 x 20m, 3.5 tấm, giá 32 triệu/tháng",3000000,80,37500,Quận Bình Tân,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê kho MT đường Lê Đình Cẩn, P. Tân Tạo, 12 x 67.5m, NH 33m, giá 70 triệu/tháng",70000000,1300,53846.15384615384,Quận Bình Tân,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê nhà góc 2MT đường Nguyễn Văn Trỗi, P.10, Q.Phú Nhuận, 23 x 12m, 8 tấm, giá 800 triệu/tháng",800000000,276,2898550.724637681,Quận Phú Nhuận,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê nhà MT đường Trần Văn Giàu, X. Lê Minh Xuân, H. Bình Chánh, 15 x 31m, 2 tấm, 19 triệu/tháng",19000000,465,40860.21505376344,Huyện Bình Chánh,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê nhà kho hẻm 1132 Tỉnh Lộ 10, P. Tân Tạo, 35 x 40m, giá 75 triêu/tháng",75000000,1400,53571.42857142857,Quận Bình Tân,Nhà phố,Nhà phố/nhà ở
+Cho thuê,Ngoại lệ giá/m² theo nhóm sản phẩm,luachonnhadat,"Cho thuê kho xưởng Hẻm 735 Quốc lộ 1, P. Bình Hưng Hòa B, 30 x 50m, giá 55 triệu/tháng",55000000,1500,36666.666666666664,Quận Bình Tân,Nhà xưởng,Tòa nhà/văn phòng/mặt bằng

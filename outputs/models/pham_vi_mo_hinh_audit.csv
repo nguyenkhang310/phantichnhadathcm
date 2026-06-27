@@ -1,0 +1,7 @@
+segment,model_in_scope,model_exclusion_reason,rows
+sale,FALSE,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,103
+sale,FALSE,Ngoại lệ giá/m² theo nhóm sản phẩm,304
+sale,TRUE,Giữ lại để train,14568
+rent,FALSE,Ngoại lệ giá tuyệt đối theo nhóm sản phẩm,90
+rent,FALSE,Ngoại lệ giá/m² theo nhóm sản phẩm,293
+rent,TRUE,Giữ lại để train,14761

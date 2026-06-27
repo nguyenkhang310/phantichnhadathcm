@@ -1,9 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Smoke test cho bo may tro ly BDS local.
-# Script nay nap app ma khong bind server, sau do kiem tra intent,
-# trich entity, memory hoi thoai va HTML tra loi tren cac cau hoi mau.
-
 cmd_args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", cmd_args, value = TRUE)
 script_file <- if (length(file_arg) > 0) sub("^--file=", "", file_arg[[1]]) else "scripts/checks/kiem_tra_tro_ly.R"

@@ -1,11 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Lightweight data refresh for the Shiny app.
-# It updates raw data, rebuilds combined/featured CSV files, and avoids model retraining.
-# Optional target mode:
-#   UPDATE_TO_TARGET=1 TARGET_ROWS=30000 DRY_RUN=1 Rscript scripts/pipeline/cap_nhat_du_lieu.R
-#   UPDATE_TO_TARGET=1 TARGET_ROWS=30000 Rscript scripts/pipeline/cap_nhat_du_lieu.R
-
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
 
@@ -33,13 +27,11 @@ TARGET_UPDATE_PROFILES <- tibble::tribble(
   "chotot_bo_sung_10_trang", NA_integer_, 0L, 10L, 0L, 0L, 0L
 )
 
-# Hàm count_rows: đếm hoặc kiểm tra điều kiện xử lý.
 count_rows <- function(path) {
   if (!file.exists(path)) return(0L)
   nrow(read_csv(path, show_col_types = FALSE))
 }
 
-# Hàm append_update_log: lưu hoặc cập nhật dữ liệu đầu ra.
 append_update_log <- function(status, before_rows, after_rows, message_text = "") {
   dir.create(PATHS$data_dir, showWarnings = FALSE)
   entry <- tibble(
@@ -69,7 +61,6 @@ append_update_log <- function(status, before_rows, after_rows, message_text = ""
   invisible(entry)
 }
 
-# Hàm run_update_data: chạy toàn bộ bước xử lý chính.
 run_update_data <- function(
     chotot_pages = as.integer(Sys.getenv("CHOTOT_UPDATE_PAGES", "3")),
     alonhadat_pages = as.integer(Sys.getenv("ALONHADAT_UPDATE_PAGES", "1")),

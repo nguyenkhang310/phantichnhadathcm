@@ -1,4 +1,3 @@
-
       $(document).on('shiny:value', function(e) {
         if (e.name === 'tabs') {
           var tab = e.value;
@@ -6,12 +5,12 @@
           $('#nav_' + tab).addClass('active');
         }
       });
-      // Cap nhat nav active ngay khi bam.
+
       $(document).on('click', '.app-nav-link', function() {
         $('.app-nav-link').removeClass('active');
         $(this).addClass('active');
       });
-      // Dat active mac dinh khi ket noi Shiny.
+
       $(document).on('shiny:connected', function() {
         $('#nav_overview').addClass('active');
       });
@@ -182,13 +181,13 @@
         if (children.length === 0) {
           children = $el;
         }
-        
+
         children.css({
           'opacity': '0',
           'transform': 'translateY(10px)',
           'transition': 'opacity 0.5s ease-out, transform 0.5s ease-out'
         });
-        
+
         children.each(function(index) {
           var child = this;
           setTimeout(function() {
@@ -219,7 +218,6 @@
         }
       });
 
-      // Giong noi - nhan dien giong noi (STT).
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       var recognition = null;
       var isListening = false;
@@ -243,7 +241,7 @@
             if (event.results[i].isFinal) {
               finalTranscript += event.results[i][0].transcript;
             } else {
-              // Hien ket qua tam thoi khi trinh duyet tra ve.
+
               var interim = event.results[i][0].transcript;
               if (interim !== '') {
                 $('#assistant_question').val(interim);
@@ -252,8 +250,7 @@
           }
           if (finalTranscript !== '') {
             $('#assistant_question').val(finalTranscript).trigger('change');
-            
-            // Tu dung sau 2 giay im lang.
+
             recognitionTimeout = setTimeout(function() {
               recognition.stop();
             }, 2000);
@@ -286,38 +283,37 @@
         }
       });
 
-      // Giong noi - doc cau tra loi (TTS).
       window.speakText = function(btn) {
         var $btn = $(btn);
         var botContainer = $btn.closest('.gemini-bot-container');
-        // Lay text thuan, bo qua cum nut thao tac.
+
         var textToSpeak = botContainer.find('.gemini-text').text().trim();
-        
+
         if (window.speechSynthesis.speaking && $btn.hasClass('speaking')) {
           window.speechSynthesis.cancel();
           $btn.removeClass('speaking');
           return;
         }
-        
+
         window.speechSynthesis.cancel();
         $('.speak-btn').removeClass('speaking');
-        
+
         var utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = 'vi-VN';
-        
+
         var voices = window.speechSynthesis.getVoices();
         var viVoice = voices.find(function(v) { return v.lang.indexOf('vi') > -1; });
         if (viVoice) utterance.voice = viVoice;
-        
+
         $btn.addClass('speaking');
-        
+
         utterance.onend = function() {
           $btn.removeClass('speaking');
         };
         utterance.onerror = function() {
           $btn.removeClass('speaking');
         };
-        
+
         window.speechSynthesis.speak(utterance);
       };
 

@@ -1,4 +1,3 @@
-
 :root {
   --radius: 16px;
   --bg: #f4f7fb;
@@ -21,9 +20,6 @@
   --chart5: #00a8e8;
 }
 
-/* =========================================================
-   SUA GRID BOOTSTRAP 3 DE CAC COT KHONG VO BO CUC
-   ========================================================= */
 .row {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -31,17 +27,16 @@
   margin-right: -12px !important;
 }
 .row::before, .row::after {
-  display: none !important; 
+  display: none !important;
 }
 [class*='col-'] {
   display: flex !important;
   flex-direction: column !important;
   padding-left: 12px !important;
   padding-right: 12px !important;
-  min-width: 0; /* Chan noi dung flex lam tran cot */
+  min-width: 0;
 }
 
-/* Nen tang */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   font-feature-settings: 'cv11', 'ss01';
@@ -59,7 +54,6 @@ html, body, .container-fluid { min-height: 100%; }
   border-right: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 4px 0 24px rgba(15, 23, 42, 0.02); z-index: 30;
 }
 
-/* Thuong hieu */
 .app-brand { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px 24px; text-align: center; gap: 16px; }
 .brand-logo { display: flex; align-items: center; justify-content: center; width: 120px; height: auto; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .brand-logo:hover { transform: scale(1.08) translateY(-2px); }
@@ -68,7 +62,6 @@ html, body, .container-fluid { min-height: 100%; }
 .brand-title { color: var(--primary-dark); font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
 .brand-subtitle { color: var(--muted); font-size: 12px; font-weight: 600; }
 
-/* Dieu huong */
 .nav-section-label { padding: 24px 24px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #94a3b8; text-transform: uppercase; }
 .app-nav-link {
   display: flex; align-items: center; gap: 14px; min-height: 44px; margin: 4px 16px; padding: 0 16px;
@@ -81,7 +74,6 @@ html, body, .container-fluid { min-height: 100%; }
 .app-sidebar-footer { margin-top: auto; padding: 24px; color: #94a3b8; font-size: 12px; line-height: 1.6; text-align: center; }
 .app-sidebar-nav { min-width: 0; }
 
-/* Thanh tren */
 .app-main { min-width: 0; flex: 1; display: flex; flex-direction: column; }
 .app-topbar {
   position: sticky; top: 0; z-index: 100; height: 72px; display: flex; align-items: center; padding: 0 32px;
@@ -93,7 +85,6 @@ html, body, .container-fluid { min-height: 100%; }
 .topbar-subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 500; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-width: 0; flex: 0 1 760px; }
 
-/* ===== Report Toolbar — thanh cong cu topbar ===== */
 .report-toolbar {
   display: flex;
   align-items: center;
@@ -109,7 +100,6 @@ html, body, .container-fluid { min-height: 100%; }
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* --- Chon khu vuc --- */
 .report-search { position: relative; flex: 1 1 260px; min-width: 240px; }
 .report-search-icon {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
@@ -156,14 +146,12 @@ html, body, .container-fluid { min-height: 100%; }
 .report-search .selectize-input input { font-size: 13px !important; min-width: 60px !important; }
 .report-search .selectize-control.single .selectize-input:after { right: 12px; }
 
-/* --- Divider --- */
 .report-divider {
   display: block; width: 1px; height: 24px; flex: 0 0 1px;
   margin: 0 8px;
   background: linear-gradient(180deg, transparent 0%, rgba(148, 163, 184, 0.35) 30%, rgba(148, 163, 184, 0.35) 70%, transparent 100%);
 }
 
-/* --- Stat items --- */
 .report-stats {
   display: flex; align-items: center; gap: 12px; padding: 0 6px;
   min-width: 0; flex: 0 1 auto;
@@ -230,7 +218,6 @@ html, body, .container-fluid { min-height: 100%; }
   overflow-wrap: anywhere;
 }
 
-/* --- Download button --- */
 .report-download-button {
   height: 36px; min-width: 0; flex-shrink: 0;
   display: inline-flex !important; align-items: center; justify-content: center; gap: 7px;
@@ -252,7 +239,6 @@ html, body, .container-fluid { min-height: 100%; }
   color: #94a3b8; font-size: 12px; font-weight: 700;
 }
 
-/* Noi dung chinh */
 .app-content { flex: 1; min-width: 0; }
 .app-content > .tabbable > .nav { display: none; }
 .app-content .tab-content { border: 0; padding: 0; }
@@ -261,7 +247,6 @@ html, body, .container-fluid { min-height: 100%; }
 .page-title { font-size: 28px; font-weight: 800; color: var(--fg); margin: 0; letter-spacing: 0; }
 .page-subtitle { color: var(--muted); font-size: 15px; margin: 8px 0 24px; line-height: 1.5; max-width: 800px; }
 
-/* The KPI */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-bottom: 24px; }
 .kpi-card {
   background: var(--card); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: var(--radius); padding: 24px;
@@ -332,19 +317,17 @@ html, body, .container-fluid { min-height: 100%; }
 .kpi-foot { margin-top: 16px; padding-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 20px; font-size: 13px; color: var(--muted); border-top: 1px dashed rgba(226, 232, 240, 0.8); }
 .kpi-delta { color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; white-space: nowrap; }
 
-/* Panel */
 .app-panel {
   background: var(--card); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: var(--radius);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03), inset 0 0 0 1px rgba(226, 232, 240, 0.5); 
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03), inset 0 0 0 1px rgba(226, 232, 240, 0.5);
   margin-bottom: 24px; transition: all 0.3s ease;
   flex: 1; display: flex; flex-direction: column; width: 100%;
-  overflow: visible !important; /* Cho dropdown hien day du */
+  overflow: visible !important;
 }
 .app-panel:hover { box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06), inset 0 0 0 1px rgba(226, 232, 240, 0.8); z-index: 40; }
 .app-panel.nested-panel { box-shadow: none; border: 1px solid var(--border); margin-bottom: 0; }
 .app-panel.nested-panel:hover { transform: none; box-shadow: none; }
 
-/* Card bo loc can noi tren bieu do/dropdown */
 .app-panel.filter-card { position: relative; z-index: 90; }
 .app-panel.filter-card:hover { transform: none; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03); z-index: 95; }
 
@@ -356,7 +339,6 @@ html, body, .container-fluid { min-height: 100%; }
 .panel-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 500; }
 .panel-body { padding: 24px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
-/* Khung bieu do */
 .html-widget, .js-plotly-plot, .plot-container, .svg-container {
   flex: 1 !important;
   width: 100% !important;
@@ -366,7 +348,6 @@ html, body, .container-fluid { min-height: 100%; }
 .panel-body .html-widget { min-height: 300px; }
 .js-plotly-plot .plotly .main-svg { overflow: visible; }
 
-/* Form va bo loc */
 .filter-panel { display: flex; flex-direction: column; gap: 18px; }
 .chart-mode { display: inline-flex; align-items: center; gap: 10px; min-height: 36px; margin: 0 0 12px; padding: 4px 12px; border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 10px; background: #f8fafc; }
 .chart-mode-label { color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -455,7 +436,6 @@ html, body, .container-fluid { min-height: 100%; }
 .filter-field select.form-control:hover, .predict-form select.form-control:hover { border-color: #94a3b8; }
 .filter-field select.form-control:focus, .predict-form select.form-control:focus, .filter-field .form-control:focus, .predict-form .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0, 114, 188, 0.15); outline: none; background-color: #ffffff; }
 
-/* Selectize can z-index cao de dropdown khong bi che */
 .selectize-input { display: flex !important; align-items: center; gap: 6px; padding: 9px 36px 9px 14px; }
 .selectize-control.multi .selectize-input:after, .selectize-control.single .selectize-input:after {
   content: ''; position: absolute; right: 16px; top: 50%; width: 0; height: 0; margin-top: -3px;
@@ -544,7 +524,6 @@ html, body, .container-fluid { min-height: 100%; }
 .table > thead > tr > th { background: #f8fafc; color: #334155; border-bottom: 2px solid var(--border); font-weight: 700; padding: 12px; }
 .table > tbody > tr > td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
 
-/* Tro ly */
 .assistant-context { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
 .assistant-context-card { min-width: 0; padding: 16px; border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 12px; background: #ffffff; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); }
 .assistant-context-label { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -664,9 +643,6 @@ html, body, .container-fluid { min-height: 100%; }
   .map-shell { min-height: 520px; }
 }
 
-/* =========================================================
-   STYLE TRO LY KIEU GEMINI
-   ========================================================= */
 .gemini-page-wrap {
   padding: 0 !important;
   max-width: none !important;
@@ -709,7 +685,6 @@ html, body, .container-fluid { min-height: 100%; }
   flex-direction: column;
 }
 
-/* Thanh cuon rieng cho tro ly */
 .gemini-chat-container::-webkit-scrollbar,
 .assistant-table-wrap::-webkit-scrollbar,
 .gemini-input-bar textarea.form-control::-webkit-scrollbar {
@@ -736,7 +711,6 @@ html, body, .container-fluid { min-height: 100%; }
   background: rgba(0, 0, 0, 0.25);
 }
 
-/* Can giua wrapper UI dong cua Shiny */
 #gemini_chat_view {
   display: flex;
   flex-direction: column;
@@ -904,9 +878,6 @@ html, body, .container-fluid { min-height: 100%; }
   height: 24px;
 }
 
-/* Hieu ung go chu cua bot duoc JS streamReveal xu ly */
-
-/* Cham loading */
 .gemini-loading {
   display: flex;
   gap: 6px;
@@ -978,16 +949,12 @@ html, body, .container-fluid { min-height: 100%; }
   margin-bottom: 6px;
 }
 
-/* ====== Cac thanh phan cau tra loi cua tro ly ====== */
-
-/* Doan mo dau */
 .gemini-text .assistant-lead {
   font-size: 15px;
   color: #1f1f1f;
   line-height: 1.6;
 }
 
-/* Luoi thong ke tra loi */
 .gemini-text .assistant-answer-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1030,7 +997,6 @@ html, body, .container-fluid { min-height: 100%; }
   margin-top: 4px;
 }
 
-/* Khoi insight */
 .gemini-text .assistant-insight {
   margin: 24px 0;
   padding: 20px;
@@ -1071,7 +1037,6 @@ html, body, .container-fluid { min-height: 100%; }
   margin-bottom: 0;
 }
 
-/* Card tin dang */
 .gemini-text .assistant-listings {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1165,7 +1130,6 @@ html, body, .container-fluid { min-height: 100%; }
   transform: translateX(4px);
 }
 
-/* Khoi ket qua du doan */
 .gemini-text .assistant-prediction {
   margin: 16px 0;
   padding: 24px;
@@ -1180,7 +1144,6 @@ html, body, .container-fluid { min-height: 100%; }
   letter-spacing: 0;
 }
 
-/* Bang so sanh */
 .gemini-text .assistant-table-wrap {
   max-width: 100%;
   overflow-x: auto;
@@ -1392,7 +1355,6 @@ html, body, .container-fluid { min-height: 100%; }
   text-decoration: underline !important;
 }
 
-/* Style ghi am va doc cau tra loi */
 .gemini-input-btn.listening {
   background: rgba(234, 67, 53, 0.1) !important;
   color: #ea4335 !important;
@@ -1415,11 +1377,6 @@ html, body, .container-fluid { min-height: 100%; }
   100% { transform: scale(1); }
 }
 
-/* =========================================================
-   FIT SCREEN MODE
-   JS trong tuong_tac.js cap nhat cac bien nay theo kich thuoc man hinh.
-   Muc tieu: khong can zoom Chrome, khong mat noi dung khi doi man hinh.
-   ========================================================= */
 :root {
   --fit-sidebar-width: 260px;
   --fit-topbar-height: 72px;
@@ -1713,6 +1670,7 @@ body,
 #stat_distribution_plot,
 #clt_plot,
 #bootstrap_plot,
+#diagnostic_error_heatmap,
 #diagnostic_error_group_plot,
 #metrics_compare_plot {
   height: var(--fit-plot-medium) !important;
@@ -1956,10 +1914,6 @@ html.fit-compact .panel-subtitle {
   }
 }
 
-/* =========================================================
-   MOBILE POLISH
-   Menu 3 gach, header gon va thanh bao cao de dung hon tren dien thoai.
-   ========================================================= */
 .mobile-menu-toggle,
 .topbar-title-mobile {
   display: none;

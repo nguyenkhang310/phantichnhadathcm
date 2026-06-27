@@ -1,0 +1,709 @@
+transaction_type,source,district_name,category_name,listings,median_price,median_area,median_price_per_m2
+Cho thuê,mogi,Thành phố Thủ Đức,Phòng/Cho thuê,1412,40000000,160,200000
+Cho thuê,mogi,Quận 7,Căn hộ,1018,24000000,97.5,241935.48387096773
+Cho thuê,mogi,Thành phố Thủ Đức,Biệt thự,763,75000000,300,240000
+Cho thuê,mogi,Quận 1,Phòng/Cho thuê,635,90000000,200,345454.54545454547
+Cho thuê,mogi,Quận Bình Thạnh,Phòng/Cho thuê,633,12000000,42,200000
+Cho thuê,mogi,Quận Tân Bình,Phòng/Cho thuê,597,17000000,70,169642.85714285713
+Cho thuê,mogi,Quận 7,Biệt thự,500,47000000,200,277777.77777777775
+Cho thuê,mogi,Quận 3,Phòng/Cho thuê,448,70000000,200,325833.3333333334
+Cho thuê,mogi,Quận Bình Thạnh,Nhà phố,406,23000000,76,333333.3333333333
+Bán,chotot,Thành phố Thủ Đức,Đất,351,5750000000,86,68181818.18181819
+Cho thuê,mogi,Quận 1,Nhà phố,350,65000000,100,636666.6666666667
+Cho thuê,mogi,Quận Phú Nhuận,Nhà phố,347,30000000,98,333333.3333333333
+Bán,chotot,Huyện Củ Chi,Đất,344,800000000,224,3994134.897360704
+Bán,chotot,Thành phố Thủ Đức,Căn hộ/Chung cư,333,3600000000,68,57333333.333333336
+Cho thuê,mogi,Quận 10,Phòng/Cho thuê,322,16500000,100,200000
+Cho thuê,mogi,Quận Tân Bình,Nhà phố,321,30000000,104,300000
+Cho thuê,mogi,Quận 3,Nhà phố,316,36000000,100,391812.865497076
+Cho thuê,mogi,Quận 10,Nhà phố,312,34500000,90,375000
+Cho thuê,mogi,Quận 7,Phòng/Cho thuê,307,26000000,107,222222.22222222225
+Bán,mogi,Thành phố Thủ Đức,Nhà phố,285,10400000000,94,115000000
+Cho thuê,mogi,Quận Phú Nhuận,Phòng/Cho thuê,284,30000000,100,263602.9411764706
+Bán,luachonnhadat,Quận Bình Tân,Nhà phố,277,9000000000,80,124050632.9113924
+Cho thuê,mogi,Quận Tân Bình,Căn hộ,274,8000000,40,165714.2857142857
+Cho thuê,mogi,Quận Tân Phú,Phòng/Cho thuê,267,3700000,30,133333.33333333334
+Bán,mogi,Thành phố Thủ Đức,Đất nền,266,8850000000,105,80075976.71752359
+Bán,mogi,Quận 3,Nhà phố,258,35000000000,100,326870370.3703704
+Bán,chotot,Quận 12,Nhà ở,253,4890000000,60,78571428.57142857
+Cho thuê,luachonnhadat,Quận Bình Tân,Nhà phố,252,26000000,100,277777.77777777775
+Cho thuê,mogi,Thành phố Thủ Đức,Nhà phố,246,39500000,101,345643.294758339
+Cho thuê,mogi,Quận Gò Vấp,Phòng/Cho thuê,240,4250000,35,151000
+Bán,chotot,Quận 12,Đất,237,4950000000,84,58333333.333333336
+Bán,mogi,Quận Bình Thạnh,Nhà phố,232,8745000000,72,157297979.7979798
+Bán,chotot,Quận Bình Tân,Nhà ở,231,5550000000,60,95238095.23809524
+Bán,chotot,Quận Gò Vấp,Nhà ở,227,6200000000,54,120000000
+Bán,chotot,Huyện Hóc Môn,Đất,217,4600000000,140,29591836.734693877
+Bán,mogi,Quận 1,Nhà phố,216,64000000000,117.5,526388888.8888889
+Cho thuê,mogi,Quận Bình Tân,Nhà phố,215,16000000,80,208333.33333333337
+Bán,chotot,Quận 7,Căn hộ/Chung cư,209,4200000000,72.5998,56666666.666666664
+Bán,chotot,Thành phố Thủ Đức,Nhà ở,209,5800000000,64,90000000
+Cho thuê,mogi,Quận 10,Căn hộ,209,17000000,74,219178.0821917808
+Cho thuê,mogi,Quận 12,Phòng/Cho thuê,204,3800000,30,116666.66666666669
+Bán,mogi,Quận 7,Căn hộ,202,9200000000,112,84872881.3559322
+Cho thuê,mogi,Thành phố Thủ Đức,Căn hộ,198,8000000,50,166666.66666666666
+Cho thuê,mogi,Quận Bình Thạnh,Căn hộ,188,9000000,40,200000
+Bán,chotot,Quận Tân Phú,Nhà ở,182,6450000000,59,113000000
+Bán,chotot,Quận Bình Thạnh,Nhà ở,180,6900000000,49.75,154305555.55555555
+Bán,chotot,Quận 7,Nhà ở,176,6150000000,52.5,112211129.99150382
+Bán,mogi,Quận Tân Bình,Nhà phố,171,26000000000,116,206666666.66666663
+Bán,chotot,Huyện Bình Chánh,Căn hộ/Chung cư,168,2715000000,60,43018627.450980395
+Bán,chotot,Quận Tân Bình,Nhà ở,167,7900000000,54,143243243.24324325
+Bán,chotot,Quận 8,Căn hộ/Chung cư,165,3230000000,71.5,45000000
+Bán,chotot,Huyện Bình Chánh,Đất,163,3150000000,120,15882352.94117647
+Cho thuê,mogi,Quận 7,Nhà phố,163,40000000,111,357142.85714285716
+Bán,chotot,Quận Bình Tân,Đất,161,5300000000,80,69680851.0638298
+Bán,mogi,Quận Bình Thạnh,Bất động sản khác,161,8300000000,80,140625000
+Bán,chotot,Quận Bình Thạnh,Căn hộ/Chung cư,159,4100000000,66,68421052.63157895
+Bán,chotot,Quận Tân Phú,Căn hộ/Chung cư,158,4100000000,70,58433734.93975904
+Bán,chotot,Quận Bình Tân,Căn hộ/Chung cư,157,2750000000,63,43750000
+Bán,mogi,Quận Gò Vấp,Nhà phố,153,5750000000,52,126666666.66666669
+Cho thuê,mogi,Quận 12,Nhà phố,152,6500000,60,114510.48951048953
+Bán,chotot,Quận 8,Nhà ở,150,6297500000,49.25,130525362.31884058
+Bán,chotot,Huyện Nhà Bè,Căn hộ/Chung cư,146,4000000000,75,43803986.71096346
+Bán,chotot,Huyện Hóc Môn,Nhà ở,143,4250000000,90,47222222.222222224
+Bán,mogi,Quận 7,Nhà phố,142,14200000000,100,127636363.63636364
+Cho thuê,mogi,Quận 1,Căn hộ,140,11000000,45,252777.77777777778
+Bán,mogi,Quận 1,Bất động sản khác,139,70000000000,120,514285714.28571427
+Cho thuê,mogi,Quận Phú Nhuận,Căn hộ,138,9150000,45,214285.7142857143
+Bán,chotot,Huyện Bình Chánh,Nhà ở,137,2500000000,82.1996,37500000
+Bán,chotot,Quận 12,Căn hộ/Chung cư,136,2770000000,61,45982456.14035088
+Bán,mogi,Quận 10,Nhà phố,135,25000000000,88,242857142.85714287
+Bán,chotot,Quận 10,Nhà ở,134,7475000000,40.5,195059523.80952382
+Cho thuê,mogi,Quận Bình Tân,Phòng/Cho thuê,134,12000000,60,151000
+Bán,chotot,Quận 6,Nhà ở,130,6250000000,56,133214285.71428572
+Bán,chotot,Quận Phú Nhuận,Nhà ở,129,7500000000,41,192460317.46031743
+Cho thuê,mogi,Quận 3,Căn hộ,128,8250000,40,212500
+Bán,chotot,Huyện Nhà Bè,Nhà ở,127,5000000000,64,69444444.44444445
+Bán,mogi,Quận Bình Tân,Nhà phố,127,11000000000,90,126785714.28571428
+Bán,chotot,Quận Tân Bình,Căn hộ/Chung cư,126,4150000000,66.475,54166666.666666664
+Cho thuê,mogi,Quận Gò Vấp,Nhà phố,126,18000000,72,250000
+Bán,chotot,Quận 3,Nhà ở,123,8500000000,37,213953488.37209305
+Bán,alonhadat,Quận Tân Bình,Nhà ở,121,20500000000,96,213541666.66666663
+Bán,chotot,Huyện Nhà Bè,Đất,121,5500000000,120,41532258.06451613
+Bán,mogi,Quận Tân Phú,Căn hộ,121,3900000000,78,51456310.67961165
+Bán,chotot,Quận 5,Căn hộ/Chung cư,120,3900000000,69,57142857.14285714
+Bán,chotot,Quận 7,Đất,120,8900000000,86,94376736.1111111
+Bán,chotot,Quận 4,Căn hộ/Chung cư,118,5775000000,77,85892857.14285713
+Bán,chotot,Quận Gò Vấp,Căn hộ/Chung cư,118,3050000000,65,45905609.09315543
+Cho thuê,mogi,Quận 12,Căn hộ,117,4500000,39,116666.66666666669
+Cho thuê,mogi,Quận Tân Phú,Nhà phố,117,24000000,93,250000
+Cho thuê,mogi,Quận 7,Bất động sản khác,116,25000000,92,244155.84415584416
+Bán,chotot,Quận Gò Vấp,Đất,114,7500000000,80,97300242.13075063
+Cho thuê,mogi,Quận 5,Phòng/Cho thuê,114,5500000,100,175000
+Cho thuê,mogi,Quận Gò Vấp,Căn hộ,114,5000000,40,134285.7142857143
+Cho thuê,mogi,Quận Tân Phú,Căn hộ,114,8500000,63.5,144097.22222222222
+Bán,chotot,Quận 5,Nhà ở,111,8400000000,40.7999,216666666.66666663
+Bán,mogi,Quận Phú Nhuận,Nhà phố,111,16000000000,74,191549295.7746479
+Bán,chotot,Quận 4,Nhà ở,110,5625000000,43.2999,130058528.42809364
+Bán,chotot,Quận Bình Thạnh,Đất,110,12000000000,100,125000000
+Bán,chotot,Quận 11,Nhà ở,108,6172500000,42.7,155738130.433213
+Bán,chotot,Huyện Củ Chi,Nhà ở,106,1025000000,131.15,8450581.032112958
+Bán,chotot,Quận 11,Căn hộ/Chung cư,106,3500000000,64.9,59160839.16083916
+Bán,mogi,Quận Phú Nhuận,Bất động sản khác,106,7090000000,55,132719435.7366771
+Bán,chotot,Quận 1,Nhà ở,105,8950000000,39,235526315.78947368
+Bán,mogi,Quận 10,Bất động sản khác,98,7000000000,85.5,81263712.15445371
+Cho thuê,luachonnhadat,Quận 6,Nhà phố,98,25000000,80,325543.47826086957
+Cho thuê,mogi,Quận 6,Nhà phố,95,17000000,72,275000
+Bán,chotot,Quận 10,Căn hộ/Chung cư,93,6700000000,72,93750000
+Bán,alonhadat,Quận Bình Thạnh,Nhà ở,92,15750000000,80.5,179205508.47457626
+Bán,mogi,Quận Tân Bình,Bất động sản khác,92,16400000000,86,192309205.35011804
+Bán,mogi,Thành phố Thủ Đức,Căn hộ,90,2200000000,76,28869047.61904762
+Cho thuê,mogi,Quận 11,Nhà phố,90,22000000,65,338235.29411764705
+Bán,alonhadat,Quận 1,Nhà ở,89,65000000000,114,485148514.85148513
+Cho thuê,mogi,Quận Bình Thạnh,Biệt thự,87,42000000,174,246666.66666666663
+Bán,chotot,Quận 6,Căn hộ/Chung cư,86,3700000000,72,53062500
+Bán,mogi,Quận 12,Nhà phố,86,7150000000,80,87797619.04761904
+Bán,chotot,Quận Phú Nhuận,Căn hộ/Chung cư,85,4900000000,64,77500000
+Bán,mogi,Quận Tân Bình,Căn hộ,84,3575000000,72,49434865.900383145
+Bán,mogi,Quận 4,Căn hộ,81,3800000000,80,60655737.704918034
+Bán,mogi,Quận Gò Vấp,Bất động sản khác,78,9950000000,77.5,117282608.69565217
+Bán,mogi,Quận 7,Bất động sản khác,74,13300000000,123.5,82055035.12880562
+Bán,chotot,Quận 8,Đất,73,6200000000,101,62571103.52673492
+Bán,mogi,Quận 3,Bất động sản khác,73,40000000000,132,363636363.6363636
+Bán,mogi,Thành phố Thủ Đức,Bất động sản khác,73,5899000000,89,64015151.51515152
+Bán,alonhadat,Thành phố Thủ Đức,Nhà ở,70,8425000000,94,102832167.83216782
+Cho thuê,mogi,Quận 12,Bất động sản khác,70,15000000,185,90326.34032634035
+Bán,luachonnhadat,Quận 6,Nhà phố,67,10500000000,70,162500000
+Bán,luachonnhadat,Quận Bình Tân,Đất,66,8000000000,90,87361111.1111111
+Bán,chotot,Huyện Cần Giờ,Đất,64,5550000000,551.5,17823529.411764704
+Bán,chotot,Quận 1,Căn hộ/Chung cư,64,7900000000,69.5,126529643.17497854
+Bán,mogi,Quận Tân Phú,Nhà phố,63,10400000000,85,119548872.18045112
+Cho thuê,mogi,Quận Gò Vấp,Biệt thự,62,34000000,100,250000
+Bán,mogi,Huyện Nhà Bè,Nhà phố,59,7690000000,80,110256410.25641026
+Cho thuê,mogi,Quận 3,Biệt thự,59,90000000,220,360000
+Bán,alonhadat,Quận Tân Phú,Nhà ở,57,10300000000,80,130921052.63157897
+Cho thuê,mogi,Quận 8,Phòng/Cho thuê,57,3600000,30,158333.33333333334
+Cho thuê,mogi,Quận 5,Nhà phố,55,70000000,100,625000
+Bán,mogi,Quận 10,Căn hộ,54,4650000000,75.5,67183908.04597701
+Cho thuê,mogi,Quận Bình Tân,Bất động sản khác,52,42500000,500,90312.5
+Cho thuê,mogi,Thành phố Thủ Đức,Bất động sản khác,52,36500000,80,140000
+Bán,mogi,Quận 1,Căn hộ,51,43000000000,139,273684210.5263158
+Bán,alonhadat,Quận Gò Vấp,Nhà ở,48,7375000000,63,111240196.07843137
+Bán,chotot,Quận 3,Căn hộ/Chung cư,48,5700000000,70.5,72222222.22222222
+Cho thuê,mogi,Quận 6,Phòng/Cho thuê,48,12000000,76,157500
+Cho thuê,mogi,Quận 11,Phòng/Cho thuê,46,9495000,45,178571.42857142858
+Cho thuê,mogi,Quận Phú Nhuận,Biệt thự,46,45000000,152.5,283482.14285714284
+Cho thuê,mogi,Quận Tân Bình,Biệt thự,46,45000000,200,250000
+Cho thuê,mogi,Quận 4,Phòng/Cho thuê,45,50000000,110,333333.3333333333
+Bán,alonhadat,Quận Phú Nhuận,Nhà ở,44,22250000000,81,233854166.6666667
+Bán,mogi,Quận 6,Nhà phố,44,11900000000,72,172222222.2222222
+Cho thuê,mogi,Quận 4,Căn hộ,44,15000000,75,212500
+Bán,alonhadat,Quận 3,Nhà ở,43,37000000000,112,336842105.2631579
+Bán,alonhadat,Quận Bình Tân,Nhà ở,43,7350000000,80,100000000
+Bán,chotot,Quận Tân Phú,Đất,43,7500000000,82,96000000
+Cho thuê,mogi,Quận Tân Phú,Bất động sản khác,43,8000000,51,121621.62162162164
+Cho thuê,mogi,Quận 4,Nhà phố,41,10000000,48,300000
+Bán,alonhadat,Quận 1,Đất,40,79000000000,157.5,639191595.4415954
+Bán,homedy,Thành phố Thủ Đức,Nhà phố,40,8900000000,83.85,117458291.83266932
+Cho thuê,mogi,Quận 1,"Văn phòng, Mặt bằng kinh doanh",40,100000000,144,600000
+Cho thuê,mogi,Quận Bình Tân,Căn hộ,40,6450000,54.5,130000
+Bán,mogi,Quận Bình Thạnh,Căn hộ,39,2250000000,74,42000000
+Cho thuê,mogi,Quận 3,"Văn phòng, Mặt bằng kinh doanh",38,65000000,165,338666.6666666666
+Bán,chotot,Quận Tân Bình,Đất,36,11100000000,96,125910200.80906738
+Bán,alonhadat,Quận Tân Bình,Đất,35,26000000000,111,225844155.84415585
+Bán,mogi,Quận 12,Đất nền,35,9000000000,115,65000000
+Cho thuê,mogi,Quận 1,Biệt thự,35,100000000,240,450000
+Bán,alonhadat,Quận 10,Nhà ở,34,16700000000,65,267142857.14285713
+Bán,alonhadat,Quận 12,Nhà ở,34,6500000000,71,79500000
+Cho thuê,mogi,Quận Bình Tân,Biệt thự,33,50000000,200,240000
+Bán,mogi,Quận 6,Bất động sản khác,32,9950000000,77,161328125
+Cho thuê,mogi,Quận Tân Bình,Bất động sản khác,32,5300000,45,137500
+Cho thuê,mogi,Quận 10,Biệt thự,30,49000000,126,334663.86554621847
+Cho thuê,mogi,Quận Bình Thạnh,Bất động sản khác,29,9500000,50,130000
+Bán,alonhadat,Quận Bình Thạnh,Đất,28,27050000000,138.5,211180555.55555552
+Bán,mogi,Quận Bình Thạnh,Đất nền,28,23250000000,110,144744631.9018405
+Bán,mogi,Quận Bình Tân,Bất động sản khác,28,10100000000,80,105567226.8907563
+Cho thuê,mogi,Quận 5,Căn hộ,28,6500000,35,200000
+Bán,alonhadat,Thành phố Thủ Đức,Biệt thự,27,65000000000,350,173684210.52631578
+Bán,homedy,Thành phố Thủ Đức,Đất nền,27,42000000000,224.4,96470588.2352941
+Bán,mogi,Quận 8,Nhà phố,27,8900000000,65,139473684.21052632
+Bán,alonhadat,Quận 6,Nhà ở,26,11800000000,72,163347953.21637428
+Bán,mogi,Quận 5,Nhà phố,26,13495000000,62.5,281969696.969697
+Bán,mogi,Quận Bình Tân,Căn hộ,26,2125000000,68,29843750
+Bán,alonhadat,Quận 7,Nhà ở,25,9700000000,74,126666666.66666669
+Bán,alonhadat,Quận 11,Nhà ở,24,15300000000,79,193750000
+Bán,alonhadat,Quận 3,Đất,24,63000000000,178.5,391350307.9327144
+Bán,mogi,Quận Gò Vấp,Căn hộ,24,2075000000,58.5,40198039.21568628
+Cho thuê,mogi,Quận 1,Bất động sản khác,24,10250000,50,235416.6666666667
+Bán,mogi,Quận 8,Căn hộ,23,2200000000,74,31250000
+Cho thuê,mogi,Quận 8,Nhà phố,23,9000000,60,187500
+Bán,alonhadat,Thành phố Thủ Đức,Đất,22,8650000000,114.5,95844553.24357405
+Bán,homedy,Quận Bình Tân,Nhà phố,22,4350000000,50,59023892.773892775
+Bán,mogi,Quận 11,Nhà phố,22,7900000000,53.5,176696832.57918552
+Bán,mogi,Quận Tân Phú,Bất động sản khác,22,8600000000,85,118263888.8888889
+Cho thuê,mogi,Quận 11,Căn hộ,22,10500000,72,163922.0779220779
+Bán,homedy,Huyện Củ Chi,Đất nền,21,1300000000,100,11250000
+Bán,homedy,Quận Bình Thạnh,Nhà phố,21,2100000000,60,42181818.18181818
+Bán,muaban,Quận Gò Vấp,Nhà ở,21,12500000000,52.5,172549019.60784313
+Cho thuê,mogi,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",21,45000000,168,200000
+Bán,alonhadat,Quận Gò Vấp,Đất,20,12845000000,99.5,119265734.26573426
+Bán,mogi,Quận Bình Tân,Đất nền,20,12700000000,120,115312500
+Cho thuê,luachonnhadat,Quận Bình Tân,Đất,20,22500000,200,100000
+Cho thuê,mogi,Quận 8,Căn hộ,20,8000000,53.5,123310.81081081083
+Cho thuê,mogi,Quận Gò Vấp,Bất động sản khác,20,5000000,42.5,125000
+Bán,alonhadat,Quận 5,Nhà ở,19,30000000000,85,369230769.2307692
+Cho thuê,mogi,Quận 12,Biệt thự,19,13000000,100,123076.92307692308
+Cho thuê,mogi,Quận Bình Thạnh,"Văn phòng, Mặt bằng kinh doanh",19,30000000,80,300000
+Cho thuê,mogi,Quận Phú Nhuận,Bất động sản khác,19,8000000,45,150000
+Bán,alonhadat,Quận 8,Nhà ở,18,10100000000,68,119393382.35294119
+Bán,mogi,Quận 4,Nhà phố,18,2479000000,36,77444642.85714287
+Cho thuê,mogi,Quận 3,Bất động sản khác,18,7250000,45,160625
+Bán,alonhadat,Huyện Hóc Môn,Nhà ở,17,4099999999.999999,84,27848101.265822783
+Bán,alonhadat,Quận Phú Nhuận,Đất,17,57000000000,168,236363636.36363637
+Bán,alonhadat,Quận Tân Bình,Biệt thự,17,25000000000,152,197674418.60465115
+Bán,alonhadat,Quận Tân Phú,Đất,17,19900000000,160,116233766.23376624
+Bán,chotot,Quận 6,Đất,17,10500000000,84,106250000
+Bán,homedy,Quận 8,Nhà phố,17,1800000000,58.5,33333333.333333332
+Bán,homedy,Quận Bình Thạnh,Bất động sản khác,17,2500000000,55,45454545.45454545
+Cho thuê,mogi,Huyện Nhà Bè,Biệt thự,17,28000000,140,247619.04761904763
+Cho thuê,mogi,Quận Gò Vấp,"Văn phòng, Mặt bằng kinh doanh",17,22000000,100,246666.66666666663
+Bán,chotot,Huyện Hóc Môn,Căn hộ/Chung cư,16,1275000000,60,19701492.53731343
+Bán,luachonnhadat,Quận Bình Tân,Biệt thự,16,30250000000,200,148630952.3809524
+Bán,mogi,Quận 12,Căn hộ,16,2615000000,62,43359375
+Cho thuê,mogi,Thành phố Thủ Đức,Đất nền,16,62500000,850,85000
+Bán,homedy,Quận 12,Nhà phố,15,1270000000,40,32500000
+Cho thuê,homedy,Quận Tân Phú,Căn hộ,15,10000000,85,122222.22222222222
+Cho thuê,luachonnhadat,Quận Bình Tân,Biệt thự,15,55000000,200,275000
+Cho thuê,mogi,Huyện Hóc Môn,Phòng/Cho thuê,15,32000000,200,104545.45454545454
+Cho thuê,mogi,Quận Tân Phú,Biệt thự,15,30000000,180,225000
+Bán,alonhadat,Huyện Bình Chánh,Nhà ở,14,5750000000,99.5,44462081.12874779
+Bán,alonhadat,Huyện Củ Chi,Nhà ở,14,900000000,121,8389015.800494956
+Bán,chotot,Huyện Cần Giờ,Nhà ở,14,13000000000,230.19995,82273479.15935615
+Bán,mogi,Quận 1,Đất nền,14,120000000000,395,377722623.345367
+Bán,mogi,Quận Phú Nhuận,Căn hộ,14,2984000000,70,48611111.11111111
+Cho thuê,chotot,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",14,195000000,89.2,1918750
+Bán,homedy,Thành phố Thủ Đức,Bất động sản khác,13,9000000000,81,116666666.66666669
+Bán,mogi,Quận 12,Bất động sản khác,13,28500000000,673,48672566.371681415
+Bán,mogi,Quận 4,Bất động sản khác,13,4980000000,79,60058823.52941176
+Bán,mogi,Quận 6,Căn hộ,13,1750000000,68,28441558.441558443
+Bán,alonhadat,Quận 1,Căn hộ chung cư,12,34950000000,138.5,272231240.981241
+Bán,alonhadat,Quận 3,Biệt thự,12,82000000000,264.5,307161125.3196931
+Bán,alonhadat,Quận Tân Bình,Căn hộ chung cư,12,28750000000,168,205026455.02645504
+Bán,mogi,Huyện Nhà Bè,Đất nền,12,9000000000,155,66388888.88888889
+Bán,mogi,Quận 10,Đất nền,12,41999500000,256.5,189221208.32001048
+Bán,mogi,Quận 3,Căn hộ,12,5300000000,59,99925037.48125938
+Cho thuê,chotot,Quận Bình Tân,"Văn phòng, Mặt bằng kinh doanh",12,185000000,87.5,1961538.4615384615
+Bán,alonhadat,Huyện Nhà Bè,Nhà ở,11,6580000000,65,63586956.52173913
+Bán,alonhadat,Quận 5,Đất,11,29500000000,85,431693989.07103825
+Bán,alonhadat,Quận Tân Bình,Mặt bằng,11,17000000000,100,207207207.2072072
+Bán,homedy,Quận Gò Vấp,Nhà phố,11,6700000000,64,100000000
+Bán,luachonnhadat,Quận Tân Phú,Nhà phố,11,8600000000,64,144545454.54545453
+Bán,mogi,Quận 5,Căn hộ,11,2025000000,70,29779411.76470588
+Cho thuê,homedy,Thành phố Thủ Đức,Nhà phố,11,27000000,140,181250
+Cho thuê,luachonnhadat,Quận Bình Tân,Mặt bằng,11,20000000,126,166666.66666666666
+Cho thuê,mogi,Huyện Bình Chánh,Nhà phố,11,15000000,100,150000
+Cho thuê,mogi,Huyện Bình Chánh,Phòng/Cho thuê,11,3500000,30,116666.66666666669
+Cho thuê,mogi,Quận 6,Căn hộ,11,8500000,52,141666.66666666666
+Cho thuê,muaban,Quận Bình Thạnh,Nhà đất cho thuê,11,5500000,45,137500
+Bán,homedy,Quận 10,Nhà phố,10,6650000000,59,191159420.28985506
+Bán,homedy,Quận Bình Tân,Đất nền,10,66275000000,63.5,41814516.129032254
+Bán,homedy,Quận Gò Vấp,Bất động sản khác,10,2150000000,53.5,40780542.98642534
+Bán,mogi,Quận 11,Căn hộ,10,3850000000,73,58545673.07692307
+Bán,mogi,Quận 3,Đất nền,10,165000000000,429,366824831.9493871
+Bán,mogi,Quận 5,Bất động sản khác,10,41500000000,96.5,222051282.05128205
+Bán,mogi,Quận 7,Đất nền,10,15900000000,133,101288181.558664
+Bán,alonhadat,Quận 10,Đất,9,29900000000,99,226666666.66666663
+Bán,alonhadat,Quận Bình Tân,Đất,9,7600000000,86,80821917.80821918
+Bán,homedy,Huyện Hóc Môn,Nhà phố,9,900000000,50,19750000
+Bán,homedy,Quận Tân Bình,Nhà phố,9,2850000000,51,118604651.1627907
+Bán,mogi,Huyện Nhà Bè,Bất động sản khác,9,17900000000,220,81363636.36363636
+Cho thuê,homedy,Quận 12,Căn hộ,9,6500000,51,120000
+Cho thuê,homedy,Quận Tân Phú,Bất động sản khác,9,10000000,78,112903.2258064516
+Cho thuê,homedy,Quận Tân Phú,Nhà phố,9,13500000,68,194029.85074626867
+Cho thuê,mogi,Quận 4,Bất động sản khác,9,3000000,45,75000
+Cho thuê,mogi,Quận Tân Bình,"Văn phòng, Mặt bằng kinh doanh",9,32000000,140,321428.5714285714
+Cho thuê,muaban,Quận Phú Nhuận,Nhà đất cho thuê,9,40000000,72,555555.5555555555
+Bán,alonhadat,Quận 12,Biệt thự,8,20450000000,202.5,77383520.27610008
+Bán,alonhadat,Quận 8,Đất,8,12200000000,86.5,119907407.4074074
+Bán,alonhadat,Quận Gò Vấp,Căn hộ chung cư,8,10150000000,129.5,122042410.71428572
+Bán,homedy,Quận 12,Bất động sản khác,8,4890000000,75.4,57736885.245901644
+Bán,homedy,Quận Tân Phú,Nhà phố,8,2075000000,64.5,65250000
+Bán,mogi,Quận 11,Bất động sản khác,8,1902500000,56,41982456.14035088
+Bán,muaban,Quận 7,Nhà ở,8,4900000000,58.8,97324810.6060606
+Bán,muaban,Quận Bình Thạnh,Nhà ở,8,6500000000,56,150793650.7936508
+Bán,muaban,Quận Tân Bình,Nhà ở,8,21900000000,63,251265822.78481013
+Bán,muaban,Quận Tân Phú,Nhà ở,8,5850000000,64,113125000
+Bán,muaban,Thành phố Thủ Đức,Đất,8,29650000000,398.95,91794001.77786402
+Cho thuê,chotot,Quận Tân Bình,"Văn phòng, Mặt bằng kinh doanh",8,123600000,67.5,1962500
+Cho thuê,chotot,Thành phố Thủ Đức,"Văn phòng, Mặt bằng kinh doanh",8,112000000,75,1758333.3333333335
+Cho thuê,homedy,Quận Bình Tân,Căn hộ,8,3350000,35,133750
+Cho thuê,mogi,Huyện Bình Chánh,Bất động sản khác,8,135000000,1750,68571.42857142858
+Cho thuê,mogi,Quận 10,Bất động sản khác,8,3250000,45,73888.88888888889
+Cho thuê,mogi,Quận 5,Bất động sản khác,8,1000000,45,56250
+Cho thuê,mogi,Quận Tân Phú,"Văn phòng, Mặt bằng kinh doanh",8,29500000,150,141250
+Cho thuê,muaban,Quận Bình Thạnh,Văn phòng/Mặt bằng,8,16500000,51.5,210060.60606060602
+Bán,alonhadat,Quận 1,Biệt thự,7,85000000000,263,416666666.6666667
+Bán,alonhadat,Quận 12,Đất,7,15000000000,168,84758364.31226766
+Bán,alonhadat,Thành phố Thủ Đức,Đất nền,7,45500000000,300,153333333.33333334
+Bán,chotot,Quận 11,Đất,7,7990000000,76,105131578.94736844
+Bán,homedy,Quận Phú Nhuận,Nhà phố,7,3000000000,60,87500000
+Bán,homedy,Thành phố Thủ Đức,Căn hộ,7,7800000000,75.5,102500000
+Bán,mogi,Huyện Bình Chánh,Nhà phố,7,11000000000,105,104761904.76190476
+Bán,mogi,Quận Gò Vấp,Đất nền,7,11200000000,127,102272727.27272728
+Bán,mogi,Quận Tân Bình,Phòng/Cho thuê,7,60000000000,179,315061643.8356164
+Bán,mogi,Quận Tân Bình,Đất nền,7,51000000000,234,210743801.65289256
+Bán,muaban,Quận 11,Nhà ở,7,5000000000,38,195000000
+Cho thuê,homedy,Quận Tân Bình,Căn hộ,7,11000000,87,123595.50561797751
+Cho thuê,homedy,Thành phố Thủ Đức,Bất động sản khác,7,31000000,90,344444.44444444444
+Cho thuê,homedy,Thành phố Thủ Đức,Căn hộ,7,16500000,79,250000
+Cho thuê,mogi,Quận 6,Bất động sản khác,7,38000000,224,175000
+Bán,alonhadat,Quận 12,Căn hộ chung cư,6,7949500000,152,52297979.7979798
+Bán,alonhadat,Quận Bình Thạnh,Biệt thự,6,29999500000,198,147679318.1818182
+Bán,alonhadat,Quận Bình Thạnh,Căn hộ chung cư,6,14400000000,83,152778864.9706458
+Bán,chotot,Quận 1,Đất,6,79245000000,95,213682738.6692382
+Bán,homedy,Huyện Củ Chi,Nhà phố,6,787500000,103,7596652.522395097
+Bán,homedy,Quận 3,Nhà phố,6,21950000000,81.5,320617583.60302055
+Bán,homedy,Quận 4,Nhà phố,6,1095000000,61.5,15319047.61904762
+Bán,homedy,Quận Gò Vấp,Căn hộ,6,2200000000,49.5,42448979.591836736
+Bán,mogi,Huyện Bình Chánh,Bất động sản khác,6,1902500000,74,30760167.46411483
+Bán,mogi,Huyện Hóc Môn,Nhà phố,6,472500000,40,17775000
+Bán,mogi,Quận 1,Phòng/Cho thuê,6,130000000000,127.5,998903508.7719297
+Bán,mogi,Quận 6,Đất nền,6,10750000000,93,126785714.28571428
+Bán,muaban,Quận 10,Nhà ở,6,20250000000,88.25,261383161.5120275
+Bán,muaban,Quận Bình Tân,Nhà ở,6,7300000000,64.35,107977425.25930446
+Bán,muaban,Quận Phú Nhuận,Nhà ở,6,14400000000,69,214743589.74358976
+Bán,muaban,Thành phố Thủ Đức,Căn hộ/Chung cư,6,10550000000,93,77736942.23452093
+Cho thuê,alonhadat,Quận 1,Văn phòng/Mặt bằng,6,107500000,247.5,635683.7606837607
+Cho thuê,chotot,Quận 3,"Văn phòng, Mặt bằng kinh doanh",6,145000000,225,1233333.3333333335
+Cho thuê,chotot,Quận Bình Thạnh,"Văn phòng, Mặt bằng kinh doanh",6,204500000,75,2253623.188405797
+Cho thuê,chotot,Quận Gò Vấp,"Văn phòng, Mặt bằng kinh doanh",6,117500000,50,2222222.222222222
+Cho thuê,homedy,Quận 12,Bất động sản khác,6,7050000,53,129705.88235294117
+Cho thuê,homedy,Quận Bình Thạnh,Bất động sản khác,6,24500000,98,344545.4545454546
+Cho thuê,homedy,Quận Tân Bình,Bất động sản khác,6,13250000,120,110416.66666666666
+Cho thuê,mogi,Quận 11,Bất động sản khác,6,10500000,60.5,244131.45539906103
+Cho thuê,mogi,Quận 8,Bất động sản khác,6,38875000,490,79500
+Cho thuê,mogi,Quận Tân Phú,Đất nền,6,55000000,735,105000
+Cho thuê,muaban,Quận 6,Nhà đất cho thuê,6,10000000,62,162815.12605042016
+Bán,alonhadat,Quận 1,Mặt bằng,5,34000000000,70,463414634.14634144
+Bán,alonhadat,Quận 11,Đất,5,18000000000,110,272727272.72727275
+Bán,alonhadat,Quận 4,Nhà ở,5,28000000000,90,311111111.1111111
+Bán,alonhadat,Quận Gò Vấp,Biệt thự,5,19000000000,210,105000000
+Bán,alonhadat,Quận Phú Nhuận,Biệt thự,5,36000000000,174,206896551.72413793
+Bán,chotot,Quận Phú Nhuận,Đất,5,15000000000,120,129729729.72972973
+Bán,homedy,Quận 7,Căn hộ,5,6200000000,95,59854014.59854014
+Bán,mogi,Huyện Bình Chánh,Đất nền,5,24905000000,1259,22239872.915011913
+Bán,mogi,Huyện Nhà Bè,Căn hộ,5,5800000000,73,81690140.84507042
+Bán,mogi,Quận 7,Phòng/Cho thuê,5,12900000000,130,136923076.92307693
+Bán,mogi,Quận Phú Nhuận,Đất nền,5,38000000000,209,195473251.0288066
+Bán,muaban,Quận Bình Thạnh,Đất,5,6400000000,30,213333333.33333337
+Cho thuê,chotot,Quận 11,"Văn phòng, Mặt bằng kinh doanh",5,200000000,96,2083333.3333333333
+Cho thuê,homedy,Quận 7,Bất động sản khác,5,10000000,67,149253.73134328358
+Cho thuê,mogi,Huyện Nhà Bè,Nhà phố,5,25000000,42,194444.44444444444
+Cho thuê,muaban,Quận 1,Nhà đất cho thuê,5,6500000,22,285714.28571428574
+Cho thuê,muaban,Quận 7,Nhà đất cho thuê,5,25000000,80,280000
+Cho thuê,muaban,Quận Tân Bình,Nhà đất cho thuê,5,45000000,133,450000
+Bán,alonhadat,Huyện Hóc Môn,Đất,4,3400000000,110.5,43560606.06060606
+Bán,alonhadat,Quận 10,Căn hộ chung cư,4,65000000000,272.5,233692106.97977823
+Bán,alonhadat,Quận Bình Tân,Biệt thự,4,22400000000,265,103963414.63414633
+Bán,alonhadat,Thành phố Thủ Đức,Căn hộ chung cư,4,20195000000,88,178379629.6296296
+Bán,homedy,Quận 1,Nhà phố,4,31000000000,78,392586580.08658004
+Bán,homedy,Quận Bình Tân,Bất động sản khác,4,28500000000,229,109503309.80185173
+Bán,luachonnhadat,Quận 8,Nhà phố,4,12375000000,190.5,69385026.73796791
+Bán,mogi,Quận 3,Phòng/Cho thuê,4,222500000000,233,829506802.7210884
+Bán,mogi,Quận 8,Bất động sản khác,4,2025000000,61,32916666.666666664
+Bán,mogi,Quận Gò Vấp,Phòng/Cho thuê,4,9150000000,63,130039682.53968254
+Bán,mogi,Quận Phú Nhuận,Phòng/Cho thuê,4,13525000000,80,157092964.18592837
+Bán,muaban,Huyện Nhà Bè,Đất,4,960000000,60.5,45817321.08047898
+Bán,muaban,Quận 1,Nhà ở,4,20750000000,54.65,231378378.3783784
+Bán,muaban,Quận 12,Nhà ở,4,4225000000,55.25,77886825.8178603
+Bán,muaban,Quận 12,Đất,4,11825000000,95.75,58122262.773722626
+Bán,muaban,Quận 8,Nhà ở,4,9700000000,68.8,158715880.89330024
+Bán,muaban,Thành phố Thủ Đức,Nhà ở,4,6100000000,86,65532581.45363408
+Cho thuê,alonhadat,Quận 7,Căn hộ/Chung cư,4,41000000,140.5,292541.8569254186
+Cho thuê,alonhadat,Quận 7,Văn phòng/Mặt bằng,4,35000000,177,177884.6153846154
+Cho thuê,alonhadat,Quận Bình Tân,Văn phòng/Mặt bằng,4,65000000,160,328333.3333333334
+Cho thuê,alonhadat,Quận Tân Phú,Văn phòng/Mặt bằng,4,33000000,185,170471.01449275366
+Cho thuê,chotot,Huyện Hóc Môn,"Văn phòng, Mặt bằng kinh doanh",4,230000000,180,1287500
+Cho thuê,chotot,Quận 10,"Văn phòng, Mặt bằng kinh doanh",4,210000000,65,3659722.222222222
+Cho thuê,chotot,Quận 12,"Văn phòng, Mặt bằng kinh doanh",4,114000000,50,3350000
+Cho thuê,homedy,Quận 3,Căn hộ,4,13000000,88,147758.28460038986
+Cho thuê,homedy,Quận 7,Căn hộ,4,14250000,70.5,214986.7374005305
+Cho thuê,homedy,Thành phố Thủ Đức,Đất nền,4,125000000,329.5,233891.8918918919
+Cho thuê,luachonnhadat,Quận Tân Phú,Nhà phố,4,40000000,69.5,399684.87394957984
+Cho thuê,mogi,Huyện Hóc Môn,Nhà phố,4,10500000,120,61912.75167785235
+Cho thuê,mogi,Quận 11,Biệt thự,4,24000000,80.5,226071.42857142858
+Cho thuê,mogi,Quận Bình Thạnh,Đất nền,4,65000000,280,235131.57894736843
+Cho thuê,muaban,Quận 1,Căn hộ/Chung cư,4,12500000,42,382791.3279132791
+Cho thuê,muaban,Quận 10,Nhà đất cho thuê,4,85000000,105,488636.36363636365
+Cho thuê,muaban,Quận 7,Phòng trọ,4,2350000,20,103125
+Cho thuê,muaban,Quận Phú Nhuận,Căn hộ/Chung cư,4,11750000,62.5,178717.9487179487
+Cho thuê,muaban,Quận Tân Bình,Văn phòng/Mặt bằng,4,11500000,30.5,277777.77777777775
+Cho thuê,muaban,Quận Tân Phú,Phòng trọ,4,3500000,22,183333.3333333333
+Cho thuê,muaban,Thành phố Thủ Đức,Phòng trọ,4,1900000,11.3,161666.66666666666
+Bán,alonhadat,Huyện Củ Chi,Nhà trọ,3,850000000,240,3541666.6666666665
+Bán,alonhadat,Quận 10,Biệt thự,3,45000000000,182,247252747.25274727
+Bán,alonhadat,Quận 6,Đất,3,11600000000,130,89230769.23076923
+Bán,alonhadat,Quận 7,Đất,3,19100000000,163,109815950.9202454
+Bán,alonhadat,Quận Phú Nhuận,Căn hộ chung cư,3,78000000000,220,354545454.54545456
+Bán,alonhadat,Quận Tân Phú,Căn hộ chung cư,3,9600000000,136,112500000
+Bán,chotot,Huyện Cần Giờ,Căn hộ/Chung cư,3,1980000000,33,60000000
+Bán,homedy,Huyện Củ Chi,Bất động sản khác,3,610000000,150,4066666.6666666665
+Bán,homedy,Huyện Hóc Môn,Đất nền,3,14800000000,300,49333333.333333336
+Bán,homedy,Quận 10,Bất động sản khác,3,11500000000,89,235849056.6037736
+Bán,homedy,Quận 12,Đất nền,3,11500000000,200,57500000
+Bán,homedy,Quận 7,Bất động sản khác,3,5500000000,76,63953488.37209302
+Bán,homedy,Quận 7,Nhà phố,3,45000000000,100,300000000
+Bán,homedy,Quận 8,Bất động sản khác,3,1500000000,60,25000000
+Bán,homedy,Quận Bình Thạnh,Căn hộ,3,2900000000,62.53,43283582.08955224
+Bán,homedy,Quận Tân Bình,Bất động sản khác,3,2690000000,39,76857142.85714285
+Bán,mogi,Quận 10,Phòng/Cho thuê,3,18000000000,115,156521739.13043478
+Bán,muaban,Huyện Hóc Môn,Đất,3,8500000000,514,30992217.898832686
+Bán,muaban,Quận Gò Vấp,Căn hộ/Chung cư,3,2100000000,52,40384615.384615384
+Cho thuê,alonhadat,Quận 12,Văn phòng/Mặt bằng,3,65000000,240,270833.3333333333
+Cho thuê,alonhadat,Quận 3,Văn phòng/Mặt bằng,3,350000000,800,350000
+Cho thuê,alonhadat,Quận Tân Bình,Văn phòng/Mặt bằng,3,45000000,250,180000
+Cho thuê,chotot,Quận 1,"Văn phòng, Mặt bằng kinh doanh",3,290000000,80,3750000
+Cho thuê,chotot,Quận 6,"Văn phòng, Mặt bằng kinh doanh",3,388000000,44,8818181.818181818
+Cho thuê,homedy,Huyện Nhà Bè,Căn hộ,3,10000000,85,117647.0588235294
+Cho thuê,homedy,Quận 10,Căn hộ,3,16000000,75,213333.33333333337
+Cho thuê,homedy,Quận 3,Nhà phố,3,11000000,75,150000
+Cho thuê,homedy,Quận Bình Tân,Phòng/Cho thuê,3,2700000,20,135000
+Cho thuê,homedy,Quận Phú Nhuận,Bất động sản khác,3,18500000,85,217647.0588235294
+Cho thuê,homedy,Quận Phú Nhuận,Căn hộ,3,17000000,90,177777.77777777778
+Cho thuê,homedy,Quận Tân Bình,Nhà phố,3,25000000,150,133333.33333333334
+Cho thuê,homedy,Thành phố Thủ Đức,Phòng/Cho thuê,3,1800000,71,26470.58823529412
+Cho thuê,luachonnhadat,Quận 5,Nhà phố,3,40000000,73,616438.3561643836
+Cho thuê,luachonnhadat,Quận 6,Mặt bằng,3,30000000,96,171568.6274509804
+Cho thuê,luachonnhadat,Quận Bình Tân,Nhà xưởng,3,60000000,634,126182.96529968454
+Cho thuê,luachonnhadat,Quận Bình Tân,Shop house,3,21000000,50,413793.1034482759
+Cho thuê,mogi,Huyện Bình Chánh,Biệt thự,3,55000000,250,200000
+Cho thuê,mogi,Huyện Bình Chánh,Căn hộ,3,6500000,63,137500
+Cho thuê,mogi,Huyện Củ Chi,Bất động sản khác,3,450000000,4118,110000
+Cho thuê,mogi,Huyện Nhà Bè,Phòng/Cho thuê,3,33000000,126,261904.7619047619
+Cho thuê,mogi,Quận 1,Đất nền,3,330000000,240,1113636.3636363635
+Cho thuê,mogi,Quận 10,"Văn phòng, Mặt bằng kinh doanh",3,40000000,140,285714.28571428574
+Cho thuê,mogi,Quận 4,"Văn phòng, Mặt bằng kinh doanh",3,40000000,100,500000
+Cho thuê,mogi,Quận Bình Tân,"Văn phòng, Mặt bằng kinh doanh",3,15000000,75,200000
+Cho thuê,muaban,Quận 1,Văn phòng/Mặt bằng,3,33000000,60,589285.7142857143
+Cho thuê,muaban,Quận 10,Văn phòng/Mặt bằng,3,40000000,78,809523.8095238095
+Cho thuê,muaban,Quận 12,Văn phòng/Mặt bằng,3,7500000,70,107142.85714285714
+Cho thuê,muaban,Quận 7,Văn phòng/Mặt bằng,3,15000000,60,250000
+Cho thuê,muaban,Quận Bình Thạnh,Kho xưởng,3,19000000,88,190000
+Cho thuê,muaban,Quận Bình Tân,Kho xưởng,3,5000000,25,200000
+Cho thuê,muaban,Quận Bình Tân,Nhà đất cho thuê,3,4500000,30,116666.66666666669
+Cho thuê,muaban,Quận Gò Vấp,Nhà đất cho thuê,3,6500000,32,108333.33333333331
+Cho thuê,muaban,Quận Tân Bình,Căn hộ/Chung cư,3,10000000,75,133333.33333333334
+Cho thuê,muaban,Quận Tân Bình,Phòng trọ,3,3200000,25,128000
+Cho thuê,muaban,Quận Tân Phú,Căn hộ/Chung cư,3,9000000,65,120000
+Cho thuê,muaban,Quận Tân Phú,Kho xưởng,3,3500000,30,116666.66666666669
+Cho thuê,muaban,Quận Tân Phú,Nhà đất cho thuê,3,20000000,72,254545.45454545456
+Cho thuê,muaban,Thành phố Thủ Đức,Căn hộ/Chung cư,3,8990000,64,140468.75
+Cho thuê,muaban,Thành phố Thủ Đức,Đất,3,55000000,160,343750
+Bán,alonhadat,Huyện Bình Chánh,Đất,2,3525000000,116.5,50518939.39393939
+Bán,alonhadat,Quận 11,Biệt thự,2,88000000000,328.5,267884943.28712285
+Bán,alonhadat,Quận 11,Căn hộ chung cư,2,27950000000,260,99615384.61538462
+Bán,alonhadat,Quận 3,Căn hộ chung cư,2,50500000000,162,252992957.7464789
+Bán,alonhadat,Quận 3,Mặt bằng,2,137000000000,275,440555555.5555556
+Bán,alonhadat,Quận 7,Nhà trọ,2,8745000000,121.5,70460355.43403965
+Bán,alonhadat,Quận Bình Tân,Căn hộ chung cư,2,5625000000,65,78750000
+Bán,alonhadat,Quận Gò Vấp,Nhà trọ,2,9200000000,102,88273809.52380954
+Bán,alonhadat,Quận Phú Nhuận,Mặt bằng,2,17745000000,59,281745169.08212566
+Bán,alonhadat,Quận Tân Bình,Đất nền,2,101000000000,755,153645637.28073478
+Bán,alonhadat,Quận Tân Phú,Mặt bằng,2,24750000000,135,205000000
+Bán,alonhadat,Quận Tân Phú,Đất nền,2,53999000000,509,91658268.44499268
+Bán,alonhadat,Thành phố Thủ Đức,Mặt bằng,2,111000000000,976.5,82580037.66478342
+Bán,alonhadat,Thành phố Thủ Đức,Nhà trọ,2,18350000000,191,88867788.02676795
+Bán,chotot,Quận 3,Đất,2,17900000000,154.375,120831608.00552106
+Bán,chotot,Quận 4,Đất,2,3975000000,57.84995,82109220.41705687
+Bán,homedy,Huyện Bình Chánh,Nhà phố,2,5150000000,73.5,68376623.37662336
+Bán,homedy,Huyện Cần Giờ,Bất động sản khác,2,86000000000,706,121869983.94863564
+Bán,homedy,Huyện Cần Giờ,Đất nền,2,14545000000,1126.5,15010772.214285305
+Bán,homedy,Huyện Nhà Bè,Căn hộ,2,6350000000,92.5,69404761.90476191
+Bán,homedy,Huyện Nhà Bè,Nhà phố,2,15250000000,129,104599719.1011236
+Bán,homedy,Quận 1,Bất động sản khác,2,122500000000,163,742467043.3145009
+Bán,homedy,Quận 1,Phòng/Cho thuê,2,188750000000,107.25,1396745131.4996986
+Bán,homedy,Quận 12,Căn hộ,2,2445000000,76,34676470.5882353
+Bán,homedy,Quận 12,Phòng/Cho thuê,2,1850000000,53.5,34786414.56582633
+Bán,homedy,Quận 5,Nhà phố,2,38000000000,65,584937039.6768829
+Bán,homedy,Quận 6,Nhà phố,2,60437500000,395,89480565.59917356
+Bán,homedy,Quận Bình Tân,Căn hộ,2,3750000000,69,54411764.705882356
+Bán,homedy,Quận Phú Nhuận,Căn hộ,2,2225000000,49.5,44948979.591836736
+Bán,luachonnhadat,Quận Bình Tân,Khách sạn,2,24500000000,161,156702898.55072463
+Bán,luachonnhadat,Quận Bình Tân,Nhà xưởng,2,33100000000,362.5,91403846.15384614
+Bán,luachonnhadat,Quận Tân Phú,Đất,2,12450000000,176,69611111.1111111
+Bán,mogi,Quận 5,Đất nền,2,14750000000,87.5,162719824.14068747
+Bán,mogi,Quận 8,Phòng/Cho thuê,2,15400000000,108,141855598.18625742
+Bán,mogi,Quận Bình Thạnh,Phòng/Cho thuê,2,34000000000,182.5,195454545.45454547
+Bán,mogi,Quận Bình Tân,Phòng/Cho thuê,2,32000000000,292,111717022.84450994
+Bán,mogi,Quận Tân Phú,Đất nền,2,42000000000,361.5,126470443.06608973
+Bán,mogi,Thành phố Thủ Đức,Phòng/Cho thuê,2,13100000000,101.5,123866758.24175826
+Bán,muaban,Huyện Bình Chánh,Kho xưởng,2,7500000000,169,48474140.700289115
+Bán,muaban,Huyện Bình Chánh,Đất,2,8185000000,96.5,79010281.38528138
+Bán,muaban,Huyện Hóc Môn,Nhà ở,2,4575000000,110.9,44606887.58934373
+Bán,muaban,Huyện Nhà Bè,Nhà ở,2,2675000000,45.4,59017027.863777086
+Bán,muaban,Quận 1,Kho xưởng,2,12900000000,75,196818181.8181818
+Bán,muaban,Quận 11,Căn hộ/Chung cư,2,5245000000,81,64335140.30612245
+Bán,muaban,Quận 11,Đất,2,10245000000,60.65,159275506.66897625
+Bán,muaban,Quận 3,Đất,2,21650000000,86.8,250827991.45299146
+Bán,muaban,Quận 6,Kho xưởng,2,67750000000,202.2,326548302.24772835
+Bán,muaban,Quận 6,Nhà ở,2,2145000000,22.9,109460989.9328859
+Bán,muaban,Quận 7,Căn hộ/Chung cư,2,8750000000,75.6,116216405.37513998
+Bán,muaban,Quận 7,Đất,2,28900000000,147.1,183152358.3305056
+Bán,muaban,Quận Bình Thạnh,Căn hộ/Chung cư,2,3700000000,65,53750000
+Bán,muaban,Quận Bình Tân,Kho xưởng,2,6625000000,90.1,74857806.36828771
+Bán,muaban,Quận Phú Nhuận,Đất,2,19800000000,74,271491228.0701754
+Bán,muaban,Quận Tân Bình,Căn hộ/Chung cư,2,13800000000,140.3,117897514.9476831
+Bán,muaban,Quận Tân Bình,Đất,2,11150000000,63.05,201860572.48384118
+Cho thuê,alonhadat,Huyện Nhà Bè,Văn phòng/Mặt bằng,2,7500000,95,83333.33333333334
+Cho thuê,alonhadat,Quận 10,Văn phòng/Mặt bằng,2,58500000,85,600000
+Cho thuê,alonhadat,Quận 8,Căn hộ/Chung cư,2,10500000,90,116666.66666666667
+Cho thuê,alonhadat,Quận Gò Vấp,Văn phòng/Mặt bằng,2,45000000,72,457142.85714285716
+Cho thuê,alonhadat,Quận Phú Nhuận,Văn phòng/Mặt bằng,2,74000000,117,613888.888888889
+Cho thuê,alonhadat,TP Vũng Tàu cũ,Căn hộ/Chung cư,2,7250000,66.5,112505.9780009565
+Cho thuê,chotot,Quận 7,"Văn phòng, Mặt bằng kinh doanh",2,112500000,17.5,9000000
+Cho thuê,chotot,Quận Phú Nhuận,"Văn phòng, Mặt bằng kinh doanh",2,240000000,115,2616666.666666667
+Cho thuê,homedy,Huyện Bình Chánh,Căn hộ,2,7000000,45,157500
+Cho thuê,homedy,Huyện Củ Chi,Đất nền,2,1100000000,123,8998347.107438017
+Cho thuê,homedy,Quận 1,Bất động sản khác,2,128500000,101.5,1213148.2237648019
+Cho thuê,homedy,Quận 11,Bất động sản khác,2,10750000,74,145646.60691421255
+Cho thuê,homedy,Quận 11,Căn hộ,2,10750000,74,145251.14155251143
+Cho thuê,homedy,Quận Bình Thạnh,Căn hộ,2,35500000,76.5,598867.9245283018
+Cho thuê,homedy,Quận Bình Thạnh,Nhà phố,2,455000000,111,7190524.193548387
+Cho thuê,homedy,Quận Bình Thạnh,Phòng/Cho thuê,2,226750000,259,547222.2222222222
+Cho thuê,homedy,Quận Gò Vấp,Căn hộ,2,11750000,85,138235.29411764705
+Cho thuê,mogi,Huyện Hóc Môn,Bất động sản khác,2,154999500,2150,64531.66256157636
+Cho thuê,mogi,Quận 11,"Văn phòng, Mặt bằng kinh doanh",2,26500000,117,304292.9292929293
+Cho thuê,mogi,Quận 6,"Văn phòng, Mặt bằng kinh doanh",2,28500000,180,158333.33333333337
+Cho thuê,mogi,Quận 8,"Văn phòng, Mặt bằng kinh doanh",2,47000000,252,161805.55555555556
+Cho thuê,mogi,Quận Bình Tân,Đất nền,2,32500000,1057.5,63888.88888888889
+Cho thuê,mogi,Quận Phú Nhuận,"Văn phòng, Mặt bằng kinh doanh",2,31000000,290,183333.33333333334
+Cho thuê,mogi,Quận Tân Bình,Đất nền,2,167500000,1203.5,122921.73067574138
+Cho thuê,muaban,Huyện Bình Chánh,Văn phòng/Mặt bằng,2,402500000,63.75,53354166.66666667
+Cho thuê,muaban,Huyện Nhà Bè,Văn phòng/Mặt bằng,2,15250000,32,947857.1428571428
+Cho thuê,muaban,Quận 10,Phòng trọ,2,2950000,25,116666.66666666666
+Cho thuê,muaban,Quận 12,Nhà đất cho thuê,2,17750000,192,97916.66666666669
+Cho thuê,muaban,Quận 12,Đất,2,112500000,2975,39022.988505747126
+Cho thuê,muaban,Quận 3,Nhà đất cho thuê,2,18000000,40,450000
+Cho thuê,muaban,Quận 4,Nhà đất cho thuê,2,10500000,33.5,340740.74074074073
+Cho thuê,muaban,Quận 7,Căn hộ/Chung cư,2,4200000,27,158750
+Cho thuê,muaban,Quận 8,Căn hộ/Chung cư,2,7250000,100,72500
+Cho thuê,muaban,Quận Bình Tân,Phòng trọ,2,2550000,25,102000
+Cho thuê,muaban,Quận Tân Bình,Kho xưởng,2,32000000,201,281565.6565656566
+Cho thuê,muaban,Quận Tân Phú,Văn phòng/Mặt bằng,2,13250000,102,154861.11111111112
+Cho thuê,muaban,Thành phố Thủ Đức,Kho xưởng,2,56000000,343,174784.11053540587
+Cho thuê,muaban,Thành phố Thủ Đức,Nhà đất cho thuê,2,21400000,87,245270.27027027027
+Cho thuê,muaban,Thành phố Thủ Đức,Văn phòng/Mặt bằng,2,40000000,60,700000
+Bán,alonhadat,Huyện Bình Chánh,Biệt thự,1,15500000000,176,88068181.81818181
+Bán,alonhadat,Huyện Bình Chánh,Căn hộ chung cư,1,1600000000,51,31372549.01960784
+Bán,alonhadat,Huyện Củ Chi,Biệt thự,1,14000000000,2553,5483744.614179397
+Bán,alonhadat,Huyện Củ Chi,Mặt bằng,1,1200000000,144,8333333.333333333
+Bán,alonhadat,Huyện Củ Chi,Đất nền,1,750000000,173,4335260.115606937
+Bán,alonhadat,Huyện Hóc Môn,Biệt thự,1,13500000000,600,22500000
+Bán,alonhadat,Huyện Hóc Môn,Mặt bằng,1,5700000000,140,40714285.71428572
+Bán,alonhadat,Huyện Nhà Bè,Đất nền,1,75000000000,611,122749590.83469722
+Bán,alonhadat,Không rõ,Căn hộ/Chung cư,1,2200000000,56,39285714.28571428
+Bán,alonhadat,Quận 10,Mặt bằng,1,24000000000,62,387096774.1935484
+Bán,alonhadat,Quận 12,Mặt bằng,1,6600000000,99,66666666.666666664
+Bán,alonhadat,Quận 5,Biệt thự,1,18900000000,83,227710843.37349397
+Bán,alonhadat,Quận 5,Căn hộ chung cư,1,40000000000,107,373831775.7009346
+Bán,alonhadat,Quận 6,Biệt thự,1,300000000000,1200,250000000
+Bán,alonhadat,Quận 6,Căn hộ chung cư,1,12500000000,130,96153846.15384616
+Bán,alonhadat,Quận 7,Biệt thự,1,58000000000,240,241666666.66666663
+Bán,alonhadat,Quận 7,Căn hộ chung cư,1,27900000000,271,102952029.5202952
+Bán,alonhadat,Quận 7,Đất nền,1,32000000000,100,320000000
+Bán,alonhadat,Quận 8,Căn hộ chung cư,1,25800000000,130,198461538.4615385
+Bán,alonhadat,Quận Bình Thạnh,Căn hộ/Chung cư,1,10500000000,77,136363636.36363637
+Bán,alonhadat,Quận Bình Tân,Nhà trọ,1,7200000000,111,64864864.86486486
+Bán,alonhadat,Quận Bình Tân,Đất nền,1,4200000000,50,84000000
+Bán,alonhadat,Quận Tân Bình,Nhà trọ,1,8199999999.999999,98,83673469.3877551
+Bán,alonhadat,Quận Tân Phú,Biệt thự,1,16500000000,108,152777777.7777778
+Bán,alonhadat,Quận Tân Phú,Nhà trọ,1,6600000000,98,67346938.7755102
+Bán,alonhadat,TP Vũng Tàu cũ,Căn hộ/Chung cư,1,2800000000,48,58333333.333333336
+Bán,chotot,Huyện Củ Chi,Căn hộ/Chung cư,1,5400000000,97,55670103.0927835
+Bán,chotot,Quận 10,Đất,1,23500000000,110,213636363.63636363
+Bán,chotot,Quận 5,Đất,1,22000000000,184.5,119241192.41192412
+Bán,homedy,Huyện Bình Chánh,Đất nền,1,2300000000,110,20909090.90909091
+Bán,homedy,Huyện Hóc Môn,Bất động sản khác,1,14800000000,230,64347826.08695652
+Bán,homedy,Quận 1,Căn hộ,1,64000000000,121,528925619.8347107
+Bán,homedy,Quận 1,Đất nền,1,350000000000,571,612959719.7898424
+Bán,homedy,Quận 10,Căn hộ,1,6900000000,75,92000000
+Bán,homedy,Quận 11,Căn hộ,1,1500000000,86,17441860.465116277
+Bán,homedy,Quận 3,Bất động sản khác,1,4680000000,45,104000000
+Bán,homedy,Quận 3,Đất nền,1,125000000000,214,584112149.5327103
+Bán,homedy,Quận 4,Bất động sản khác,1,7000000000,105,66666666.666666664
+Bán,homedy,Quận 6,Căn hộ,1,1700000000,50,34000000
+Bán,homedy,Quận Bình Thạnh,Phòng/Cho thuê,1,27900000000,106,263207547.1698113
+Bán,homedy,Quận Bình Thạnh,Đất nền,1,79000000000,219,360730593.60730594
+Bán,homedy,Quận Bình Tân,Phòng/Cho thuê,1,28500000000,230,123913043.47826087
+Bán,homedy,Quận Phú Nhuận,Đất nền,1,260000000000,465,559139784.9462366
+Bán,homedy,Quận Tân Bình,Phòng/Cho thuê,1,1800000000,50,36000000
+Bán,homedy,Quận Tân Bình,Đất nền,1,379000000000,2400,157916666.66666666
+Bán,homedy,Quận Tân Phú,Bất động sản khác,1,5150000000,63,81746031.74603175
+Bán,homedy,Thành phố Thủ Đức,Phòng/Cho thuê,1,5500000000,100,55000000
+Bán,luachonnhadat,Huyện Bình Chánh,Đất,1,125000000000,4650,26881720.430107526
+Bán,luachonnhadat,Quận 11,Nhà phố,1,2880000000,14,205714285.7142857
+Bán,luachonnhadat,Quận 5,Nhà phố,1,16899999999.999998,97,174226804.12371132
+Bán,luachonnhadat,Quận 6,Căn hộ,1,5800000000,56,103571428.57142857
+Bán,luachonnhadat,Quận 6,Phòng cho thuê,1,28000000000,112,250000000
+Bán,luachonnhadat,Quận 8,Đất,1,4900000000,62,79032258.06451613
+Bán,luachonnhadat,Quận Bình Tân,Căn hộ,1,3680000000,51,72156862.74509804
+Bán,luachonnhadat,Quận Bình Tân,Mặt bằng,1,1600000000,160,10000000
+Bán,luachonnhadat,Quận Bình Tân,Shop house,1,8500000000,88,96590909.0909091
+Bán,luachonnhadat,Quận Phú Nhuận,Nhà phố,1,16700000000,68,245588235.2941177
+Bán,luachonnhadat,Quận Tân Phú,Căn hộ dịch vụ,1,10950000000,102,107352941.1764706
+Bán,luachonnhadat,Quận Tân Phú,Khách sạn,1,10500000000,80,131250000
+Bán,luachonnhadat,Quận Tân Phú,Phòng cho thuê,1,19000000000,157,121019108.28025478
+Bán,mogi,Huyện Củ Chi,Nhà phố,1,1425000000,90,15833333.333333334
+Bán,mogi,Huyện Củ Chi,Phòng/Cho thuê,1,2150000000,90,23888888.888888888
+Bán,mogi,Huyện Hóc Môn,Đất nền,1,620000000,65,9538461.538461538
+Bán,mogi,Quận 11,Đất nền,1,3315000000,48,69062500
+Bán,mogi,Quận 4,Đất nền,1,1790000000,26,68846153.84615384
+Bán,mogi,Quận 8,Đất nền,1,5400000000,54,100000000
+Bán,muaban,Huyện Bình Chánh,Căn hộ/Chung cư,1,10000000000,100,100000000
+Bán,muaban,Quận 1,Đất,1,42000000000,400,105000000
+Bán,muaban,Quận 10,Kho xưởng,1,9400000000,32.3,291021671.8266254
+Bán,muaban,Quận 10,Văn phòng/Mặt bằng,1,48500000000,135,359259259.2592593
+Bán,muaban,Quận 12,Phòng trọ,1,5000000000,80,62500000
+Bán,muaban,Quận 3,Kho xưởng,1,117000000000,150.7,776376907.7637691
+Bán,muaban,Quận 3,Nhà ở,1,330000000000,341,967741935.483871
+Bán,muaban,Quận 3,Văn phòng/Mặt bằng,1,8199999999.999999,45,182222222.2222222
+Bán,muaban,Quận 4,Nhà ở,1,68000000000,68,1000000000
+Bán,muaban,Quận 6,Đất,1,1700000000,18,94444444.44444443
+Bán,muaban,Quận 7,Kho xưởng,1,2350000000,17,138235294.11764705
+Bán,muaban,Quận Bình Thạnh,Phòng trọ,1,6900000000,37.1,185983827.49326143
+Bán,muaban,Quận Gò Vấp,Văn phòng/Mặt bằng,1,8100000000,52,155769230.76923078
+Bán,muaban,Quận Gò Vấp,Đất,1,5500000000,50,110000000
+Bán,muaban,Quận Tân Bình,Kho xưởng,1,15800000000,60,263333333.33333337
+Bán,muaban,Quận Tân Phú,Văn phòng/Mặt bằng,1,10900000000,52,209615384.6153846
+Bán,muaban,Thành phố Thủ Đức,Kho xưởng,1,10990000000,87,126321839.08045976
+Bán,muaban,Thành phố Thủ Đức,Phòng trọ,1,33500000000,256,130859375
+Cho thuê,alonhadat,Bình Dương cũ,Căn hộ/Chung cư,1,1500000,30,50000
+Cho thuê,alonhadat,Huyện Củ Chi,Văn phòng/Mặt bằng,1,8000000,1306,6125.5742725880555
+Cho thuê,alonhadat,Không rõ,Căn hộ/Chung cư,1,13000000,79,164556.96202531646
+Cho thuê,alonhadat,Quận 6,Căn hộ/Chung cư,1,12000000,70,171428.57142857142
+Cho thuê,alonhadat,Quận Bình Thạnh,Văn phòng/Mặt bằng,1,1500000,80,18750
+Cho thuê,alonhadat,Quận Phú Nhuận,Căn hộ/Chung cư,1,16000000,93,172043.01075268816
+Cho thuê,alonhadat,TP Bến Cát cũ,Căn hộ/Chung cư,1,3000000,50,60000
+Cho thuê,alonhadat,Thành phố Thủ Đức,Văn phòng/Mặt bằng,1,10000000,90,111111.11111111112
+Cho thuê,chotot,Huyện Bình Chánh,"Văn phòng, Mặt bằng kinh doanh",1,350000000,250,1400000
+Cho thuê,chotot,Huyện Củ Chi,"Văn phòng, Mặt bằng kinh doanh",1,170000000,120,1416666.6666666667
+Cho thuê,chotot,Quận 4,"Văn phòng, Mặt bằng kinh doanh",1,100000000,36,2777777.777777778
+Cho thuê,homedy,Huyện Củ Chi,Nhà phố,1,839000000,133,6308270.67669173
+Cho thuê,homedy,Huyện Hóc Môn,Bất động sản khác,1,15000000,500,30000
+Cho thuê,homedy,Quận 1,Nhà phố,1,15000000,23,652173.9130434783
+Cho thuê,homedy,Quận 10,Bất động sản khác,1,2000000,86,23255.81395348837
+Cho thuê,homedy,Quận 3,Bất động sản khác,1,12500000,83,150602.4096385542
+Cho thuê,homedy,Quận 3,Phòng/Cho thuê,1,4000000,30,133333.33333333334
+Cho thuê,homedy,Quận 4,Căn hộ,1,30000000,117,256410.2564102564
+Cho thuê,homedy,Quận 4,Nhà phố,1,24000000,74,324324.3243243243
+Cho thuê,homedy,Quận 4,Phòng/Cho thuê,1,7500000,28,267857.14285714284
+Cho thuê,homedy,Quận 5,Căn hộ,1,12000000,38,315789.4736842105
+Cho thuê,homedy,Quận 8,Nhà phố,1,38000000,102,372549.01960784313
+Cho thuê,homedy,Quận Bình Thạnh,Đất nền,1,120000000,400,300000
+Cho thuê,homedy,Quận Gò Vấp,Bất động sản khác,1,7300000,75,97333.33333333331
+Cho thuê,homedy,Quận Gò Vấp,Nhà phố,1,17000000,182,93406.5934065934
+Cho thuê,homedy,Quận Phú Nhuận,Nhà phố,1,314000000,800,392500
+Cho thuê,homedy,Quận Phú Nhuận,Phòng/Cho thuê,1,16000000,90,177777.77777777778
+Cho thuê,homedy,Quận Tân Bình,Phòng/Cho thuê,1,7000000,16,437500
+Cho thuê,luachonnhadat,Huyện Bình Chánh,Nhà phố,1,19000000,465,40860.21505376344
+Cho thuê,luachonnhadat,Quận 11,Nhà phố,1,130000000,140,928571.4285714284
+Cho thuê,luachonnhadat,Quận 6,Biệt thự,1,25000000,112,223214.2857142857
+Cho thuê,luachonnhadat,Quận 6,Căn hộ,1,11000000,72,152777.77777777778
+Cho thuê,luachonnhadat,Quận 6,Shop house,1,10000000,64,156250
+Cho thuê,luachonnhadat,Quận 8,Biệt thự,1,19000000,190,100000
+Cho thuê,luachonnhadat,Quận 8,Nhà phố,1,76000000,775,98064.51612903226
+Cho thuê,luachonnhadat,Quận 8,Nhà xưởng,1,22000000,250,88000
+Cho thuê,luachonnhadat,Quận Bình Tân,Căn hộ,1,12000000,70,171428.57142857142
+Cho thuê,luachonnhadat,Quận Bình Tân,Khách sạn,1,25000000,100,250000
+Cho thuê,luachonnhadat,Quận Phú Nhuận,Nhà phố,1,800000000,276,2898550.724637681
+Cho thuê,mogi,Huyện Bình Chánh,"Văn phòng, Mặt bằng kinh doanh",1,10000000,140,71428.57142857143
+Cho thuê,mogi,Huyện Củ Chi,Biệt thự,1,20000000,500,40000
+Cho thuê,mogi,Huyện Củ Chi,Nhà phố,1,473570000,4118,115000
+Cho thuê,mogi,Huyện Hóc Môn,Biệt thự,1,25000000,1000,25000
+Cho thuê,mogi,Huyện Nhà Bè,Căn hộ,1,14000000,71,197183.0985915493
+Cho thuê,mogi,Quận 12,"Văn phòng, Mặt bằng kinh doanh",1,19000000,205,92682.9268292683
+Cho thuê,mogi,Quận 6,Đất nền,1,120000000,1000,120000
+Cho thuê,mogi,Quận 7,"Văn phòng, Mặt bằng kinh doanh",1,27000000,60,450000
+Cho thuê,muaban,Huyện Củ Chi,Đất,1,39000000,2700,14444.444444444443
+Cho thuê,muaban,Huyện Hóc Môn,Kho xưởng,1,50000000,800,62500
+Cho thuê,muaban,Huyện Nhà Bè,Căn hộ/Chung cư,1,4300000,26,165384.61538461538
+Cho thuê,muaban,Quận 1,Phòng trọ,1,22000000,56,392857.1428571429
+Cho thuê,muaban,Quận 1,Đất,1,40000000,120,333333.3333333333
+Cho thuê,muaban,Quận 10,Căn hộ/Chung cư,1,86000000,86,1000000
+Cho thuê,muaban,Quận 11,Căn hộ/Chung cư,1,10500000,75,140000
+Cho thuê,muaban,Quận 12,Kho xưởng,1,9000000,136,66176.4705882353
+Cho thuê,muaban,Quận 12,Phòng trọ,1,3500000,20,175000
+Cho thuê,muaban,Quận 3,Căn hộ/Chung cư,1,2000000000,123,16260162.601626016
+Cho thuê,muaban,Quận 4,Kho xưởng,1,11500000,49,234693.8775510204
+Cho thuê,muaban,Quận 4,Phòng trọ,1,2500000,13,192307.6923076923
+Cho thuê,muaban,Quận 5,Căn hộ/Chung cư,1,6700000,40,167500
+Cho thuê,muaban,Quận 5,Nhà đất cho thuê,1,11500000,50,230000
+Cho thuê,muaban,Quận 5,Văn phòng/Mặt bằng,1,13000000,48,270833.3333333333
+Cho thuê,muaban,Quận 6,Căn hộ/Chung cư,1,15000000,65,230769.2307692308
+Cho thuê,muaban,Quận 6,Đất,1,11000000,36,305555.55555555556
+Cho thuê,muaban,Quận 7,Đất,1,80000000,450,177777.77777777778
+Cho thuê,muaban,Quận 8,Nhà đất cho thuê,1,18000000,64,281250
+Cho thuê,muaban,Quận Bình Thạnh,Căn hộ/Chung cư,1,9000000,53,169811.320754717
+Cho thuê,muaban,Quận Bình Thạnh,Phòng trọ,1,4500000,20,225000
+Cho thuê,muaban,Quận Bình Thạnh,Đất,1,8199999.999999999,50,163999.99999999997
+Cho thuê,muaban,Quận Bình Tân,Văn phòng/Mặt bằng,1,200000000,170,1176470.5882352942
+Cho thuê,muaban,Quận Bình Tân,Đất,1,12000000,80,150000
+Cho thuê,muaban,Quận Gò Vấp,Kho xưởng,1,3900000,27,144444.44444444444
+Cho thuê,muaban,Quận Gò Vấp,Phòng trọ,1,3600000,30,120000
+Cho thuê,muaban,Quận Gò Vấp,Văn phòng/Mặt bằng,1,4500000,20,225000
+Cho thuê,muaban,Quận Gò Vấp,Đất,1,3800000,40,95000
+Cho thuê,muaban,Quận Phú Nhuận,Phòng trọ,1,3500000,12,291666.6666666667
+Cho thuê,muaban,Quận Phú Nhuận,Văn phòng/Mặt bằng,1,11110000,30,370333.3333333333
+Cho thuê,muaban,Quận Tân Bình,Đất,1,155000000,328.4,471985.38367844094
+Cho thuê,muaban,Quận Tân Phú,Đất,1,29000000,400,72500

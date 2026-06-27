@@ -1,8 +1,3 @@
-# ============================================================
-# GIAO DIỆN ỨNG DỤNG
-# Khai báo layout, sidebar, các tab và input/output placeholder của Shiny.
-# ============================================================
-
 nav_link <- function(id, label, icon_name) {
   actionLink(
     inputId = paste0("nav_", id),
@@ -81,16 +76,16 @@ ui <- fluidPage(
           class = "topbar-actions",
           div(
             class = "report-toolbar",
-            # --- Chọn khu vực ---
+
             div(
               class = "report-search",
               div(class = "report-search-icon", icon("location-dot")),
               uiOutput("report_district_picker")
             ),
-            # --- Thống kê nhanh ---
+
             tags$span(class = "report-divider"),
             uiOutput("report_quick_insight"),
-            # --- Xuất PDF ---
+
             tags$span(class = "report-divider"),
             downloadLink(
               "download_district_report",
@@ -156,12 +151,7 @@ ui <- fluidPage(
               )
             )
           ),
-          # ======================================================
-          # UI - PHAN TICH GIA / EDA
-          # Cac panel trong tab nay tra loi cau hoi thi truong:
-          # phan phoi gia, quan he dien tich-gia, gia/m2 theo khu vuc,
-          # heatmap khu vuc x loai BDS, xu huong thoi gian va tuong quan.
-          # ======================================================
+
           tabPanel(
             title = "analysis", value = "analysis",
             div(
@@ -201,11 +191,7 @@ ui <- fluidPage(
               )
             )
           ),
-          # ======================================================
-          # UI - SUY LUAN THONG KE
-          # Tab nay ap dung truc tiep ly thuyet xac suat thong ke:
-          # xac suat co dieu kien, CLT, bootstrap CI va kiem dinh gia thuyet.
-          # ======================================================
+
           tabPanel(
             title = "statistics", value = "statistics",
             div(
@@ -307,6 +293,9 @@ ui <- fluidPage(
                 column(6, app_panel("Phân phối sai số", "Sai số log(giá thực tế) - log(giá dự đoán)", plotlyOutput("diagnostic_residual_plot", height = 460)))
               ),
               fluidRow(
+                column(12, app_panel("Heatmap sai số mô hình", "Màu càng đậm thì MAPE trung bình càng cao theo khu vực và loại BĐS", plotlyOutput("diagnostic_error_heatmap", height = 460)))
+              ),
+              fluidRow(
                 column(6, app_panel("Sai số theo khu vực", "Nhóm có MAPE cao trong mẫu kiểm tra", plotlyOutput("diagnostic_error_group_plot", height = 430))),
                 column(6, app_panel("So sánh chỉ số mô hình", "RMSE, MAE, MAPE và R² theo từng thuật toán", plotlyOutput("metrics_compare_plot", height = 430)))
               )
@@ -342,22 +331,19 @@ ui <- fluidPage(
           tabPanel(title = "assistant", value = "assistant", div(class = "gemini-page-wrap",
             div(
               class = "gemini-wrapper",
-              
-              # Khung chat va loi chao
+
               div(
                 class = "gemini-chat-container",
                 uiOutput("gemini_chat_view")
               ),
-              
-              # Thanh nhap noi o cuoi man hinh
+
               div(
                 class = "gemini-input-container-wrap",
                 div(
                   class = "gemini-input-bar",
-                  # Nut cong trang tri
+
                   actionLink("assistant_add", label = icon("plus"), class = "gemini-input-btn"),
-                  
-                  # O nhap cau hoi
+
                   textAreaInput(
                     "assistant_question",
                     NULL,
@@ -365,19 +351,18 @@ ui <- fluidPage(
                     rows = 1,
                     placeholder = "Hỏi trợ lý BDS..."
                   ),
-                  
-                  # Cum dieu khien ben phai
+
                   div(
                     class = "gemini-input-right",
-                    # Nhan che do xu ly local
+
                     div(
                       class = "gemini-model-badge",
                       span("Dữ liệu R"),
                       icon("chevron-down")
                     ),
-                    # Nut micro
+
                     actionLink("assistant_mic", label = icon("microphone"), class = "gemini-input-btn"),
-                    # Nut gui cau hoi
+
                     actionButton(
                       "assistant_send",
                       label = icon("arrow-up"),
@@ -386,8 +371,7 @@ ui <- fluidPage(
                   )
                 )
               ),
-              
-              # Ghi chu nho va nut xoa hoi thoai
+
               div(
                 class = "gemini-footer-note",
                 span("BDS dùng công cụ dữ liệu nội bộ, mô hình dự đoán và bộ nhớ hội thoại. Không dùng API ngoài."),

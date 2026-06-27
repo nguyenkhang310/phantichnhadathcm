@@ -1,8 +1,3 @@
-# ============================================================
-# APP HELPERS - DATA, MODEL, EDA, STATISTICS, ASSISTANT
-# File này được source từ app.R để app.R chỉ còn vai trò điều phối UI/server.
-# ============================================================
-
 in_hcmc_bbox <- function(lat, lon) {
   !is.na(lat) & !is.na(lon) &
     lat >= 10.30 & lat <= 11.20 &
@@ -430,9 +425,11 @@ best_model_from_bundle <- function(bundle) {
 
 add_prediction_encoding_keys <- function(input_row) {
   input_row %>%
+    add_model_quality_features() %>%
     mutate(
       district_category_key = paste(as.character(district_name), as.character(category_name), sep = " | "),
-      source_category_key = paste(as.character(source), as.character(category_name), sep = " | ")
+      source_category_key = paste(as.character(source), as.character(category_name), sep = " | "),
+      district_model_category_key = paste(as.character(district_name), as.character(model_category), sep = " | ")
     )
 }
 
@@ -463,7 +460,9 @@ prepare_prediction_for_bundle <- function(input_row, bundle) {
       category = "category_price_encoded",
       source = "source_price_encoded",
       district_category = "district_category_price_encoded",
-      source_category = "source_category_price_encoded"
+      source_category = "source_category_price_encoded",
+      model_category = "model_category_price_encoded",
+      district_model_category = "district_model_category_price_encoded"
     )
     for (encoding_name in names(encoding_cols)) {
       input_row <- apply_bundle_encoding(input_row, bundle$target_encodings[[encoding_name]], encoding_cols[[encoding_name]])
@@ -520,13 +519,11 @@ predict_log_with_model <- function(bundle, model_name, input_row) {
   as.numeric(pred)
 }
 
-# Cache để giữ model trong bộ nhớ tránh đọc đĩa liên tục
 GLOBAL_MODEL_CACHE <- new.env(parent = emptyenv())
 
 load_model_cached <- function(model_path) {
   if (!file.exists(model_path)) return(NULL)
 
-  # Tạo key duy nhất dựa trên đường dẫn và thời gian sửa đổi file
   mtime <- file.info(model_path)$mtime
   cache_key <- paste0(model_path, "_", as.character(as.numeric(mtime)))
 
@@ -534,13 +531,11 @@ load_model_cached <- function(model_path) {
     return(get(cache_key, envir = GLOBAL_MODEL_CACHE))
   }
 
-  # Đọc model mới và lưu vào cache
   if (isTRUE(getOption("bds.verbose_model_cache", FALSE))) {
     message("Đang tải mô hình từ đĩa: ", model_path)
   }
   bundle <- readRDS(model_path)
 
-  # Xóa các cache cũ của file này để tránh rò rỉ bộ nhớ
   existing_keys <- ls(envir = GLOBAL_MODEL_CACHE)
   old_keys <- existing_keys[startsWith(existing_keys, paste0(model_path, "_"))]
   if (length(old_keys) > 0) {
@@ -591,7 +586,6 @@ prediction_model_label <- function(is_rent) {
   model_label_vi(best_model_from_bundle(bundle))
 }
 
-
 build_prediction_row <- function(df, district, category, ward, area, rooms, transaction_type) {
   is_rent <- identical(transaction_type, "Cho thuê")
   segment_df <- df %>% filter(is_rent == !!is_rent)
@@ -619,6 +613,8 @@ build_prediction_row <- function(df, district, category, ward, area, rooms, tran
   }
 
   tibble(
+    title = paste(transaction_type, category, district),
+    address = district,
     district_name = district,
     category_name = category,
     ward = if_else(is.na(ward) | ward == "", "Không rõ", ward),
@@ -656,28 +652,16 @@ build_prediction_row <- function(df, district, category, ward, area, rooms, tran
     )
 }
 
-# ============================================================
-# ASSISTANT - SHARED TEXT HELPERS
-# Các hàm nhỏ bên dưới được Assistant V2 dùng lại để:
-# - chuẩn hóa câu hỏi tiếng Việt
-# - dò keyword/regex
-# - nhận diện quận/huyện
-# - dựng các block HTML giải thích ngắn
-# ============================================================
-
-# Chuẩn hóa text về dạng không dấu, lowercase để match keyword ổn định hơn.
 assistant_text_key <- function(x) {
   x <- strip_vietnamese(as.character(x))
   x <- gsub("[^a-z0-9 ]+", " ", x)
   gsub("\\s+", " ", trimws(x))
 }
 
-# Kiểm tra text có khớp ít nhất một pattern không.
 assistant_contains_any <- function(text, patterns) {
   any(vapply(patterns, function(pattern) grepl(pattern, text), logical(1)))
 }
 
-# Nhận diện khu vực được nhắc trong câu hỏi của người dùng.
 assistant_match_districts <- function(question, choices) {
   key <- assistant_text_key(question)
   choices <- sort(unique(as.character(choices)))
@@ -710,7 +694,6 @@ assistant_match_districts <- function(question, choices) {
   unique(matched)
 }
 
-# Lấy số đầu tiên trong một đoạn text, dùng cho ngân sách/diện tích/phòng.
 assistant_extract_number <- function(text) {
   value <- gsub(",", ".", text)
   number <- regmatches(value, regexpr("[0-9]+([.][0-9]+)?", value))
@@ -718,14 +701,12 @@ assistant_extract_number <- function(text) {
   suppressWarnings(as.numeric(number))
 }
 
-# Gắn nhãn độ tin cậy theo số lượng mẫu mà bot đang dùng.
 assistant_confidence_label <- function(n) {
   if (n >= 80) "Cao"
   else if (n >= 20) "Vừa"
   else "Thấp"
 }
 
-# Diễn giải một giá trị cao/thấp hơn benchmark bao nhiêu phần trăm.
 assistant_relative_text <- function(value, baseline, label = "mặt bằng chung") {
   if (!is.finite(value) || !is.finite(baseline) || baseline <= 0) return("chưa đủ dữ liệu để so chuẩn")
   pct <- (value / baseline - 1) * 100
@@ -733,7 +714,6 @@ assistant_relative_text <- function(value, baseline, label = "mặt bằng chung
   paste0(ifelse(pct > 0, "cao hơn ", "thấp hơn "), label, " khoảng ", round(abs(pct), 1), "%")
 }
 
-# Dựng một block HTML ngắn để bot trả lời có cấu trúc dễ đọc.
 assistant_insight_block <- function(title, items) {
   items <- items[!is.na(items) & nzchar(items)]
   if (length(items) == 0) return("")
@@ -744,15 +724,6 @@ assistant_insight_block <- function(title, items) {
     "</div>"
   )
 }
-
-# ============================================================
-# ASSISTANT V2 - LOCAL TOOL-BASED ASSISTANT
-# Luồng chính:
-# 1. trích tiêu chí từ câu hỏi
-# 2. gộp với context câu trước nếu là follow-up
-# 3. nhận diện intent
-# 4. gọi tool local: lọc data, so sánh, gợi ý listing hoặc gọi model dự đoán
-# ============================================================
 
 assistant_escape <- function(x) {
   htmltools::htmlEscape(as.character(x))
@@ -2351,15 +2322,6 @@ interactive_chart <- function(plot, tooltip = "all") {
     ) %>%
     config(displayModeBar = FALSE, responsive = TRUE)
 }
-
-# ============================================================
-# SUY LUAN THONG KE / BOOTSTRAP / CLT HELPERS
-# Cac ham trong khoi nay phuc vu tab "Suy luan thong ke":
-# - empirical probability va conditional probability
-# - standard error, sampling distribution theo CLT
-# - bootstrap confidence interval
-# - hypothesis testing va data quality diagnostics
-# ============================================================
 
 finite_positive <- function(x) {
   !is.na(x) & is.finite(x) & x > 0

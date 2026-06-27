@@ -1,8 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Kiểm tra nhanh dashboard, dữ liệu và artifact mô hình.
-# Script này không crawl web, chỉ kiểm tra dữ liệu/mô hình đã tạo.
-
 source("scripts/config/duong_dan_du_an.R")
 use_local_r_libs()
 source(PATHS$display_labels_script)
