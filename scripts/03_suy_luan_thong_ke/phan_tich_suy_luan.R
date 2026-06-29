@@ -201,16 +201,13 @@ run_statistical_inference <- function(bootstrap_reps = as.integer(Sys.getenv("BO
 
   if (nrow(bootstrap_tbl) > 0) {
     p_boot <- bootstrap_tbl %>%
-      # Tạo biến phân loại bảng facet và rút gọn lại nhãn hiển thị ở trục dọc (chỉ giữ lại tên Quận)
       mutate(
         type = if_else(grepl("^Bán", group), "Thị trường: Bán", "Thị trường: Cho thuê"),
         district_clean = gsub("Bán - |Cho thuê - ", "", group)
       ) %>%
-      # Vẽ theo nhãn rút gọn district_clean thay vì group cũ
       ggplot(aes(x = reorder(district_clean, median_value), y = median_value / 1e6)) +
       geom_pointrange(aes(ymin = ci_low / 1e6, ymax = ci_high / 1e6), color = "#C0504D") +
       coord_flip() +
-      # ĐỔI THÀNH scales = "free" ĐỂ GIẢI PHÓNG CẢ TRỤC X LẪN TRỤC Y
       facet_wrap(~type, scales = "free", ncol = 1) + 
       labs(
         title = "Bootstrap CI trung vị giá/m² của các khu vực nhiều tin",
@@ -220,7 +217,7 @@ run_statistical_inference <- function(bootstrap_reps = as.integer(Sys.getenv("BO
       theme_minimal(base_size = 12) +
       theme(
         strip.text = element_text(face = "bold", size = 11),
-        panel.spacing = unit(1.5, "lines") # Tăng khoảng cách giữa 2 bảng cho thoáng
+        panel.spacing = unit(1.5, "lines") 
       )
 
     ggsave(file.path(PLOT_DIR, "10_bootstrap_ci_trung_vi_gia_m2.png"), p_boot, width = 10, height = 8, dpi = 160)
