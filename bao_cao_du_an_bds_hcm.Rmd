@@ -801,6 +801,152 @@ Nhận xét: biểu đồ khoảng tin cậy theo quận/huyện chuyển từ m
 
 Khi hai khoảng tin cậy chồng lấn nhiều, không nên kết luận mạnh rằng một quận “đắt hơn rõ rệt” quận còn lại chỉ vì điểm trung bình cao hơn. Ngược lại, nếu một quận vừa có điểm ước lượng cao vừa có khoảng tin cậy tách biệt hơn, nhận định về mặt bằng giá sẽ đáng tin hơn. Biểu đồ này bổ sung cho biểu đồ giá/m² ở phần trực quan hóa bằng cách đưa thêm yếu tố bất định mẫu vào phân tích.
 
+## Phân phối giá/m² giữa các khu vực
+
+```{r stat-ecdf, out.width='100%'}
+sale_df <- featured %>%
+  filter(
+    transaction_type == "Bán",
+    price_per_m2 > 0,
+    !is.na(district_name),
+    district_name != "Không rõ",
+    !is.na(category_name),
+    category_name != "Không rõ"
+  ) %>%
+  mutate(
+    coord_status = if_else(
+      !is.na(lat) & !is.na(lon) &
+        lat >= 10.30 & lat <= 11.20 &
+        lon >= 106.00 & lon <= 107.30,
+      "Tọa độ gốc từ nguồn",
+      "Ước lượng theo khu vực cũ"
+    )
+  )
+
+if (nrow(sale_df) > 0) {
+  display_districts <- sale_df %>%
+    count(district_name, sort = TRUE) %>%
+    pull(district_name)
+
+  ecdf_df <- sale_df %>%
+    mutate(
+      district_name = factor(district_name, levels = display_districts),
+      price_per_m2_million = price_per_m2 / 1e6
+    ) %>%
+    arrange(district_name, price_per_m2_million) %>%
+    group_by(district_name) %>%
+    mutate(cdf = row_number() / n()) %>%
+    ungroup()
+
+  ggplot(ecdf_df, aes(x = price_per_m2_million, y = cdf, color = district_name)) +
+    geom_step(linewidth = 0.9, alpha = 0.8) +
+    scale_color_manual(values = hcl.colors(length(display_districts), "Dynamic")) +
+    labs(
+      title = "Phân phối tích lũy giá/m² của tất cả các khu vực",
+      x = "Giá/m² (triệu đồng/m²)",
+      y = "Xác suất tích lũy",
+      color = "Khu vực"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(legend.position = "bottom", legend.key.width = unit(1.2, "lines"))
+} else {
+  plot(0, type = "n", axes = FALSE, xlab = "", ylab = "")
+}
+```
+
+Nhận xét: biểu đồ phân phối tích lũy cho thấy cách giá/m² phân bố trong từng khu vực và giúp so sánh nhanh phần trăm tin ở các mức giá khác nhau. Nếu đường của một khu vực nằm phía trái và dốc lên sớm hơn, điều đó cho thấy khu vực đó có nhiều tin ở mức giá thấp hơn; nếu đường nằm phía phải thì khu vực đó có nhiều tin ở mức giá cao hơn. Đây là cách trực quan hóa phù hợp khi dữ liệu giá bị lệch phải và có outlier.
+
+## Xác suất có điều kiện P(loại BĐS | khu vực)
+
+```{r stat-conditional-prob, out.width='100%'}
+if (nrow(sale_df) > 0) {
+  top_categories <- sale_df %>%
+    count(category_name, sort = TRUE) %>%
+    slice_head(n = 8) %>%
+    pull(category_name)
+  
+  display_districts <- sale_df %>%
+    count(district_name, sort = TRUE) %>%
+    slice_head(n = 10) %>%
+    pull(district_name)
+  
+  prob_df <- sale_df %>%
+    filter(district_name %in% display_districts,
+           category_name %in% top_categories) %>%
+    count(district_name, category_name) %>%
+    group_by(district_name) %>%
+    mutate(prob = n / sum(n)) %>%
+    ungroup() %>%
+    tidyr::complete(district_name, category_name, fill = list(prob = 0)) %>%
+    mutate(
+      district_name = factor(district_name, levels = display_districts),
+      category_name = factor(category_name, levels = rev(top_categories))
+    )
+  
+  ggplot(prob_df, aes(x = district_name, y = category_name, fill = prob)) +
+    geom_tile(color = "white") +
+    scale_fill_distiller(
+      palette = "Blues",
+      direction = -1, 
+      limits = c(0, 1),
+      na.value = "transparent"
+    ) +
+    labs(fill = "prob") +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 35, hjust = 1),
+      panel.grid = element_blank()
+    )
+} else {
+  plot(0, type = "n", axes = FALSE, xlab = "", ylab = "")
+}
+```
+
+Nhận xét: biểu đồ này giúp nhìn trực tiếp cấu trúc phân phối của loại BĐS trong từng khu vực. Nếu một ô có màu đậm hơn, điều đó cho thấy xác suất xuất hiện của loại tài sản đó trong khu vực đó cao hơn. Kết quả thường phản ánh sự khác biệt về định hướng thị trường: các khu vực trung tâm có thể tập trung nhiều căn hộ, trong khi khu vực ngoại thành hoặc khu dân cư có nhiều nhà phố hoặc đất nền.
+
+## Bảng xác suất thực nghiệm
+
+```{r stat-empirical-probability}
+if (nrow(sale_df) > 0) {
+  district_focus <- sale_df %>%
+    count(district_name, sort = TRUE) %>%
+    slice(1) %>%
+    pull(district_name)
+
+  category_focus <- sale_df %>%
+    count(category_name, sort = TRUE) %>%
+    slice(1) %>%
+    pull(category_name)
+
+  q3_price <- quantile(sale_df$price_per_m2, 0.75, na.rm = TRUE)
+
+  empirical_prob_tbl <- tibble::tibble(
+    `Xác suất thực nghiệm` = c(
+      paste0("P(khu vực = ", district_focus, ")"),
+      paste0("P(loại BĐS = ", category_focus, ")"),
+      "P(giá/m² >= Q3)",
+      paste0("P(loại BĐS = ", category_focus, " | khu vực = ", district_focus, ")"),
+      "P(tọa độ gốc từ nguồn)"
+    ),
+    `Giá trị` = c(
+      format_pct(mean(sale_df$district_name == district_focus, na.rm = TRUE)),
+      format_pct(mean(sale_df$category_name == category_focus, na.rm = TRUE)),
+      format_pct(mean(sale_df$price_per_m2 >= q3_price, na.rm = TRUE)),
+      format_pct(mean(sale_df$category_name[sale_df$district_name == district_focus] == category_focus, na.rm = TRUE)),
+      format_pct(mean(sale_df$coord_status == "Tọa độ gốc từ nguồn", na.rm = TRUE))
+    )
+  )
+
+  empirical_prob_tbl %>%
+    kable(caption = "Bảng xác suất thực nghiệm trên dữ liệu đã lọc")
+} else {
+  tibble::tibble(`Thông báo` = "Không có dữ liệu đủ lớn để tính xác suất thực nghiệm.") %>%
+    kable()
+}
+```
+
+Nhận xét: bảng xác suất thực nghiệm cho phép chuyển các quan sát trong dữ liệu thành các xác suất trực quan và gần với thực tế hơn so với suy luận lý thuyết thuần túy. Những số này có thể dùng làm điểm khởi đầu cho các phân tích sâu hơn, như đánh giá độ thường xuyên của loại BĐS trong từng khu vực hay kiểm tra xem một tin đăng có nằm trong nhóm giá cao hay không.
+
 ## Bootstrap trung vị giá/m²
 
 ```{r bootstrap-ci}
