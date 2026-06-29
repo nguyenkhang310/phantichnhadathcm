@@ -17,7 +17,7 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
     ),
-    tags$link(rel = "stylesheet", href = "giao_dien.css?v=mobile-polish-20260624c"),
+    tags$link(rel = "stylesheet", href = "giao_dien.css?v=report-plots-20260629"),
     tags$script(src = "tuong_tac.js?v=mobile-polish-20260624c")
   ),
   div(
@@ -26,7 +26,14 @@ ui <- fluidPage(
       class = "app-sidebar",
       div(
         class = "app-brand",
-        div(class = "brand-logo", tags$img(src = "hcmute-logo.png", alt = "HCM-UTE")),
+        div(
+          class = "brand-logo",
+          tags$img(
+            src = "assets/hcmute-logo.png?v=20260629",
+            alt = "HCM-UTE",
+            onerror = "this.onerror=null;this.src='hcmute-logo.png?v=20260629';"
+          )
+        ),
         div(
           class = "brand-text",
           div(class = "brand-title", "Môn: Lập Trình R"),
@@ -50,6 +57,7 @@ ui <- fluidPage(
         nav_link("map", "Bản đồ dữ liệu", "map-location-dot"),
         nav_link("analysis", "Phân tích giá", "chart-column"),
         nav_link("statistics", "Suy luận thống kê", "square-root-variable"),
+        nav_link("report_plots", "Báo cáo biểu đồ", "images"),
         nav_link("predict", "Dự đoán giá", "calculator"),
         nav_link("diagnostics", "Đánh giá mô hình", "clipboard-check"),
         nav_link("clusters", "Phân cụm khu vực", "layer-group"),
@@ -180,7 +188,7 @@ ui <- fluidPage(
                 column(6, app_panel("Tỷ trọng nguồn dữ liệu", "Tỷ trọng nguồn trong nhóm giao dịch đang chọn", chart_mode_control("source_radar_tx"), plotlyOutput("source_sunburst_plot", height = 390)))
               ),
               fluidRow(
-                column(6, app_panel("Xu hướng theo thời gian", "Loại các ngày đăng trong tương lai để tránh nhiễu", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
+                column(6, app_panel("Độ phủ theo tháng", "Kiểm tra phân bố thời gian của dữ liệu; không suy luận xu hướng thị trường", chart_mode_control("time_trend_tx"), plotlyOutput("time_trend_plot", height = 340))),
                 column(6, app_panel("Tương quan biến số", "Hệ số tương quan trên các biến số chính", chart_mode_control("correlation_tx"), plotlyOutput("correlation_plot", height = 340)))
               ),
               app_panel(
@@ -189,6 +197,15 @@ ui <- fluidPage(
                 chart_mode_control("ecdf_tx"),
                 plotlyOutput("price_ecdf_plot", height = 340)
               )
+            )
+          ),
+
+          tabPanel(
+            title = "report_plots", value = "report_plots",
+            div(
+              class = "page-wrap report-plot-page",
+              h1(class = "page-title", "Báo cáo biểu đồ"),
+              uiOutput("report_plot_gallery")
             )
           ),
 

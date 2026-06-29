@@ -141,12 +141,24 @@ run_eda <- function() {
     mutate(posted_month = floor_date(as.Date(posted_at), "month")) %>%
     filter(!is.na(posted_month), posted_month <= Sys.Date()) %>%
     count(posted_month, transaction_type) %>%
-    ggplot(aes(x = posted_month, y = n, color = transaction_type)) +
-    geom_line(linewidth = 0.9) +
-    geom_point(size = 1.5) +
-    scale_y_continuous(labels = format_count_axis) +
-    labs(title = "Xu hướng số tin theo tháng", x = "Tháng", y = "Số tin", color = "Giao dịch") +
-    theme_minimal(base_size = 12)
+    mutate(n_plot = pmax(n, 1L)) %>%
+    ggplot(aes(x = posted_month, y = n_plot, color = transaction_type)) +
+    geom_segment(aes(xend = posted_month, y = 1, yend = n_plot), linewidth = 0.7, alpha = 0.65) +
+    geom_point(size = 1.8) +
+    facet_wrap(~ transaction_type, ncol = 1) +
+    scale_y_log10(
+      breaks = c(1, 10, 100, 1000, 10000),
+      labels = format_count_axis
+    ) +
+    labs(
+      title = "Độ phủ thời gian của dữ liệu",
+      subtitle = "Thang log10; dùng để kiểm tra độ phủ dữ liệu, không suy ra xu hướng thị trường",
+      x = "Tháng đăng/ghi nhận",
+      y = "Số tin",
+      color = "Giao dịch"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(legend.position = "none")
   save_plot(p6, "06_xu_huong_tin_theo_ngay.png")
 
   if (all(c("lat", "lon") %in% names(df))) {

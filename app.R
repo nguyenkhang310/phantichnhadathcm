@@ -42,6 +42,10 @@ if (is.na(CONG_UNG_DUNG) || CONG_UNG_DUNG <= 0) {
   stop("BDS_APP_PORT phải là một số nguyên dương.")
 }
 
+dir.create(PATHS$plot_dir, recursive = TRUE, showWarnings = FALSE)
+shiny::addResourcePath("plots", normalizePath(PATHS$plot_dir, mustWork = FALSE))
+shiny::addResourcePath("assets", normalizePath("www", mustWork = TRUE))
+
 DATA_PATH <- PATHS$featured_csv
 RAW_PATH <- PATHS$combined_raw_csv
 METRICS_PATH <- PATHS$metrics_csv

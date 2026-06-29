@@ -1,9 +1,10 @@
 server <- function(input, output, session) {
   map_marker_limit <- performance_limit("BDS_MAP_MAX_MARKERS", 35000)
+  stat_all_districts_value <- "__all__"
 
   nav_tabs <- c(
     "overview", "map", "analysis", "statistics", "predict",
-    "diagnostics", "clusters", "data", "assistant"
+    "report_plots", "diagnostics", "clusters", "data", "assistant"
   )
 
   invisible(lapply(nav_tabs, function(tab_id) {
@@ -55,6 +56,10 @@ server <- function(input, output, session) {
 
   assistant_messages <- reactiveVal(list())
   assistant_context <- reactiveVal(assistant_empty_context())
+
+  output$report_plot_gallery <- renderUI({
+    report_plot_gallery_ui(report_plot_catalog())
+  })
 
   output$gemini_chat_view <- renderUI({
     messages <- assistant_messages()
@@ -370,21 +375,59 @@ server <- function(input, output, session) {
     unique(choices)
   })
 
+  stat_district_select_choices <- reactive({
+    choices <- stat_district_choices()
+    c("Tất cả khu vực" = stat_all_districts_value, setNames(choices, choices))
+  })
+
   stat_selected_district_a <- reactive({
     choices <- stat_district_choices()
-    if (length(choices) == 0) return(NA_character_)
     value <- input$stat_district_a
-    if (!is.null(value) && length(value) > 0 && value[[1]] %in% choices) value[[1]] else choices[[1]]
+    if (!is.null(value) && length(value) > 0 && identical(value[[1]], stat_all_districts_value)) {
+      return(stat_all_districts_value)
+    }
+    if (length(choices) == 0) return(NA_character_)
+    if (!is.null(value) && length(value) > 0 && value[[1]] %in% choices) value[[1]] else stat_all_districts_value
   })
 
   stat_selected_district_b <- reactive({
     choices <- stat_district_choices()
-    if (length(choices) == 0) return(NA_character_)
     value <- input$stat_district_b
+    if (!is.null(value) && length(value) > 0 && identical(value[[1]], stat_all_districts_value)) {
+      return(stat_all_districts_value)
+    }
+    if (length(choices) == 0) return(NA_character_)
     if (!is.null(value) && length(value) > 0 && value[[1]] %in% choices) {
       return(value[[1]])
     }
-    if (length(choices) >= 2) choices[[2]] else choices[[1]]
+    stat_all_districts_value
+  })
+
+  stat_selected_specific_districts <- reactive({
+    choices <- stat_district_choices()
+    selected <- unique(c(stat_selected_district_a(), stat_selected_district_b()))
+    selected <- selected[!is.na(selected) & selected != stat_all_districts_value & selected %in% choices]
+    selected
+  })
+
+  stat_comparison_districts <- reactive({
+    choices <- stat_district_choices()
+    if (length(choices) == 0) return(character())
+
+    selected <- stat_selected_specific_districts()
+    if (length(selected) >= 2) return(selected[seq_len(2)])
+    if (length(selected) == 1) {
+      fallback <- setdiff(choices, selected)
+      return(unique(c(selected, fallback[seq_len(min(1, length(fallback)))])))
+    }
+    choices[seq_len(min(2, length(choices)))]
+  })
+
+  stat_focus_district <- reactive({
+    selected <- stat_selected_specific_districts()
+    if (length(selected) > 0) return(selected[[1]])
+    choices <- stat_district_choices()
+    if (length(choices) > 0) choices[[1]] else NA_character_
   })
 
   diagnostic_data <- reactive({
@@ -580,15 +623,23 @@ server <- function(input, output, session) {
   })
 
   output$stat_district_a_filter <- renderUI({
-    choices <- stat_district_choices()
-    selected <- if (length(choices) > 0) choices[[1]] else ""
-    selectInput("stat_district_a", NULL, choices = choices, selected = selected, selectize = FALSE)
+    selectInput(
+      "stat_district_a",
+      NULL,
+      choices = stat_district_select_choices(),
+      selected = stat_all_districts_value,
+      selectize = FALSE
+    )
   })
 
   output$stat_district_b_filter <- renderUI({
-    choices <- stat_district_choices()
-    selected <- if (length(choices) >= 2) choices[[2]] else if (length(choices) == 1) choices[[1]] else ""
-    selectInput("stat_district_b", NULL, choices = choices, selected = selected, selectize = FALSE)
+    selectInput(
+      "stat_district_b",
+      NULL,
+      choices = stat_district_select_choices(),
+      selected = stat_all_districts_value,
+      selectize = FALSE
+    )
   })
 
   output$stat_filter_summary <- renderUI({
@@ -605,6 +656,9 @@ server <- function(input, output, session) {
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Giao dịch"),
           div(class = "filter-chip-value", tx)),
+      div(class = "filter-chip",
+          div(class = "filter-chip-label", "Khu vực"),
+          div(class = "filter-chip-value", active_or_all(stat_selected_specific_districts()))),
       div(class = "filter-chip",
           div(class = "filter-chip-label", "Nguồn tọa độ"),
           div(class = "filter-chip-value", coordinate_source_label(df, compact = TRUE)))
@@ -1181,46 +1235,56 @@ server <- function(input, output, session) {
 
   output$time_trend_plot <- renderPlotly({
     tx <- chart_transaction("time_trend_tx")
-    m2_info <- price_m2_display_info(tx)
     df <- analysis_chart_data("time_trend_tx") %>%
       mutate(posted_date = as.Date(posted_at)) %>%
-      filter(!is.na(posted_date), posted_date <= Sys.Date(), finite_positive(price_per_m2))
+      filter(!is.na(posted_date), posted_date <= Sys.Date())
     validate(need(nrow(df) > 0, paste("Không có dữ liệu ngày hợp lệ cho", tx)))
 
     trend_df <- df %>%
       mutate(posted_month = lubridate::floor_date(posted_date, unit = "month")) %>%
       group_by(posted_month) %>%
-      summarise(
-        n = n(),
-        median_m2 = median(price_per_m2, na.rm = TRUE) / m2_info$scale,
-        .groups = "drop"
-      ) %>%
-      arrange(posted_month)
+      summarise(n = n(), .groups = "drop") %>%
+      arrange(posted_month) %>%
+      mutate(
+        n_plot = pmax(n, 1L),
+        tooltip = paste0(
+          "Giao dịch: ", tx,
+          "<br>Tháng: ", format(posted_month, "%m/%Y"),
+          "<br>Số tin: ", format_count_vi(n)
+        )
+      )
 
-    plot_ly(trend_df, x = ~posted_month) %>%
-      add_bars(
-        y = ~n,
-        name = "Số tin",
-        marker = list(color = "rgba(0,114,188,0.25)"),
-        hovertemplate = "Tháng: %{x|%m/%Y}<br>Số tin: %{y}<extra></extra>"
-      ) %>%
-      add_lines(
-        y = ~median_m2,
-        name = paste0("Giá/m² trung vị (", m2_info$unit, ")"),
-        yaxis = "y2",
-        line = list(color = "#ef4444", width = 3),
-        hovertemplate = paste0("Tháng: %{x|%m/%Y}<br>Giá/m²: %{y:.1f} ", m2_info$unit, "<extra></extra>")
-      ) %>%
+    plot_ly(
+      trend_df,
+      x = ~posted_month,
+      y = ~n_plot,
+      type = "bar",
+      text = ~tooltip,
+      hovertemplate = "%{text}<extra></extra>",
+      marker = list(color = if (identical(tx, "Cho thuê")) "#10b981" else "#0072bc", opacity = 0.78)
+    ) %>%
       layout(
-        barmode = "overlay",
-        margin = list(l = 82, r = 82, t = 12, b = 96),
+        margin = list(l = 82, r = 24, t = 12, b = 90),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         font = list(family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif", color = "#1f2937"),
-        legend = list(orientation = "h", x = 0, y = -0.28, font = list(size = 11), itemwidth = 30),
         xaxis = list(title = "", automargin = TRUE, gridcolor = "#e5e7eb"),
-        yaxis = list(title = "Số tin", gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb"),
-        yaxis2 = list(title = m2_info$unit, overlaying = "y", side = "right", showgrid = FALSE)
+        yaxis = list(
+          title = "Số tin (log10)",
+          type = "log",
+          gridcolor = "#e5e7eb",
+          zerolinecolor = "#e5e7eb"
+        ),
+        annotations = list(list(
+          x = 0,
+          y = 1.13,
+          xref = "paper",
+          yref = "paper",
+          text = "Dùng để kiểm tra độ phủ dữ liệu theo tháng, không suy ra xu hướng thị trường",
+          showarrow = FALSE,
+          xanchor = "left",
+          font = list(size = 12, color = "#64748b")
+        ))
       ) %>%
       config(displayModeBar = FALSE, responsive = TRUE)
   })
@@ -1346,22 +1410,29 @@ server <- function(input, output, session) {
       filter(!is_missing_label(district_name), !is_missing_label(category_name))
     validate(need(nrow(df) > 0, "Không có dữ liệu để tính xác suất có điều kiện."))
 
-    top_districts <- df %>% count(district_name, sort = TRUE) %>% slice_head(n = 10) %>% pull(district_name)
+    selected_districts <- stat_selected_specific_districts()
+    display_districts <- if (length(selected_districts) > 0) {
+      selected_districts
+    } else {
+      df %>%
+        count(district_name, sort = TRUE) %>%
+        pull(district_name)
+    }
     top_categories <- df %>% count(category_name, sort = TRUE) %>% slice_head(n = 8) %>% pull(category_name)
     prob_df <- df %>%
-      filter(district_name %in% top_districts, category_name %in% top_categories) %>%
+      filter(district_name %in% display_districts, category_name %in% top_categories) %>%
       count(district_name, category_name) %>%
       group_by(district_name) %>%
       mutate(prob = n / sum(n)) %>%
       ungroup()
 
-    z <- matrix(0, nrow = length(top_categories), ncol = length(top_districts), dimnames = list(top_categories, top_districts))
+    z <- matrix(0, nrow = length(top_categories), ncol = length(display_districts), dimnames = list(top_categories, display_districts))
     for (i in seq_len(nrow(prob_df))) {
       z[prob_df$category_name[[i]], prob_df$district_name[[i]]] <- prob_df$prob[[i]]
     }
 
     plot_ly(
-      x = top_districts,
+      x = display_districts,
       y = top_categories,
       z = z,
       type = "heatmap",
@@ -1382,7 +1453,8 @@ server <- function(input, output, session) {
   output$stat_distribution_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
-    districts <- unique(c(stat_selected_district_a(), stat_selected_district_b()))
+    districts <- stat_comparison_districts()
+    validate(need(length(districts) > 0, "Chưa có khu vực phù hợp để vẽ phân phối."))
     df <- stat_base_data() %>%
       filter(district_name %in% districts, finite_positive(price_per_m2)) %>%
       filter_price_m2_chart_outliers() %>%
@@ -1434,7 +1506,8 @@ server <- function(input, output, session) {
   output$bootstrap_plot <- renderPlotly({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
-    district <- stat_selected_district_a()
+    district <- stat_focus_district()
+    validate(need(!is.na(district), "Chưa có khu vực phù hợp để bootstrap."))
     values <- stat_base_data() %>%
       filter(district_name == district, finite_positive(price_per_m2)) %>%
       pull(price_per_m2)
@@ -1480,8 +1553,12 @@ server <- function(input, output, session) {
   output$hypothesis_table <- renderTable({
     tx <- input$stat_transaction %||% "Bán"
     m2_info <- price_m2_display_info(tx)
-    district_a <- stat_selected_district_a()
-    district_b <- stat_selected_district_b()
+    districts <- stat_comparison_districts()
+    if (length(districts) < 2) {
+      return(data.frame(Ket_qua = "Chưa đủ dữ liệu để kiểm định hai nhóm."))
+    }
+    district_a <- districts[[1]]
+    district_b <- districts[[2]]
     alpha <- 0.05
     test_df <- stat_base_data() %>%
       filter(district_name %in% c(district_a, district_b), finite_positive(price_per_m2)) %>%
@@ -1513,7 +1590,7 @@ server <- function(input, output, session) {
 
   output$empirical_probability_table <- renderTable({
     df <- stat_base_data()
-    district <- stat_selected_district_a()
+    district <- stat_focus_district()
     category <- input$stat_category
     top_category <- df %>%
       filter(!is_missing_label(category_name)) %>%
@@ -1853,15 +1930,7 @@ server <- function(input, output, session) {
       m %>% transmute(model, metric = "Chỉ số MAE", value = mae_vnd / min_mae * 100)
     ) %>%
       mutate(
-        model_short = dplyr::recode(
-          model,
-          "Linear Regression" = "Tuyến tính",
-          "Random Forest" = "Rừng NN",
-          "XGBoost" = "XGB",
-          "RF + XGBoost Ensemble" = "Tổ hợp",
-          "Tuned RF/XGBoost Ensemble" = "Tối ưu",
-          .default = model
-        ),
+        model_short = model_label_vi(model),
         model_short = factor(model_short, levels = unique(model_short)),
         tooltip = paste0("Mô hình: ", model_label_vi(model), "<br>Chỉ số: ", metric, "<br>Giá trị: ", format_number_vi(value, 1))
       )
@@ -1884,7 +1953,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         legend = list(orientation = "h", x = 0, y = -0.30, font = list(size = 11), itemwidth = 30),
-        xaxis = list(title = "", automargin = TRUE, tickangle = 0, tickfont = list(size = 11)),
+        xaxis = list(title = "", automargin = TRUE, tickangle = 20, tickfont = list(size = 11)),
         yaxis = list(title = list(text = "Giá trị / chỉ số", standoff = 18), automargin = TRUE, gridcolor = "#e5e7eb", zerolinecolor = "#e5e7eb")
       ) %>%
       config(displayModeBar = FALSE, responsive = TRUE)

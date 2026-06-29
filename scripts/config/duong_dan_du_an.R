@@ -17,7 +17,6 @@ PATHS <- list(
   output_dir = "outputs",
   model_dir = "outputs/models",
   plot_dir = "outputs/plots",
-  report_figure_dir = "outputs/figures",
 
   chotot_raw_csv = "data/raw/chotot/chotot_schema_chuan.csv",
   chotot_sqlite = "data/cache/cache_chotot.sqlite",

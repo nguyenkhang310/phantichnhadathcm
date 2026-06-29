@@ -2587,3 +2587,122 @@ predict_prices_for_rows <- function(df, bundle) {
   }
   expm1(as.numeric(pred_log))
 }
+
+report_plot_catalog <- function() {
+  tibble::tribble(
+    ~section, ~title, ~filename, ~comment,
+    "Trực quan hóa dữ liệu", "Cơ cấu nguồn dữ liệu", "11_co_cau_nguon_du_lieu.png",
+    "Nhận xét: dữ liệu hiện tại có khoảng 30 nghìn tin và số lượng hai nhóm `Bán` - `Cho thuê` nhìn chung gần cân bằng, nhưng cơ cấu theo nguồn lại rất lệch. Mogi là nguồn lớn nhất và nghiêng mạnh về tin cho thuê, trong khi Chợ Tốt đóng góp chủ yếu cho nhóm bán; các nguồn như Alonhadat, Lựa Chọn Nhà Đất, Homedy và Mua Bán có quy mô nhỏ hơn nhiều. Điều này có nghĩa là sự cân bằng tổng thể giữa bán và thuê không đồng nghĩa với việc từng nguồn đại diện đều cho cả hai thị trường.",
+
+    "Trực quan hóa dữ liệu", "Top khu vực có nhiều tin", "04_top_quan_nhieu_tin.png",
+    "Nhận xét: trong bộ dữ liệu thu thập được, các khu vực có mật độ tin cao nhất là Thành phố Thủ Đức, Quận 7, Bình Thạnh, Tân Bình, Bình Tân và Quận 1. Nhóm xem đây là các khu vực có độ phủ mẫu tốt hơn để phân tích, nhưng không kết luận trực tiếp rằng đây là những nơi có giao dịch thực tế cao nhất. Lý do số tin nhiều có thể đến từ quy mô khu vực, mức độ phổ biến của nguồn rao, hoặc việc một số phân khúc được đăng online nhiều hơn.",
+
+    "Trực quan hóa dữ liệu", "Cơ cấu loại bất động sản", "12_co_cau_loai_bat_dong_san.png",
+    "Nhận xét: cơ cấu loại tài sản cho thấy dữ liệu không phải một khối đồng nhất. Nhóm nhà phố, phòng/cho thuê, căn hộ/chung cư, đất và biệt thự xuất hiện với tỷ trọng lớn, nhưng mỗi nhóm lại gắn với một cơ chế định giá khác nhau. Tin cho thuê tập trung nhiều ở phòng/cho thuê, căn hộ và nhà phố; tin bán nổi bật hơn ở nhà ở, nhà phố, đất và căn hộ/chung cư. Vì vậy nếu lấy toàn bộ dữ liệu để tính một mặt bằng giá chung, kết quả sẽ bị trộn giữa nhiều thị trường nhỏ khác nhau.",
+
+    "Trực quan hóa dữ liệu", "Giá/m² theo loại bất động sản", "08_gia_m2_theo_loai_bds.png",
+    "Nhận xét: biểu đồ giá/m² theo loại BĐS cho thấy khác biệt giữa các nhóm sản phẩm lớn hơn nhiều so với khi chỉ nhìn giá tổng. Nhà phố, đất, biệt thự và bất động sản khác thường có biên độ rộng vì trong cùng một nhãn có thể trộn tài sản hẻm, mặt tiền, đất nền, tài sản thương mại hoặc nhà có dòng tiền cho thuê. Căn hộ và phòng thuê có xu hướng tập trung hơn, nhưng vẫn bị ảnh hưởng bởi vị trí, tòa nhà, nội thất và chất lượng tiện ích.",
+
+    "Trực quan hóa dữ liệu", "Phân phối giá", "01_phan_phoi_log_gia.png",
+    "Nhận xét: phân phối giá lệch phải rất mạnh ở cả hai nhóm giao dịch. Trong dữ liệu hiện tại, trung vị giá bán khoảng 6,3 tỷ đồng nhưng phân vị 90 đã lên khoảng 42 tỷ và phân vị 99 lên tới khoảng 235 tỷ; nhóm cho thuê có trung vị khoảng 26 triệu đồng/tháng nhưng cũng có các tin rất cao ở phân khúc mặt bằng, nhà nguyên căn hoặc tài sản thương mại. Điều này cho thấy phần lớn tin nằm ở vùng giá phổ biến, còn một nhóm nhỏ tài sản cao cấp/đặc thù tạo ra đuôi phân phối rất dài.",
+
+    "Trực quan hóa dữ liệu", "Phân phối giá theo khu vực", "02_gia_theo_quan_boxplot.png",
+    "Nhận xét: boxplot theo khu vực cho thấy không chỉ trung vị giá khác nhau mà độ phân tán trong từng quận cũng rất khác nhau. Các quận trung tâm và cận trung tâm thường có hộp giá cao hơn, nhưng cũng có nhiều điểm ngoại lệ vì cùng một quận có thể trộn căn hộ, nhà hẻm, nhà mặt tiền, biệt thự hoặc tài sản thương mại. Ngược lại, một số khu vực xa trung tâm có trung vị thấp hơn nhưng vẫn có các điểm giá cao nếu xuất hiện đất lớn, nhà mặt tiền hoặc dự án đặc thù.",
+
+    "Trực quan hóa dữ liệu", "Diện tích và giá", "03_dien_tich_va_gia.png",
+    "Nhận xét: diện tích và giá có quan hệ cùng chiều, nhưng mức độ chặt khác nhau giữa bán và cho thuê. Với nhóm cho thuê, quan hệ diện tích - giá rõ hơn vì tiền thuê thường tăng khá trực tiếp theo quy mô sử dụng, đặc biệt ở phòng, căn hộ, mặt bằng và nhà nguyên căn. Với nhóm bán, quan hệ này yếu và nhiễu hơn: một căn diện tích nhỏ ở Quận 1, Quận 3 hoặc mặt tiền kinh doanh có thể đắt hơn tài sản diện tích lớn ở khu vực xa trung tâm.",
+
+    "Trực quan hóa dữ liệu", "Phân bố địa lý tin đăng", "07_phan_bo_dia_ly_gia.png",
+    "Nhận xét: phân bố tọa độ giúp kiểm tra xem dữ liệu có phủ đúng không gian TP.HCM hay không. Các điểm tập trung nhiều ở khu vực nội thành, Thủ Đức, Quận 7, Bình Thạnh, Tân Bình và các trục đô thị có hoạt động rao tin mạnh. Điều này phù hợp với biểu đồ số tin theo quận, đồng thời cho thấy dữ liệu có tính đô thị rõ rệt hơn là phân bố đều trên toàn địa bàn.",
+
+    "Trực quan hóa dữ liệu", "Giá/m² theo khu vực", "05_top_quan_gia_m2_cao.png",
+    "Nhận xét: giá/m² giúp loại bớt ảnh hưởng của diện tích và làm nổi bật chênh lệch vị trí trong dữ liệu quan sát được. Với nhóm bán, Quận 1 có trung vị giá/m² cao nhất, tiếp theo là Quận 3, Phú Nhuận, Quận 10, Tân Bình và Bình Thạnh. Nhóm cho thuê cũng có mẫu tương tự, với Quận 1, Quận 3 và một số quận cận trung tâm nằm ở vùng giá/m² cao hơn.",
+
+    "Trực quan hóa dữ liệu", "Heatmap khu vực và loại BĐS", "13_heatmap_khu_vuc_loai_bds.png",
+    "Nhận xét: heatmap làm rõ điều mà biểu đồ giá/m² theo quận chưa thể hiện hết: giá cao không chỉ liên quan đến khu vực, mà còn liên quan đến loại tài sản. Trong dữ liệu quan sát được, các ô đậm ở nhóm bán tập trung tại Quận 1, Quận 3 và những loại có yếu tố đất/nhà phố/bất động sản thương mại, cho thấy nhóm này có mặt bằng giá/m² cao hơn trong dữ liệu. Ở nhóm cho thuê, nhà phố, biệt thự, căn hộ và phòng thuê tại khu trung tâm cũng có mặt bằng giá/m² cao hơn nhiều tổ hợp khác. Cần đặc biệt cẩn thận với các ô có số mẫu nhỏ hoặc nhãn loại tài sản chưa thật sạch. Dù biểu đồ đã lọc tối thiểu số tin, một vài tổ hợp như nhãn `Phòng/Cho thuê` trong nhóm bán có thể phản ánh nhiễu nhãn hoặc sản phẩm rất đặc thù, không nên dùng để kết luận thị trường. Cách đọc tốt nhất là tìm các cụm ô nhất quán theo vùng và loại BĐS, thay vì tập trung vào một ô đậm đơn lẻ.",
+
+    "Trực quan hóa dữ liệu", "Độ phủ thời gian của dữ liệu", "06_xu_huong_tin_theo_ngay.png",
+    "Nhận xét: biểu đồ này không được dùng để chứng minh thị trường có nhiều hay ít tin theo thời gian, mà dùng để kiểm tra **độ phủ thời gian của bộ dữ liệu**. Dữ liệu hiện tại là một snapshot tổng hợp từ nhiều nguồn rao online; phần lớn tin nằm ở giai đoạn thu thập chính 05-06/2026, trong khi các tháng cũ chủ yếu là những tin còn lưu ngày đăng/ghi nhận từ nguồn. Vì vậy nếu gọi đây là “xu hướng số tin đăng” thì rất dễ gây hiểu nhầm rằng thị trường tăng đột biến, trong khi thực chất đây là đặc điểm của quá trình thu thập dữ liệu. Điểm thuyết phục cần nhấn mạnh là: đây là dữ liệu phù hợp hơn cho phân tích mặt bằng giá theo khu vực, loại BĐS và đặc trưng tin đăng tại thời điểm thu thập, chưa phù hợp để kết luận xu hướng thị trường theo tháng. Các tháng có rất ít tin vẫn được giữ lại để minh bạch về độ phủ, nhưng khi phân tích giá theo thời gian cần đặt ngưỡng đủ mẫu hoặc chỉ dùng như kiểm tra chất lượng dữ liệu. Cách trình bày này biến một điểm yếu tiềm ẩn thành giới hạn phương pháp được nêu rõ, thay vì để người đọc hiểu nhầm là lỗi làm sạch dữ liệu.",
+
+    "Trực quan hóa dữ liệu", "Giá/m² theo tháng đủ mẫu", "14_xu_huong_thoi_gian.png",
+    "Nhận xét: vì độ phủ theo tháng không đồng đều, biểu đồ giá/m² theo thời gian chỉ hiển thị các tháng có đủ số tin tối thiểu trong từng nhóm giao dịch. Cách này tránh để những tháng chỉ có vài quan sát tạo ra đường giá nhiễu hoặc làm người đọc tưởng rằng dữ liệu có chuỗi thời gian đều. Kích thước điểm biểu diễn số tin, giúp thấy tháng nào có nền mẫu chắc hơn khi đọc trung vị giá/m². Biểu đồ này vẫn chỉ nên được xem là kiểm tra bổ trợ. Nếu muốn phân tích xu hướng giá thị trường thật sự, cần thu thập dữ liệu đều theo tháng, cố định nguồn, kiểm soát loại BĐS và loại bỏ ảnh hưởng của thời điểm crawl/import. Trong phạm vi báo cáo này, biến thời gian chủ yếu giúp đánh giá độ mới và độ phủ dữ liệu; trọng tâm phân tích đáng tin cậy hơn vẫn là mặt bằng giá theo khu vực, loại BĐS và các đặc trưng tài sản.",
+
+    "Trực quan hóa dữ liệu", "Tương quan biến số", "15_ma_tran_tuong_quan.png",
+    "Nhận xét: ma trận tương quan cho thấy một số quan hệ đúng về mặt cấu trúc dữ liệu, ví dụ `log_price` liên hệ rất mạnh với `log_price_per_m2` vì giá/m² được tính trực tiếp từ giá và diện tích. Các biến như số phòng, độ dài tiêu đề hoặc diện tích có tương quan riêng lẻ thấp đến trung bình với giá, nhưng điều đó không có nghĩa chúng không quan trọng. Theo cách nhóm đọc dữ liệu, vai trò của diện tích chỉ rõ hơn khi biết khu vực và loại tài sản; số phòng cũng cần đọc riêng giữa căn hộ, nhà phố và phòng thuê. Do tương quan chỉ đo từng cặp biến, nó dễ bỏ sót thông tin chỉ rõ khi kết hợp nhiều biến với nhau. Ví dụ khoảng cách đến trung tâm có thể không tương quan mạnh trên toàn bộ dữ liệu vì mỗi phân khúc có quy luật riêng, nhưng vẫn hữu ích khi kết hợp với quận/huyện, loại BĐS và giá/m² lịch sử. Vì vậy phần này nên được xem là kiểm tra sơ bộ trước mô hình hóa; kết luận dự đoán cần dựa trên mô hình đa biến, kiểm soát rò rỉ dữ liệu và đánh giá trên tập kiểm định.",
+
+    "Suy luận thống kê", "Khoảng tin cậy giá bán/m² theo khu vực", "09_ci_gia_ban_m2_quan.png",
+    "Nhận xét: biểu đồ khoảng tin cậy theo quận/huyện chuyển từ mô tả EDA sang suy luận thống kê: không chỉ hỏi quận nào có giá/m² trung bình cao hơn, mà còn hỏi mức ước lượng đó chắc đến đâu. Các quận có nhiều tin và dữ liệu tương đối đồng nhất thường có khoảng tin cậy hẹp hơn; các quận ít tin hoặc trộn nhiều loại tài sản dễ có khoảng rộng hơn, khiến việc so sánh thứ hạng kém chắc chắn. Khi hai khoảng tin cậy chồng lấn nhiều, không nên kết luận mạnh rằng một quận “đắt hơn rõ rệt” quận còn lại chỉ vì điểm trung bình cao hơn. Ngược lại, nếu một quận vừa có điểm ước lượng cao vừa có khoảng tin cậy tách biệt hơn, nhận định về mặt bằng giá sẽ đáng tin hơn. Biểu đồ này bổ sung cho biểu đồ giá/m² ở phần trực quan hóa bằng cách đưa thêm yếu tố bất định mẫu vào phân tích.",
+
+    "Suy luận thống kê", "Bootstrap trung vị giá/m²", "10_bootstrap_ci_trung_vi_gia_m2.png",
+    "Nhận xét: bootstrap phù hợp vì giá/m² lệch phải và có outlier, trong khi giả định phân phối chuẩn có thể quá mạnh. Kết quả bootstrap cho thấy độ bất định của trung vị giá/m²; nhóm có khoảng CI rộng thường có dữ liệu phân tán, số mẫu nhỏ hoặc trộn nhiều phân khúc. Vì vậy khi đưa ra kết luận về khu vực đắt/rẻ, nên ưu tiên nhóm có CI không chồng lấn quá nhiều và có số tin đủ lớn.",
+
+    "Suy luận thống kê", "Mô phỏng định lý giới hạn trung tâm", "16_mo_phong_clt_gia_ban_m2.png",
+    "Nhận xét: dù dữ liệu gốc lệch, trung bình mẫu qua nhiều lần lấy mẫu có xu hướng tập trung quanh trung bình tổng thể khi cỡ mẫu đủ lớn. Tuy nhiên kết quả này là minh họa định lý giới hạn trung tâm trong dữ liệu hiện có, không làm mất đi vấn đề outlier ở cấp từng tin. Vì vậy phần mô hình vẫn cần log-transform, lọc ngoại lệ theo nhóm và đánh giá bằng nhiều metric thay vì chỉ dựa vào RMSE.",
+
+    "Mô hình hóa", "So sánh mô hình theo chỉ số chuẩn hóa", "17_so_sanh_mo_hinh_chuan_hoa.png",
+    "Nhận xét: biểu đồ chuẩn hóa giúp so sánh các metric khác đơn vị. Chỉ số càng thấp càng tốt; riêng R² đã được đảo chiều để cùng hướng với sai số. Nếu hai mô hình có MAPE gần nhau, nên ưu tiên mô hình có MAE/RMSE thấp hơn và R² cao hơn.",
+
+    "Mô hình hóa", "Heatmap so sánh mô hình", "18_heatmap_so_sanh_mo_hinh.png",
+    "Nhận xét: heatmap cho thấy trong lần huấn luyện này, mô hình cây và ensemble thường có rủi ro sai số thấp hơn Linear Regression, đặc biệt ở MAPE. Kết quả này phù hợp với dữ liệu bất động sản vì giá cần được đọc cùng lúc theo khu vực, loại BĐS, diện tích và tín hiệu trong tiêu đề.",
+
+    "Mô hình hóa", "Độ quan trọng biến - giá bán", "do_quan_trong_bien_ban.png",
+    "Nhận xét: độ quan trọng biến là tín hiệu từ mô hình, không phải lời giải thích nguyên nhân trực tiếp. Ví dụ `district_category_price_encoded` quan trọng vì nó tóm tắt mặt bằng giá theo khu vực và loại BĐS, nên cần đọc cùng với phân phối dữ liệu và số lượng mẫu từng nhóm.",
+
+    "Mô hình hóa", "Độ quan trọng biến - giá thuê", "do_quan_trong_bien_thue.png",
+    "Nhận xét: độ quan trọng biến là tín hiệu từ mô hình, không phải lời giải thích nguyên nhân trực tiếp. Ví dụ `district_category_price_encoded` quan trọng vì nó tóm tắt mặt bằng giá theo khu vực và loại BĐS, nên cần đọc cùng với phân phối dữ liệu và số lượng mẫu từng nhóm.",
+
+    "Mô hình hóa", "Dự đoán so với thực tế - bán", "du_doan_so_voi_thuc_te_ban.png",
+    "Nhận xét: điểm càng gần đường chéo thì dự đoán càng sát giá rao thực tế. Những điểm lệch xa thường thuộc nhóm dữ liệu thiếu đặc trưng, giá rao quá khác mặt bằng hoặc tin có yếu tố chưa được mã hóa như pháp lý, nội thất, hướng nhà, chiều rộng hẻm, tầng căn hộ, tiện ích tòa nhà. Vì RMSE lớn hơn MAE rõ rệt, có thể thấy vẫn tồn tại các outlier làm sai số bình phương tăng mạnh.",
+
+    "Mô hình hóa", "Dự đoán so với thực tế - cho thuê", "du_doan_so_voi_thuc_te_thue.png",
+    "Nhận xét: điểm càng gần đường chéo thì dự đoán càng sát giá rao thực tế. Những điểm lệch xa thường thuộc nhóm dữ liệu thiếu đặc trưng, giá rao quá khác mặt bằng hoặc tin có yếu tố chưa được mã hóa như pháp lý, nội thất, hướng nhà, chiều rộng hẻm, tầng căn hộ, tiện ích tòa nhà. Vì RMSE lớn hơn MAE rõ rệt, có thể thấy vẫn tồn tại các outlier làm sai số bình phương tăng mạnh.",
+
+    "Mô hình hóa", "Phân cụm khu vực", "19_phan_cum_khu_vuc.png",
+    "Nhận xét: phân cụm giúp nhóm các tổ hợp khu vực - loại BĐS có mặt bằng giá và diện tích tương tự nhau. Trong dữ liệu quan sát được, các cụm có giá/m² cao thường nghiêng về khu vực trung tâm hoặc sản phẩm có khả năng khai thác thương mại; các cụm có diện tích lớn nhưng giá/m² thấp hơn thường nghiêng về nhà đất/đất hoặc khu vực xa trung tâm hơn. Khi đọc cụm, cần chú ý `listing_count` vì cụm có ít tin dễ bị nhiễu."
+  ) %>%
+    mutate(section = factor(section, levels = c("Trực quan hóa dữ liệu", "Suy luận thống kê", "Mô hình hóa")))
+}
+
+report_plot_card <- function(item) {
+  image_path <- file.path(PATHS$plot_dir, item$filename)
+  image_exists <- file.exists(image_path)
+  div(
+    class = "report-plot-card",
+    div(
+      class = "report-plot-media",
+      if (image_exists) {
+        tags$img(
+          src = paste0("plots/", item$filename),
+          alt = item$title,
+          loading = "lazy"
+        )
+      } else {
+        div(class = "report-plot-missing", paste("Chưa có file", item$filename))
+      }
+    ),
+    div(
+      class = "report-plot-copy",
+      div(class = "report-plot-kicker", as.character(item$section)),
+      h3(item$title),
+      p(item$comment)
+    )
+  )
+}
+
+report_plot_gallery_ui <- function(catalog) {
+  sections <- levels(catalog$section)
+  tagList(lapply(sections, function(section_name) {
+    section_items <- catalog %>% filter(as.character(section) == section_name)
+    if (nrow(section_items) == 0) return(NULL)
+    div(
+      class = "report-plot-section",
+      h2(section_name),
+      div(
+        class = "report-plot-grid",
+        tagList(lapply(seq_len(nrow(section_items)), function(i) {
+          report_plot_card(section_items[i, , drop = FALSE])
+        }))
+      )
+    )
+  }))
+}

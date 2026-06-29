@@ -502,6 +502,96 @@ html, body, .container-fluid { min-height: 100%; }
 .map-legend { position: absolute; z-index: 500; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1); }
 .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 .dot-low { background: #059669; } .dot-mid { background: #d97706; } .dot-high { background: #ed1c24; }
+
+.report-plot-page .app-panel:hover { transform: none; }
+.report-plot-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 114, 188, 0.16);
+  border-radius: 12px;
+  background: rgba(0, 114, 188, 0.06);
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.report-plot-note i { color: var(--primary); margin-top: 3px; }
+.report-plot-section { margin-top: 8px; }
+.report-plot-section + .report-plot-section { margin-top: 34px; }
+.report-plot-section h2 {
+  margin: 0 0 16px;
+  color: var(--fg);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.report-plot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.report-plot-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+}
+.report-plot-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+}
+.report-plot-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.report-plot-copy {
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+}
+.report-plot-kicker {
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.report-plot-copy h3 {
+  margin: 0;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.report-plot-copy p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.62;
+}
+.report-plot-missing {
+  padding: 20px;
+  color: #b45309;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .bds-marker-cluster { background: transparent; border: 0; }
 .bds-marker-cluster div {
   width: 100%; height: 100%; border-radius: 50%;
@@ -577,6 +667,7 @@ html, body, .container-fluid { min-height: 100%; }
 @media (max-width: 1200px) {
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .filter-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .report-plot-grid { grid-template-columns: 1fr; }
   #map_filter_summary .filter-summary.full,
   #data_filter_summary .filter-summary.full,
   .stat-filter-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -610,6 +701,9 @@ html, body, .container-fluid { min-height: 100%; }
   .kpi-grid { grid-template-columns: 1fr; }
   .filter-toolbar { grid-template-columns: 1fr; }
   .filter-grid, .filter-summary.full { grid-template-columns: 1fr; }
+  .report-plot-media { min-height: 180px; padding: 10px; }
+  .report-plot-copy { padding: 14px; }
+  .report-plot-section h2 { font-size: 18px; }
   #map_filter_summary .filter-summary.full,
   #data_filter_summary .filter-summary.full,
   .stat-filter-summary { grid-template-columns: 1fr; }

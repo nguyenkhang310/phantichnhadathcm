@@ -25,8 +25,7 @@ phantichnhadathcm/
 |   `-- logs/      # Nhat ky cap nhat
 |-- outputs/
 |   |-- models/    # Model RDS, metrics, registry, phan cum
-|   |-- plots/     # Bieu do PNG/CSV sinh tu EDA, suy luan, mo hinh
-|   `-- figures/   # Hinh tam sinh khi render R Markdown
+|   `-- plots/     # Bieu do PNG/CSV dung chung cho pipeline va bao cao
 |-- scripts/
 |   |-- 01_thu_thap_du_lieu/     # Scraper va importer
 |   |-- 02_xu_ly_du_lieu/        # Merge + feature engineering

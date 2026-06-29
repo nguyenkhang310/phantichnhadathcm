@@ -52,11 +52,11 @@ DISPLAY_FEATURE_LABELS_VI <- c(
 )
 
 DISPLAY_MODEL_LABELS_VI <- c(
-  "Linear Regression" = "Hồi quy tuyến tính",
+  "Linear Regression" = "Linear Regression",
   "Random Forest" = "Random Forest",
   "XGBoost" = "XGBoost",
-  "RF + XGBoost Ensemble" = "Tổ hợp RF + XGBoost",
-  "Tuned RF/XGBoost Ensemble" = "Tổ hợp RF/XGBoost tối ưu"
+  "RF + XGBoost Ensemble" = "RF + XGBoost Ensemble",
+  "Tuned RF/XGBoost Ensemble" = "Tuned RF/XGBoost Ensemble"
 )
 
 label_from_lookup <- function(x, lookup) {
